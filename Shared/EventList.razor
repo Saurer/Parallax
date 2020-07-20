@@ -1,4 +1,4 @@
-<table class="table table-bordered table-sm">
+<table class="table table-bordered table-hover table-sm">
     <thead>
         <tr>
             <th class="text-center">#</th>
@@ -11,7 +11,7 @@
     </thead>
     <tbody>
         @foreach (var item in Items) {
-            <tr>
+            <tr class="@(item.ID == SelectedItemID ? "table-secondary" : "")" @onclick="() => HandleClick(item)">
                 <td class="text-center">@item.ID</td>
                 <td>@item.BaseEventID</td>
                 <td>@item.ValueID</td>
@@ -26,4 +26,14 @@
 @code {
     [Parameter]
     public IEnumerable<IEvent> Items { get; set; }
+
+    [Parameter]
+    public EventCallback<IEvent> OnClick { get;set; }
+
+    [Parameter]
+    public int? SelectedItemID { get;set; }
+
+    private async Task HandleClick(IEvent item) {
+        await OnClick.InvokeAsync(item);
+    }
 }

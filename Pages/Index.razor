@@ -7,18 +7,136 @@
         <Paginator CurrentPage="@currentPage" TotalPages="@totalPages" OnChange="@HandlePageChange" />
     </TitleRight>
     <ChildContent>
-        <EventList Items="@events" />
+        <div class="row">
+            <div class="col-sm-8">
+                <EventList Items="@events" OnClick="@HandleSelect" SelectedItemID="@(selection?.ID)"/>
+            </div>
+            <div class="col-sm">
+                @if (null == selection) {
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <strong>Information</strong>
+                            </h5>
+                            <p class="card-text">Select event that you wish to inspect. Detailed information about that event will appear here</p>
+                        </div>
+                    </div>
+                }
+                else {
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <strong>Event #@selection.Value.ID - @selection.Value.Value</strong>
+                            </h5>
+
+                            <table class="table table-borderless table-sm">
+                                <tbody>
+                                    <tr>
+                                        <td class="text-left">
+                                            <span class="oi oi-flag text-muted"></span>
+                                            <span>Base event</span>
+                                        </td>
+                                        <td class="text-right">
+                                            <button class="btn btn-link p-0" @onclick="() => HandleSelect(selection.Value.BaseEvent)">
+                                                (@selection.Value.BaseEvent.ID) @selection.Value.BaseEvent.Value
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-left">
+                                            <span class="oi oi-tag text-muted"></span>
+                                            <span>Value type</span>
+                                        </td>
+                                        <td class="text-right">
+                                            <button class="btn btn-link p-0" @onclick="() => HandleSelect(selection.Value.ValueEvent)">
+                                                (@selection.Value.ValueEvent.ID) @selection.Value.ValueEvent.Value
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-left">
+                                            <span class="oi oi-script text-muted"></span>
+                                            <span>Value</span>
+                                        </td>
+                                        @if (selection.Value.ValueDescriptor == null) {
+                                            <td class="text-right">
+                                                @selection.Value.Value
+                                            </td>
+                                        }
+                                        else {
+                                            <td class="text-right">
+                                                <button class="btn btn-link p-0" @onclick="() => HandleSelect(selection.Value.ValueDescriptor)">
+                                                    (@selection.Value.Value) @selection.Value.ValueDescriptor.Value
+                                                </button>
+                                            </td>
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <td class="text-left">
+                                            <span class="oi oi-task text-muted"></span>
+                                            <span>Condition</span>
+                                        </td>
+                                        <td class="text-right">
+                                            <button class="btn btn-link p-0" @onclick="() => HandleSelect(selection.Value.ConditionEvent)">
+                                                (@selection.Value.ConditionEvent.ID) @selection.Value.ConditionEvent.Value
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-left">
+                                            <span class="oi oi-person text-muted"></span>
+                                            <span>Actor</span>
+                                        </td>
+                                        <td class="text-right">
+                                            <button class="btn btn-link p-0" @onclick="() => HandleSelect(selection.Value.ActorEvent)">
+                                                (@selection.Value.ActorEvent.ID) @selection.Value.ActorEvent.Value
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
 
         <hr/>
-        <button class="btn btn-primary" disabled>
-            <span class="oi oi-cloud-download mr-1"></span>
-            <span>Save</span>
-        </button>
 
-        <button class="btn btn-primary" disabled>
-            <span class="oi oi-cloud-upload mr-1"></span>
-            <span>Load</span>
-        </button>
+        <div class="card-deck">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Backup data</h5>
+                    <p class="card-text">Save current graph state to file. You can restore your workload and continue your work any time later</p>
+                    <button class="btn btn-warning btn-block">
+                        <span class="oi oi-cloud-download mr-1"></span>
+                        <span>Backup now</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Restore data</h5>
+                    <p class="card-text">Load graph state from existing file. This will replay graph events in order of their appearance</p>
+                    <button class="btn btn-primary btn-block">
+                        <span class="oi oi-cloud-upload mr-1"></span>
+                        <span>Load from file</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Reset state</h5>
+                    <p class="card-text">Reset current state to genesis table. This will erase all events that were invoked by the user</p>
+                    <button class="btn btn-danger btn-block">
+                        <span class="oi oi-cloud-upload mr-1"></span>
+                        <span>Reset graph</span>
+                    </button>
+                </div>
+            </div>
+        </div>
     </ChildContent>
 </Scaffold>
 
@@ -27,6 +145,17 @@
     private const int ITEMS_PER_PAGE = 15;
     private int currentPage = 1;
     private int totalPages = 1;
+    private SelectedEventData? selection;
+
+    private struct SelectedEventData {
+        public int ID { get;set; }
+        public string Value { get;set; }
+        public IEvent ValueDescriptor { get;set; }
+        public IEvent BaseEvent { get;set; }
+        public IEvent ValueEvent { get;set; }
+        public IEvent ConditionEvent { get;set; }
+        public IEvent ActorEvent { get;set; }
+    }
 
     protected override async Task OnInitializedAsync() {
         events = await LoadPage(currentPage);
@@ -41,5 +170,23 @@
     private async Task HandlePageChange(int page) {
         currentPage = page;
         events = await LoadPage(page);
+    }
+
+    private async Task HandleSelect(IEvent e) {
+        IEvent valueDescriptor = null;
+
+        if (Int32.TryParse(e.Value, out var val)) {
+            valueDescriptor = await Engine.Storage.GetEvent(val);
+        }
+
+        selection = new SelectedEventData {
+            ID = e.ID,
+            Value = e.Value,
+            ValueDescriptor = valueDescriptor,
+            BaseEvent = await Engine.Storage.GetEvent(e.BaseEventID),
+            ValueEvent = await Engine.Storage.GetEvent(e.ValueID),
+            ConditionEvent = await Engine.Storage.GetEvent(e.ConditionEventID),
+            ActorEvent = await Engine.Storage.GetEvent(e.ActorEventID)
+        };
     }
 }

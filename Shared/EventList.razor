@@ -1,0 +1,29 @@
+<table class="table table-bordered table-sm">
+    <thead>
+        <tr>
+            <th class="text-center">#</th>
+            <th>BaseEventID</th>
+            <th>ValueID</th>
+            <th>Value</th>
+            <th>Condition</th>
+            <th>Actor</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Items) {
+            <tr>
+                <td class="text-center">@item.ID</td>
+                <td>@item.BaseEventID</td>
+                <td>@item.ValueID</td>
+                <td>@item.Value</td>
+                <td>@item.ConditionEventID</td>
+                <td>@item.ActorEventID</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    [Parameter]
+    public IEnumerable<IEvent> Items { get; set; }
+}

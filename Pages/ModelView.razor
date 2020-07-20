@@ -1,0 +1,102 @@
+﻿@page "/models/{id:int}"
+@inject EngineBase Engine
+
+@if (null != model) {
+    <Scaffold>
+        <Title>(@model.ID) @model.Name</Title>
+        <ChildContent>
+            <h4>Parent</h4>
+            @if (StaticEvent.Event == model.Parent) {
+                <span>Root</span>
+            }
+            else {
+                var parentLink = $"/models/{model.Parent}";
+                <NavLink href="@parentLink">@model.ParentName</NavLink>
+            }
+
+            <hr/>
+
+            @if (model.OwnAttributes.Any()) {
+                <h4>Own Attributes</h4>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Properties</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var attr in model.OwnAttributes) {
+                            <tr>
+                                <td>@attr.ID</td>
+                                <td>@attr.Name</td>
+                                <td>@attr.Type</td>
+                                <td>
+                                    <dl>
+                                        @foreach (var prop in attr.Properties) {
+                                            <dt>@prop.ID</dt>
+                                            <dd>@prop.ValueID</dd>
+                                        }
+                                    </dl>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+
+            @if (model.InheritedAttributes.Any()) {
+                <h4>Inherited Attributes</h4>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Properties</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var attr in model.InheritedAttributes) {
+                            <tr>
+                                <td>@attr.ID</td>
+                                <td>@attr.Name</td>
+                                <td>@attr.Type</td>
+                                <td>
+                                    <dl>
+                                        @foreach (var prop in attr.Properties) {
+                                            <dt>@prop.ID</dt>
+                                            <dd>@prop.ValueID</dd>
+                                        }
+                                    </dl>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </ChildContent>
+    </Scaffold>
+}
+
+@code {
+    [Parameter]
+    public int ID { get; set; }
+
+    private ModelData model = null;
+
+    protected override async Task OnInitializedAsync() {
+        await Redraw();
+    }
+
+    protected override async Task OnParametersSetAsync() {
+        await Redraw();
+    }
+
+    private async Task Redraw() {
+        var model = await Engine.Storage.GetModel(ID);
+        this.model = await ModelData.Instantiate(model);
+    }
+}

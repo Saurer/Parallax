@@ -1,0 +1,69 @@
+﻿@page "/individuals"
+@inject EngineBase Engine
+
+<Scaffold>
+    <Title>Individials list</Title>
+    <TitleRight>
+        <button class="btn btn-light">
+            <span class="oi oi-plus mr-1"></span>
+            <span>Create</span>
+        </button>
+    </TitleRight>
+    <ChildContent>
+        <div class="card-columns">
+            @foreach (var item in individuals) {
+                var modelLink = $"/models/{item.Model.ID}";
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <strong>@item.Name</strong>
+                            @if (item.Valid) {
+                                <span class="badge badge-success float-right">Valid</span>
+                            }
+                            else {
+                                <span class="badge badge-danger float-right">Invalid</span>
+                            }
+                        </h5>
+                        <div class="row">
+                            <div class="col-sm">
+                                <span class="oi oi-fork text-muted"></span>
+                                <span>Model</span>
+                            </div>
+                            <div class="col-sm text-right">
+                                <NavLink href="@modelLink">@item.Model.Name</NavLink>
+                            </div>
+                        </div>
+                        <hr/>
+                        @foreach (var attr in item.Model.Attributes) {
+                            <div class="row">
+                                <div class="col-sm">
+                                    <strong>@attr.Name</strong>
+                                </div>
+                                <div class="col-sm text-right">
+                                    @if (item.Attributes.ContainsKey(attr.ID)) {
+                                        <span>@item.Attributes[attr.ID]</span>
+                                    }
+                                    else {
+                                        <span>
+                                            <span class="oi oi-warning text-warning"></span>
+                                            <span class="text-muted">Unassigned</span>
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </ChildContent>
+</Scaffold>
+
+@code {
+    private IEnumerable<IndividualData> individuals = Array.Empty<IndividualData>();
+
+    protected override async Task OnInitializedAsync() {
+        var individuals = await Engine.Storage.GetIndividuals();
+        this.individuals = await Task.WhenAll(individuals.Select(i => IndividualData.Instantiate(i)));
+    }
+}

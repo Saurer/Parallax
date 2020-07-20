@@ -1,0 +1,35 @@
+<nav>
+    <ul class="pagination">
+        <li class="page-item @(CurrentPage == 1 ? "disabled" : "")">
+            <button class="page-link" @onclick="() => HandleChange(1)" disabled="@(CurrentPage == 1)">
+                <span aria-hidden="true">&laquo;</span>
+            </button>
+        </li>
+        @for (int i = 1;i <= TotalPages;i++) {
+            int pageHandle = i;
+            <li class="page-item @(CurrentPage == pageHandle ? "active" : "")">
+                <button class="page-link" disabled="@(CurrentPage == pageHandle)" @onclick="() => HandleChange(pageHandle)">@i</button>
+            </li>
+        }
+        <li class="page-item @(CurrentPage == TotalPages ? "disabled" : "")">
+            <button class="page-link" @onclick="() => HandleChange(TotalPages)" disabled="@(CurrentPage == TotalPages)">
+                <span aria-hidden="true">&raquo;</span>
+            </button>
+        </li>
+    </ul>
+</nav>
+
+@code {
+    [Parameter]
+    public int CurrentPage { get; set; }
+
+    [Parameter]
+    public int TotalPages { get; set; }
+
+    [Parameter]
+    public EventCallback<int> OnChange { get; set; }
+
+    private async void HandleChange(int page) {
+        await OnChange.InvokeAsync(page);
+    }
+}

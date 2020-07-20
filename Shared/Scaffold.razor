@@ -1,0 +1,23 @@
+<Heading>
+    <ChildContent>
+        @Title
+    </ChildContent>
+    <Right>
+        @TitleRight
+    </Right>
+</Heading>
+<hr/>
+<section>
+    @ChildContent
+</section>
+
+@code {
+    [Parameter]
+    public RenderFragment ChildContent { get;set; }
+
+    [Parameter]
+    public RenderFragment Title { get;set; }
+
+    [Parameter]
+    public RenderFragment TitleRight { get;set; }
+}

@@ -1,0 +1,47 @@
+﻿@page "/models"
+@inject EngineBase Engine
+
+<Scaffold>
+    <Title>Models list</Title>
+    <ChildContent>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Parent</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach(var model in models) {
+                var link = $"/models/{model.ID}";
+                var parentLink = $"/models/{model.Parent}";
+
+                <tr>
+                    <td>@model.ID</td>
+                    <td>
+                        <NavLink href="@link">@model.Name</NavLink>
+                    </td>
+                    <td>
+                        @if (StaticEvent.Event == model.Parent) {
+                            <span>Root</span>
+                        }
+                        else {
+                            <NavLink href="@parentLink">@model.ParentName</NavLink>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </ChildContent>
+</Scaffold>
+
+@code {
+    private IEnumerable<ModelData> models = Array.Empty<ModelData>();
+
+    protected override async Task OnInitializedAsync() {
+        var models = await Engine.Storage.GetModels();
+        this.models = await Task.WhenAll(models.Select(m => ModelData.Instantiate(m)));
+    }
+}

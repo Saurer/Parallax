@@ -1,6 +1,6 @@
 ﻿@page "/"
-@inject EngineBase Engine
 @inject IModalService Modal
+@inject EngineService EngineService
 
 <Scaffold>
     <Title>Event log</Title>
@@ -131,7 +131,7 @@
                 <div class="card-body">
                     <h5 class="card-title">Reset state</h5>
                     <p class="card-text">Reset current state to genesis table. This will erase all events that were invoked by the user</p>
-                    <button class="btn btn-danger btn-block" @onclick="@(() => Modal.Show<ResetGraph>("Confirmation"))">
+                    <button class="btn btn-danger btn-block" @onclick="HandleReset">
                         <span class="oi oi-cloud-upload mr-1"></span>
                         <span>Reset graph</span>
                     </button>
@@ -149,13 +149,19 @@
     private SelectedEventData? selection;
 
     private struct SelectedEventData {
-        public int ID { get;set; }
-        public string Value { get;set; }
-        public IEvent ValueDescriptor { get;set; }
-        public IEvent BaseEvent { get;set; }
-        public IEvent ValueEvent { get;set; }
-        public IEvent ConditionEvent { get;set; }
-        public IEvent ActorEvent { get;set; }
+        public int ID { get; set; }
+        public string Value { get; set; }
+        public IEvent ValueDescriptor { get; set; }
+        public IEvent BaseEvent { get; set; }
+        public IEvent ValueEvent { get; set; }
+        public IEvent ConditionEvent { get; set; }
+        public IEvent ActorEvent { get; set; }
+    }
+
+    private EngineBase Engine {
+        get {
+            return EngineService.Instance;
+        }
     }
 
     protected override async Task OnInitializedAsync() {
@@ -189,5 +195,14 @@
             ConditionEvent = await Engine.Storage.GetEvent(e.ConditionEventID),
             ActorEvent = await Engine.Storage.GetEvent(e.ActorEventID)
         };
+    }
+
+    private async Task HandleReset() {
+        var dialog = Modal.Show<ResetGraph>("Confirmation");
+        var result = (await dialog.Result).Data is true;
+        if (result) {
+            await EngineService.InitEngine();
+            events = await LoadPage(currentPage);
+        }
     }
 }

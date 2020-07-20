@@ -17,10 +17,10 @@
     public BlazoredModalInstance BlazoredModal { get;set; }
 
     private void Confirm() {
-        BlazoredModal.Close();
+        BlazoredModal.Close(ModalResult.Ok(true));
     }
 
     private void Cancel() {
-        BlazoredModal.Close();
+        BlazoredModal.Close(ModalResult.Cancel());
     }
 }

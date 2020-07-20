@@ -16,7 +16,7 @@ namespace Parallax {
             await engineService.InitEngine();
 
             builder.Services.AddTransient(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
-            builder.Services.AddSingleton(sp => engineService.Instance);
+            builder.Services.AddTransient(sp => engineService.Instance);
             builder.Services.AddSingleton(sp => engineService);
             builder.Services.AddBlazoredModal();
 

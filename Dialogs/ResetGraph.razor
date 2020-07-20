@@ -1,21 +1,3 @@
-@* <p class="mt-0">Do you really want to clear graph data?</p>
-<hr/>
-<button type="button" class="btn btn-danger" @onclick="Confirm">Confirm</button>
-<button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
-
-@code {
-    [CascadingParameter]
-    public BlazoredModalInstance BlazoredModal { get;set; }
-
-    private void Confirm() {
-        BlazoredModal.Close();
-    }
-
-    private void Cancel() {
-        BlazoredModal.Close();
-    }
-} *@
-
 <DialogLayout>
     <ChildContent>
         <p>Do you really want to reset the state of your graph?</p>

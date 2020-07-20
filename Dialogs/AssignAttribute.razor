@@ -1,0 +1,92 @@
+@inject EngineBase Engine
+
+<DialogLayout>
+    <ChildContent>
+        <form>
+            <div class="form-group row">
+                <label for="eventID" class="col-sm-3 col-form-label">
+                    <strong>Event ID</strong>
+                </label>
+                <div class="col-sm-9">
+                    <input type="text" readonly class="form-control-plaintext" id="eventID" value="@EventID"/>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="attr" class="col-sm-3 col-form-label">
+                    <strong>Attribute</strong>
+                </label>
+                <div class="col-sm-9">
+                    <input type="text" readonly class="form-control-plaintext" id="attr" value="@(attr?.Value)"/>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="dataType" class="col-sm-3 col-form-label">
+                    <strong>Data type</strong>
+                </label>
+                <div class="col-sm-9">
+                    <input type="text" readonly class="form-control-plaintext" id="dataType" value="@dataType?.Name"/>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="value" class="col-sm-3 col-form-label">
+                    <strong>Value</strong>
+                </label>
+                <div class="col-sm-9">
+                    <input type="text" @onchange="HandleChange" class="form-control @(valid ? "is-valid" : "is-invalid")" id="value"/>
+                </div>
+            </div>
+        </form>
+    </ChildContent>
+    <Footer>
+        <button type="button" class="btn btn-primary" @onclick="Confirm">Confirm</button>
+        <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+    </Footer>
+</DialogLayout>
+
+@code {
+    [CascadingParameter]
+    public BlazoredModalInstance BlazoredModal { get;set; }
+
+    [Parameter]
+    public int EventID { get;set; }
+
+    [Parameter]
+    public int AttrID { get;set; }
+
+    private IAttr attr;
+    private AuroraCore.Types.DataType dataType;
+    private string value = "";
+    private bool valid = false;
+
+    protected override async Task OnInitializedAsync() {
+        attr = await Engine.Storage.GetAttribute(AttrID);
+        dataType = await attr.GetDataType();
+    }
+
+    private void HandleChange(ChangeEventArgs e) {
+        var newValue = (string)e.Value;
+        valid = dataType.Validate(newValue);
+        value = newValue;
+    }
+
+    private async Task Confirm() {
+        if (!valid) {
+            return;
+        }
+
+        await Engine.ProcessEvent(new Graph.EventData {
+            ID = Engine.Position,
+            BaseEventID = EventID,
+            ValueID = AttrID,
+            ConditionEventID = EventID,
+            ActorEventID = 0,
+            Value = value,
+            Date = DateTime.UtcNow,
+        });
+        await BlazoredModal.Close(ModalResult.Ok(true));
+    }
+
+    private void Cancel() {
+        BlazoredModal.Close();
+    }
+}

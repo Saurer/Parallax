@@ -1,5 +1,6 @@
 ﻿@page "/individuals"
 @inject EngineBase Engine
+@inject IModalService Modal
 
 <Scaffold>
     <Title>Individials list</Title>
@@ -44,10 +45,10 @@
                                         <span>@item.Attributes[attr.ID]</span>
                                     }
                                     else {
-                                        <span>
+                                        <button class="btn btn-link p-0 border-bottom" @onclick="@(() => HandleAssignAttribute(item, attr.ID))">
                                             <span class="oi oi-warning text-warning"></span>
                                             <span class="text-muted">Unassigned</span>
-                                        </span>
+                                        </button>
                                     }
                                 </div>
                             </div>
@@ -63,7 +64,22 @@
     private IEnumerable<IndividualData> individuals = Array.Empty<IndividualData>();
 
     protected override async Task OnInitializedAsync() {
+        await Refresh();
+    }
+
+    private async Task Refresh() {
         var individuals = await Engine.Storage.GetIndividuals();
         this.individuals = await Task.WhenAll(individuals.Select(i => IndividualData.Instantiate(i)));
+    }
+
+    private async Task HandleAssignAttribute(IndividualData individual, int attrID) {
+        var parameters = new ModalParameters();
+        parameters.Add("EventID", individual.ID);
+        parameters.Add("AttrID", attrID);
+        var modal = Modal.Show<AssignAttribute>($"Assign attribute to '{individual.Name}'", parameters);
+        var result = (await modal.Result).Data is true;
+        if (result) {
+            await Refresh();
+        }
     }
 }

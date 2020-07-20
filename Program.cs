@@ -25,7 +25,7 @@ namespace Parallax {
             var typeManager = new TypeManager();
             var engine = new EngineBase(new MemoryStorage(typeManager));
 
-            foreach (var e in Graph.Table) {
+            foreach (var e in Graph.GenesisData) {
                 await engine.ProcessEvent(e);
             }
 

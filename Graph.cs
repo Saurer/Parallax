@@ -14,7 +14,7 @@ namespace Parallax {
             public DateTime Date { get; set; }
         }
 
-        public static IEnumerable<EventData> Table = new EventData[]{
+        public static IEnumerable<EventData> GenesisData = new EventData[]{
             new EventData{ ID = 0, BaseEventID = 0, ValueID = 0, Value = "Event", ConditionEventID = 0, ActorEventID = 0 },
             new EventData{ ID = 1, BaseEventID = 0, ValueID = 0, Value = "SubEvent", ConditionEventID = 0, ActorEventID = 0 },
             new EventData{ ID = 2, BaseEventID = 0, ValueID = 1, Value = "Actor", ConditionEventID = 0, ActorEventID = 0 },

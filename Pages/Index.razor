@@ -1,5 +1,6 @@
 ﻿@page "/"
 @inject EngineBase Engine
+@inject IModalService Modal
 
 <Scaffold>
     <Title>Event log</Title>
@@ -130,7 +131,7 @@
                 <div class="card-body">
                     <h5 class="card-title">Reset state</h5>
                     <p class="card-text">Reset current state to genesis table. This will erase all events that were invoked by the user</p>
-                    <button class="btn btn-danger btn-block">
+                    <button class="btn btn-danger btn-block" @onclick="@(() => Modal.Show<ResetGraph>("Confirmation"))">
                         <span class="oi oi-cloud-upload mr-1"></span>
                         <span>Reset graph</span>
                     </button>

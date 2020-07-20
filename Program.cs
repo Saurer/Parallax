@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using AuroraCore;
 using AuroraCore.Types;
 using AuroraCore.Storage.Implementation;
+using Blazored.Modal;
 
 namespace Parallax {
     public class Program {
@@ -17,6 +18,7 @@ namespace Parallax {
 
             builder.Services.AddTransient(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
             builder.Services.AddSingleton(sp => engine);
+            builder.Services.AddBlazoredModal();
 
             await builder.Build().RunAsync();
         }

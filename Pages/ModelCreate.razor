@@ -83,15 +83,14 @@
             <hr/>
             <button type="submit" class="btn btn-primary">
                 <span class="oi oi-plus mr-1"></span>
-                <span>Create</span>
+                <span>Confirm</span>
             </button>
         </EditForm>
     </ChildContent>
 </Scaffold>
 
 @code {
-    private CreateModelData model = new CreateModelData();
-
+    private ModelCreateData model = new ModelCreateData();
     private IEnumerable<DataType> dataTypes = Array.Empty<DataType>();
     private IEnumerable<IModel> models = Array.Empty<IModel>();
     private IEnumerable<(string, string)> parentAttrs = Array.Empty<(string, string)>();

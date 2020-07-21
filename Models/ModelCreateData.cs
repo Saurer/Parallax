@@ -11,7 +11,7 @@ namespace Parallax.Models {
         Entity = StaticEvent.Entity,
     }
 
-    public class CreateModelData {
+    public class ModelCreateData {
         private List<(string, int)> attributes = new List<(string, int)>();
 
         [Required, MinLength(1)]

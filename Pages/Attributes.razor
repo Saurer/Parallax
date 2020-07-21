@@ -1,0 +1,50 @@
+﻿@page "/attributes"
+@inject EngineBase Engine
+
+<Scaffold>
+    <Title>Attributes</Title>
+    <TitleRight>
+        <NavLink href="/attributes/create" class="btn btn-light">
+            <span class="oi oi-plus mr-1"></span>
+            <span>Create</span>
+        </NavLink>
+    </TitleRight>
+    <ChildContent>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Properties</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var attr in attributes) {
+                    <tr>
+                        <td>@attr.ID</td>
+                        <td>@attr.Name</td>
+                        <td>@attr.Type</td>
+                        <td>
+                            <dl>
+                                @foreach (var prop in attr.Properties) {
+                                    <dt>@prop.PropertyID</dt>
+                                    <dd>@prop.ValueID</dd>
+                                }
+                            </dl>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </ChildContent>
+</Scaffold>
+
+@code {
+    private IEnumerable<AttrData> attributes = Array.Empty<AttrData>();
+
+    protected override async Task OnInitializedAsync() {
+        var values = await Engine.Storage.GetAttributes();
+        attributes = await Task.WhenAll(values.Select(a => AttrData.Instantiate(a)));
+    }
+}

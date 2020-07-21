@@ -1,0 +1,58 @@
+﻿@page "/attributes/create"
+@inject EngineBase Engine
+@inject EngineService EngineService
+@inject NavigationManager NavigationManager
+@inject CredentialsService CredentialsService
+
+<Scaffold>
+    <Title>Create attribute</Title>
+    <ChildContent>
+        <EditForm Model="@model" OnValidSubmit="@HandleSubmit">
+            <DataAnnotationsValidator/>
+
+            <div class="form-group">
+                <label for="name">Name</label>
+                <InputText class="form-control" @bind-Value="model.Name" />
+            </div>
+
+            <div class="form-group">
+                <label for="dataType">Data type</label>
+                <InputSelect @bind-Value="model.DataType" class="form-control">
+                    @foreach (var (dtID, dtName) in dataTypes) {
+                        <option value="@dtID">@dtName</option>
+                    }
+                </InputSelect>
+            </div>
+
+            <hr/>
+            <button type="submit" class="btn btn-primary">
+                <span class="oi oi-plus mr-1"></span>
+                <span>Confirm</span>
+            </button>
+        </EditForm>
+    </ChildContent>
+</Scaffold>
+
+@code {
+    private AttributeCreateData model = new AttributeCreateData();
+    private IEnumerable<(int, string)> dataTypes = Array.Empty<(int, string)>();
+
+    protected async override Task OnInitializedAsync() {
+        var result = new List<(int, string)>();
+        var values = EngineService.Types.GetAll();
+        foreach (var dt in values) {
+            var dtIndividual = await Engine.Storage.GetDataTypeIndividual(dt.Name);
+            result.Add((
+                dtIndividual.ID,
+                dt.Name
+            ));
+        }
+        dataTypes = result;
+        model.DataType = dataTypes.First().Item1;
+    }
+
+    private async Task HandleSubmit() {
+        await model.Execute(Engine, CredentialsService);
+        NavigationManager.NavigateTo("/attributes");
+    }
+}

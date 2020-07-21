@@ -1,4 +1,5 @@
 ﻿@inherits LayoutComponentBase
+@inject EngineBase Engine
 @inject CredentialsService Credentials
 
 <div class="sidebar">
@@ -32,12 +33,12 @@
     private bool userDropdown = false;
     private IEnumerable<IIndividual> actors = Array.Empty<IIndividual>();
 
-    protected override async Task OnInitializedAsync() {
-        actors = await Credentials.GetActors();
-    }
-
-    private void HandleMenuClick() {
+    private async Task HandleMenuClick() {
         userDropdown = !userDropdown;
+        
+        if (userDropdown) {
+            actors = await Engine.Storage.GetActors();
+        }
     }
 
     private void HandleUserClick(IIndividual actor) {

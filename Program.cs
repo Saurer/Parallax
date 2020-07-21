@@ -16,8 +16,8 @@ namespace Parallax {
             var engineService = new EngineService();
             await engineService.InitEngine();
 
-            var credentialsService = new CredentialsService(engineService.Instance);
-            var actors = await credentialsService.GetActors();
+            var credentialsService = new CredentialsService();
+            var actors = await engineService.Instance.Storage.GetActors();
             credentialsService.SetCurrentActor(actors.First());
 
             builder.Services.AddTransient(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });

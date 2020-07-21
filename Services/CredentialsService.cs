@@ -32,23 +32,14 @@ namespace Parallax.Services {
     }
 
     public class CredentialsService {
-        private EngineBase engine;
 
         public IIndividual CurrentActor { get; private set; }
-
-        public CredentialsService(EngineBase engine) {
-            this.engine = engine;
-        }
-
-        public Task<IEnumerable<IIndividual>> GetActors() {
-            return engine.Storage.GetActors();
-        }
 
         public void SetCurrentActor(IIndividual actor) {
             CurrentActor = actor;
         }
 
-        public async Task ProcessEvent(FederatedEvent e) {
+        public async Task ProcessEvent(EngineBase engine, FederatedEvent e) {
             await e.Attach(engine, CurrentActor);
         }
     }

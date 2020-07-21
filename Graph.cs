@@ -35,7 +35,7 @@ namespace Parallax {
             new EventData{ ID = 17, BaseEventID = 5, ValueID = 8, Value = "Name", ConditionEventID = 15, ActorEventID = 0 },
             new EventData{ ID = 18, BaseEventID = 17, ValueID = 12, Value = "14", ConditionEventID = 17, ActorEventID = 0 },
             new EventData{ ID = 19, BaseEventID = 9, ValueID = 5, Value = "17", ConditionEventID = 9, ActorEventID = 0 },
-            new EventData{ ID = 20, BaseEventID = 2, ValueID = 7, Value = "Actor_Model", ConditionEventID = 9, ActorEventID = 0 },
+            new EventData{ ID = 20, BaseEventID = 2, ValueID = 7, Value = "Model_Actor", ConditionEventID = 9, ActorEventID = 0 },
             new EventData{ ID = 21, BaseEventID = 2, ValueID = 8, Value = "Actor_Main", ConditionEventID = 20, ActorEventID = 0 },
             new EventData{ ID = 22, BaseEventID = 21, ValueID = 17, Value = "Main Actor", ConditionEventID = 21, ActorEventID = 0 },
         };

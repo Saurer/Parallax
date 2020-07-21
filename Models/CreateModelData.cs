@@ -43,7 +43,7 @@ namespace Parallax.Models {
 
             // Create attributes
             foreach (var (name, dataType) in attributes) {
-                int attrID = await service.ProcessEvent(engine, new FederatedEvent(StaticEvent.Attribute, StaticEvent.Individual, modelID, name));
+                int attrID = await service.ProcessEvent(engine, new FederatedEvent(StaticEvent.Attribute, StaticEvent.Individual, StaticEvent.AttributeModel, name));
                 await service.ProcessEvent(engine, new FederatedEvent(attrID, StaticEvent.DataType, attrID, dataType.ToString()));
                 await service.ProcessEvent(engine, new FederatedEvent(modelID, StaticEvent.Attribute, modelID, attrID.ToString()));
             }

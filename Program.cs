@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Blazored.Modal;
 using Parallax.Services;
+using System.Linq;
 
 namespace Parallax {
     public class Program {
@@ -15,9 +16,14 @@ namespace Parallax {
             var engineService = new EngineService();
             await engineService.InitEngine();
 
+            var credentialsService = new CredentialsService(engineService.Instance);
+            var actors = await credentialsService.GetActors();
+            credentialsService.SetCurrentActor(actors.First());
+
             builder.Services.AddTransient(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
             builder.Services.AddTransient(sp => engineService.Instance);
             builder.Services.AddSingleton(sp => engineService);
+            builder.Services.AddSingleton(sp => credentialsService);
             builder.Services.AddBlazoredModal();
 
             await builder.Build().RunAsync();

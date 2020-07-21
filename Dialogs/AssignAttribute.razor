@@ -1,4 +1,5 @@
 @inject EngineBase Engine
+@inject CredentialsService Credentials
 
 <DialogLayout>
     <ChildContent>
@@ -45,13 +46,13 @@
 
 @code {
     [CascadingParameter]
-    public BlazoredModalInstance BlazoredModal { get;set; }
+    public BlazoredModalInstance BlazoredModal { get; set; }
 
     [Parameter]
-    public int EventID { get;set; }
+    public int EventID { get; set; }
 
     [Parameter]
-    public int AttrID { get;set; }
+    public int AttrID { get; set; }
 
     private IAttr attr;
     private AuroraCore.Types.DataType dataType;
@@ -74,15 +75,12 @@
             return;
         }
 
-        await Engine.ProcessEvent(new Graph.EventData {
-            ID = Engine.Position,
-            BaseEventID = EventID,
-            ValueID = AttrID,
-            ConditionEventID = EventID,
-            ActorEventID = 0,
-            Value = value,
-            Date = DateTime.UtcNow,
-        });
+        await Credentials.ProcessEvent(new FederatedEvent(
+            EventID,
+            AttrID,
+            EventID,
+            value
+        ));
         await BlazoredModal.Close(ModalResult.Ok(true));
     }
 

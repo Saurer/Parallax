@@ -1,4 +1,5 @@
 ﻿@inherits LayoutComponentBase
+@inject CredentialsService Credentials
 
 <div class="sidebar">
     <NavMenu />
@@ -6,10 +7,41 @@
 
 <div class="main">
     <div class="top-row px-4">
-        <a href="http://blazor.net" target="_blank" class="ml-md-auto">About</a>
+        <div class="dropdown">
+            <button class="btn btn-light dropdown-toggle" @onclick="HandleMenuClick">
+                <span class="oi oi-person mr-1"></span>
+                <span>@(Credentials.CurrentActor.Value)</span>
+            </button>
+            <div class="dropdown-menu" style="left:auto;right:0;display:@(userDropdown ? "block" : "none")">
+                @foreach (var actor in actors) {
+                    <button class="dropdown-item" disabled="@(Credentials.CurrentActor.ID == actor.ID)">
+                        <span class="oi oi-person mr-1"></span>
+                        <span>@actor.Value</span>
+                    </button>
+                }
+            </div>
+        </div>
     </div>
 
     <div class="content px-4">
         @Body
     </div>
 </div>
+
+@code {
+    private bool userDropdown = false;
+    private IEnumerable<IIndividual> actors = Array.Empty<IIndividual>();
+
+    protected override async Task OnInitializedAsync() {
+        actors = await Credentials.GetActors();
+    }
+
+    private void HandleMenuClick() {
+        userDropdown = !userDropdown;
+    }
+
+    private void HandleUserClick(IIndividual actor) {
+        Credentials.SetCurrentActor(actor);
+        StateHasChanged();
+    }
+}

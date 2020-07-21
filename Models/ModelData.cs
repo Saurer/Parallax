@@ -12,6 +12,17 @@ namespace Parallax.Models {
         public string ParentName { get; private set; }
         public IEnumerable<AttrData> OwnAttributes { get; private set; }
         public IEnumerable<AttrData> InheritedAttributes { get; private set; }
+        public IEnumerable<AttrData> AllAttributes {
+            get {
+                foreach (var attr in InheritedAttributes) {
+                    yield return attr;
+                }
+
+                foreach (var attr in OwnAttributes) {
+                    yield return attr;
+                }
+            }
+        }
 
         private ModelData() { }
 

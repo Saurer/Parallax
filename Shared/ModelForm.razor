@@ -1,0 +1,61 @@
+@inject IModalService ModalService
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Value</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (null != model) {
+            @foreach (var attr in model.AllAttributes) {
+                <tr>
+                    <td>@attr.Name</td>
+                    <td>@attr.Type</td>
+                    <td>
+                        <button type="button" class="btn btn-link p-0 border-bottom" @onclick="@(() => HandleAssignAttribute(attr.ID))">
+                            @if (Values.ContainsKey(attr.ID)) {
+                                <span>@Values[attr.ID]</span>
+                            }
+                            else {
+                                <span class="oi oi-warning text-warning"></span>
+                                <span class="text-muted">Unassigned</span>
+                            }
+                        </button>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+@code {
+    [Parameter]
+    public IModel Model { get; set; }
+
+    [Parameter]
+    public Dictionary<int, string> Values { get; set; }
+
+    private ModelData model;
+
+    protected async override Task OnInitializedAsync() {
+        model = await ModelData.Instantiate(Model);
+    }
+
+    private async Task HandleAssignAttribute(int attrID) {
+        var parameters = new ModalParameters();
+        parameters.Add("AttrID", attrID);
+        parameters.Add("Value", Values.ContainsKey(attrID) ? Values[attrID] : "");
+        var modal = ModalService.Show<SetAttributeValue>("Set attribute", parameters);
+        var result = (await modal.Result).Data;
+
+        if (result is string value) {
+            Values[attrID] = value;
+        }
+        else if (result is null) {
+            Values.Remove(attrID);
+        }
+    }
+}

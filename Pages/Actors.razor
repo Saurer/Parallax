@@ -1,12 +1,18 @@
-﻿@page "/individuals"
+﻿@page "/actors"
 @inject EngineBase Engine
 @inject IModalService Modal
 
 <Scaffold>
-    <Title>Individials list</Title>
+    <Title>Actors</Title>
+    <TitleRight>
+        <NavLink href="/actors/create" class="btn btn-light">
+            <span class="oi oi-plus mr-1"></span>
+            <span>Create</span>
+        </NavLink>
+    </TitleRight>
     <ChildContent>
         <div class="card-columns">
-            @foreach (var item in individuals) {
+            @foreach (var item in actors) {
                 var modelLink = $"/models/{item.Model.ID}";
                 <div class="card">
                     <div class="card-body">
@@ -55,15 +61,15 @@
 </Scaffold>
 
 @code {
-    private IEnumerable<IndividualData> individuals = Array.Empty<IndividualData>();
+    private IEnumerable<IndividualData> actors = Array.Empty<IndividualData>();
 
     protected override async Task OnInitializedAsync() {
         await Refresh();
     }
 
     private async Task Refresh() {
-        var individuals = await Engine.Storage.GetIndividuals();
-        this.individuals = await Task.WhenAll(individuals.Select(i => IndividualData.Instantiate(i)));
+        var actors = await Engine.Storage.GetActors();
+        this.actors = await Task.WhenAll(actors.Select(i => IndividualData.Instantiate(i)));
     }
 
     private async Task HandleAssignAttribute(IndividualData individual, int attrID) {

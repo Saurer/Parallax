@@ -55,7 +55,7 @@
                             <td>@attr.Name</td>
                             <td>@attr.Type</td>
                             <td>
-                                <button type="button" class="btn btn-danger" @onclick="() => model.RemoveAttribute(attr)">
+                                <button type="button" class="btn btn-danger" @onclick="() => HandleRemoveAttribute(attr)">
                                     <span class="oi oi-trash"></span>
                                 </button>
                             </td>
@@ -111,6 +111,11 @@
         }
 
         model.AddAttribute(newAttr);
+        await FilterAttributes();
+    }
+
+    public async Task HandleRemoveAttribute(AttrData value) {
+        model.RemoveAttribute(value);
         await FilterAttributes();
     }
 

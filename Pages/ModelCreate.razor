@@ -43,41 +43,40 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var (name, dataType) in parentAttrs) {
+                    @foreach (var attr in parentAttrs) {
                         <tr>
-                            <td>@name</td>
-                            <td>@dataType</td>
+                            <td>@attr.Name</td>
+                            <td>@attr.Type</td>
                             <td>Inherited</td>
                         </tr>
                     }
-                    @foreach (var (name, dataType) in model.Attributes) {
+                    @foreach (var attr in model.Attributes) {
                         <tr>
-                            <td>@name</td>
-                            <td>@dataType</td>
+                            <td>@attr.Name</td>
+                            <td>@attr.Type</td>
                             <td>
-                                <button type="button" class="btn btn-danger" @onclick="() => model.RemoveAttribute((name, dataType))">
+                                <button type="button" class="btn btn-danger" @onclick="() => model.RemoveAttribute(attr)">
                                     <span class="oi oi-trash"></span>
                                 </button>
                             </td>
                         </tr>
                     }
-                    <tr>
-                        <td>
-                            <input class="form-control" placeholder="New attribute" @bind-value="@newName" />
-                        </td>
-                        <td>
-                            <select class="form-control">
-                                @foreach (var type in dataTypes) {
-                                    <option value="@type.Name">@type.Name</option>
-                                }
-                            </select>
-                        </td>
-                        <td>
-                            <button type="button" class="btn btn-primary" @onclick="HandleAddAttribute">
-                                <span class="oi oi-plus"></span>
-                            </button>
-                        </td>
-                    </tr>
+                    @if (attributes.Any()) {
+                        <tr>
+                            <td colspan="2">
+                                <select class="form-control">
+                                    @foreach (var attr in attributes) {
+                                        <option value="@attr.ID">@attr.Name</option>
+                                    }
+                                </select>
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-primary" @onclick="HandleAddAttribute">
+                                    <span class="oi oi-plus"></span>
+                                </button>
+                            </td>
+                        </tr>
+                    }
                 </tbody>
             </table>
             <hr/>
@@ -91,42 +90,55 @@
 
 @code {
     private ModelCreateData model = new ModelCreateData();
-    private IEnumerable<DataType> dataTypes = Array.Empty<DataType>();
     private IEnumerable<IModel> models = Array.Empty<IModel>();
-    private IEnumerable<(string, string)> parentAttrs = Array.Empty<(string, string)>();
-    private string newName = "";
-    private int newType;
+    private IEnumerable<AttrData> parentAttrs = Array.Empty<AttrData>();
+    private IEnumerable<AttrData> attributes = Array.Empty<AttrData>();
+    private AttrData newAttr;
 
     protected async override Task OnInitializedAsync() {
-        dataTypes = EngineService.Types.GetAll();
-        var dtIndividual = await Engine.Storage.GetDataTypeIndividual(dataTypes.First().Name);
-        newType = dtIndividual.ID;
         models = await Engine.Storage.GetModels();
         await HandleChangeParent(models.First().ID.ToString());
+        newAttr = attributes.FirstOrDefault();
     }
 
-    private void HandleAddAttribute() {
-        if (String.IsNullOrEmpty(newName)) {
+    private async Task HandleAddAttribute() {
+        if (model.HasAttribute(newAttr)) {
             return;
         }
 
-        model.AddAttribute((newName, newType));
-        newName = "";
+        if (parentAttrs.Any(a => a.ID == newAttr.ID)) {
+            return;
+        }
+
+        model.AddAttribute(newAttr);
+        await FilterAttributes();
     }
 
     private async Task HandleChangeParent(object value) {
         if (Int32.TryParse((string)value, out var id)) {
             var parent = await Engine.Storage.GetModel(id);
             var attrs = await parent.GetAllAttributes();
-            var result = new List<(string, string)>();
+            var result = new List<AttrData>();
 
             foreach (var attr in attrs) {
                 var dt = await attr.GetDataType();
-                result.Add((attr.Value, dt.Name));
+                var attrData = await AttrData.Instantiate(attr);
+                result.Add(attrData);
             }
             parentAttrs = result;
             model.Parent = parent.ID;
+            await FilterAttributes();
         }
+    }
+
+    private async Task FilterAttributes() {
+        var values = await Engine.Storage.GetAttributes();
+        attributes = await Task.WhenAll(
+            values.Where(a =>
+                !model.HasAttribute(a.ID) &&
+                !parentAttrs.Any(p => a.ID == p.ID)
+            ).Select(a => AttrData.Instantiate(a))
+        );
     }
 
     private async Task HandleSubmit() {

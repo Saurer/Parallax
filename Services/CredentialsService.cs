@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using AuroraCore;
 using AuroraCore.Storage;
@@ -18,9 +17,10 @@ namespace Parallax.Services {
             this.value = value;
         }
 
-        public async Task Attach(EngineBase engine, IIndividual actor) {
+        public async Task<int> Attach(EngineBase engine, IIndividual actor) {
+            int id = engine.Position;
             await engine.ProcessEvent(new Graph.EventData {
-                ID = engine.Position,
+                ID = id,
                 BaseEventID = baseEventID,
                 ValueID = valueID,
                 ConditionEventID = conditionEventID,
@@ -28,6 +28,7 @@ namespace Parallax.Services {
                 ActorEventID = actor.ID,
                 Date = DateTime.UtcNow
             });
+            return id;
         }
     }
 
@@ -39,8 +40,8 @@ namespace Parallax.Services {
             CurrentActor = actor;
         }
 
-        public async Task ProcessEvent(EngineBase engine, FederatedEvent e) {
-            await e.Attach(engine, CurrentActor);
+        public async Task<int> ProcessEvent(EngineBase engine, FederatedEvent e) {
+            return await e.Attach(engine, CurrentActor);
         }
     }
 }

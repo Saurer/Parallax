@@ -6,6 +6,7 @@ using AuroraCore.Types;
 namespace Parallax.Services {
     public class EngineService {
         public EngineBase Instance { get; private set; }
+        public TypeManager Types { get; private set; }
 
         public async Task<EngineBase> InitEngine() {
             var typeManager = new TypeManager();
@@ -16,6 +17,7 @@ namespace Parallax.Services {
             }
 
             Instance = engine;
+            Types = typeManager;
             return Instance;
         }
     }

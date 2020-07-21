@@ -1,0 +1,137 @@
+﻿@page "/models/create"
+@inject EngineBase Engine
+@inject EngineService EngineService
+@inject CredentialsService CredentialsService
+@inject NavigationManager NavigationManager
+
+<Scaffold>
+    <Title>Create model</Title>
+    <ChildContent>
+        <EditForm Model="@model" OnValidSubmit="@HandleSubmit">
+            <DataAnnotationsValidator/>
+
+            <div class="form-group">
+                <label for="name">Model name</label>
+                <InputText class="form-control" @bind-Value="model.Name" />
+            </div>
+
+            <div class="form-group">
+                <label for="type">Event base</label>
+                <InputSelect @bind-Value="model.EventType" class="form-control">
+                    <option value="@EventType.Actor">Actor</option>
+                    <option value="@EventType.Entity">Entity</option>
+                    <option value="@EventType.Attribute">Attribute</option>
+                </InputSelect>
+            </div>
+
+            <div class="form-group">
+                <label for="parent">Parent model</label>
+                <select class="form-control" id="parent" @onchange="e => HandleChangeParent(e.Value)">
+                    @foreach (var model in models) {
+                        <option value="@model.ID">@model.Value</option>
+                    }
+                </select>
+            </div>
+
+            <h4 class="mt-5">Attributes</h4>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th style="width:1px"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var (name, dataType) in parentAttrs) {
+                        <tr>
+                            <td>@name</td>
+                            <td>@dataType</td>
+                            <td>Inherited</td>
+                        </tr>
+                    }
+                    @foreach (var (name, dataType) in model.Attributes) {
+                        <tr>
+                            <td>@name</td>
+                            <td>@dataType</td>
+                            <td>
+                                <button type="button" class="btn btn-danger" @onclick="() => model.RemoveAttribute((name, dataType))">
+                                    <span class="oi oi-trash"></span>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                    <tr>
+                        <td>
+                            <input class="form-control" placeholder="New attribute" @bind-value="@newName" />
+                        </td>
+                        <td>
+                            <select class="form-control">
+                                @foreach (var type in dataTypes) {
+                                    <option value="@type.Name">@type.Name</option>
+                                }
+                            </select>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-primary" @onclick="HandleAddAttribute">
+                                <span class="oi oi-plus"></span>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <hr/>
+            <button type="submit" class="btn btn-primary">
+                <span class="oi oi-plus mr-1"></span>
+                <span>Create</span>
+            </button>
+        </EditForm>
+    </ChildContent>
+</Scaffold>
+
+@code {
+    private CreateModelData model = new CreateModelData();
+
+    private IEnumerable<DataType> dataTypes = Array.Empty<DataType>();
+    private IEnumerable<IModel> models = Array.Empty<IModel>();
+    private IEnumerable<(string, string)> parentAttrs = Array.Empty<(string, string)>();
+    private string newName = "";
+    private int newType;
+
+    protected async override Task OnInitializedAsync() {
+        dataTypes = EngineService.Types.GetAll();
+        var dtIndividual = await Engine.Storage.GetDataTypeIndividual(dataTypes.First().Name);
+        newType = dtIndividual.ID;
+        models = await Engine.Storage.GetModels();
+        await HandleChangeParent(models.First().ID.ToString());
+    }
+
+    private void HandleAddAttribute() {
+        if (String.IsNullOrEmpty(newName)) {
+            return;
+        }
+
+        model.AddAttribute((newName, newType));
+        newName = "";
+    }
+
+    private async Task HandleChangeParent(object value) {
+        if (Int32.TryParse((string)value, out var id)) {
+            var parent = await Engine.Storage.GetModel(id);
+            var attrs = await parent.GetAllAttributes();
+            var result = new List<(string, string)>();
+
+            foreach (var attr in attrs) {
+                var dt = await attr.GetDataType();
+                result.Add((attr.Value, dt.Name));
+            }
+            parentAttrs = result;
+            model.Parent = parent.ID;
+        }
+    }
+
+    private async Task HandleSubmit() {
+        int modelID = await model.Execute(Engine, CredentialsService);
+        NavigationManager.NavigateTo($"/models/{modelID}");
+    }
+}

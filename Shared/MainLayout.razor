@@ -15,7 +15,7 @@
             </button>
             <div class="dropdown-menu" style="left:auto;right:0;display:@(userDropdown ? "block" : "none")">
                 @foreach (var actor in actors) {
-                    <button class="dropdown-item" disabled="@(Credentials.CurrentActor.ID == actor.ID)">
+                    <button class="dropdown-item" disabled="@(Credentials.CurrentActor.ID == actor.ID)" @onclick="() => HandleUserClick(actor)">
                         <span class="oi oi-person mr-1"></span>
                         <span>@actor.Value</span>
                     </button>
@@ -35,7 +35,7 @@
 
     private async Task HandleMenuClick() {
         userDropdown = !userDropdown;
-        
+
         if (userDropdown) {
             actors = await Engine.Storage.GetActors();
         }
@@ -43,6 +43,6 @@
 
     private void HandleUserClick(IIndividual actor) {
         Credentials.SetCurrentActor(actor);
-        StateHasChanged();
+        userDropdown = false;
     }
 }

@@ -64,7 +64,7 @@
                     @if (attributes.Any()) {
                         <tr>
                             <td colspan="2">
-                                <select class="form-control">
+                                <select class="form-control" value="@newAttr.ID" @onchange="HandleChangeNewAttr">
                                     @foreach (var attr in attributes) {
                                         <option value="@attr.ID">@attr.Name</option>
                                     }
@@ -110,7 +110,8 @@
             return;
         }
 
-        model.AddAttribute(newAttr);
+        var attrData = attributes.Where(a => a.ID == newAttr.ID).Single();
+        model.AddAttribute(attrData);
         await FilterAttributes();
     }
 
@@ -136,6 +137,12 @@
         }
     }
 
+    private void HandleChangeNewAttr(ChangeEventArgs e) {
+        if (Int32.TryParse((string)e.Value, out var id)) {
+            newAttr = attributes.Where(a => a.ID == id).Single();
+        }
+    }
+
     private async Task FilterAttributes() {
         var values = await Engine.Storage.GetAttributes();
         attributes = await Task.WhenAll(
@@ -144,6 +151,7 @@
                 !parentAttrs.Any(p => a.ID == p.ID)
             ).Select(a => AttrData.Instantiate(a))
         );
+        newAttr = attributes.FirstOrDefault();
     }
 
     private async Task HandleSubmit() {

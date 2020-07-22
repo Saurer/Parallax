@@ -1,0 +1,37 @@
+﻿@page "/roles"
+@inject EngineBase Engine
+
+<Scaffold>
+    <Title>Roles</Title>
+    <TitleRight>
+        <NavLink href="/roles/create" class="btn btn-light">
+            <span class="oi oi-plus mr-1"></span>
+            <span>Create</span>
+        </NavLink>
+    </TitleRight>
+    <ChildContent>
+        @foreach (var role in roles) {
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-sm-1">
+                            @role.ID
+                        </div>
+                        <div class="col-sm-11">
+                            <strong>@role.Name</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </ChildContent>
+</Scaffold>
+
+@code {
+    private IEnumerable<IndividualData> roles = Array.Empty<IndividualData>();
+
+    protected override async Task OnInitializedAsync() {
+        var values = await Engine.Storage.GetRoles();
+        roles = await Task.WhenAll(values.Select(a => IndividualData.Instantiate(a)));
+    }
+}

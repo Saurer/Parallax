@@ -1,17 +1,17 @@
-﻿@page "/actors/create"
+﻿@page "/entities/create"
 @inject EngineBase Engine
 @inject NavigationManager NavigationManager
 @inject CredentialsService CredentialsService
 
 <Scaffold>
-    <Title>Create actor</Title>
+    <Title>Create entity</Title>
     <ChildContent>
-        <IndividualCreateForm Type="@IndividualCreateType.Actor" OnSubmit="@HandleSubmit" />
+        <IndividualCreateForm Type="@IndividualCreateType.Entity" OnSubmit="@HandleSubmit" />
     </ChildContent>
 </Scaffold>
 
 @code {
     private void HandleSubmit() {
-        NavigationManager.NavigateTo("/actors");
+        NavigationManager.NavigateTo("/entities");
     }
 }

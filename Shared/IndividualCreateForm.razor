@@ -1,0 +1,44 @@
+﻿@inject EngineBase Engine
+@inject NavigationManager NavigationManager
+@inject CredentialsService CredentialsService
+
+<EditForm Model="@model" OnValidSubmit="@HandleSubmit">
+    <DataAnnotationsValidator/>
+
+    <div class="form-group">
+        <label for="name">Name</label>
+        <InputText class="form-control" @bind-Value="model.Name" />
+    </div>
+
+    <h4 class="mt-5">Attributes</h4>
+    @if (null != actorModel) {
+        <ModelForm Model="@actorModel" Values="@model.Attributes" />
+    }
+
+    <hr/>
+    <button type="submit" class="btn btn-primary">
+        <span class="oi oi-plus mr-1"></span>
+        <span>Confirm</span>
+    </button>
+</EditForm>
+
+@code {
+    [Parameter]
+    public IndividualCreateType Type { get; set; }
+
+    [Parameter]
+    public EventCallback OnSubmit { get; set; }
+
+    private IndividualCreateData model;
+    private IModel actorModel;
+
+    protected async override Task OnInitializedAsync() {
+        model = new IndividualCreateData(Type);
+        actorModel = await Engine.Storage.GetModel(model.ModelID);
+    }
+
+    private async Task HandleSubmit() {
+        await model.Execute(Engine, CredentialsService);
+        await OnSubmit.InvokeAsync(null);
+    }
+}

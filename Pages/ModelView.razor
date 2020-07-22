@@ -1,5 +1,7 @@
 ﻿@page "/models/{id:int}"
 @inject EngineBase Engine
+@inject IModalService ModalService
+@inject CredentialsService CredentialsService
 
 @if (null != model) {
     <Scaffold>
@@ -77,6 +79,12 @@
                     </tbody>
                 </table>
             }
+
+            <hr/>
+            <button class="btn btn-primary" @onclick="HandleAddAttribute">
+                <span class="oi oi-plus mr-1"></span>
+                <span>Add attribute</span>
+            </button>
         </ChildContent>
     </Scaffold>
 }
@@ -98,5 +106,23 @@
     private async Task Redraw() {
         var model = await Engine.Storage.GetModel(ID);
         this.model = await ModelData.Instantiate(model);
+    }
+
+    private async Task HandleAddAttribute() {
+        var parameters = new ModalParameters();
+        var attributeIDs = model.AllAttributes.Select(l => l.ID);
+        parameters.Add("Attributes", attributeIDs);
+        var modal = ModalService.Show<AddModelAttribute>("Add attribute", parameters);
+        var result = (await modal.Result).Data;
+
+        if (result is int) {
+            await CredentialsService.ProcessEvent(Engine, new FederatedEvent(
+                ID,
+                StaticEvent.Attribute,
+                ID,
+                result.ToString()
+            ));
+            await Redraw();
+        }
     }
 }

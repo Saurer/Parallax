@@ -1,0 +1,65 @@
+@inject EngineBase Engine
+@inject EngineService EngineService
+
+@if (availableAttributes.Any()) {
+    <DialogLayout>
+        <ChildContent>
+            <form>
+                <div class="form-group">
+                    <label for="dataType">Attribute</label>
+                    <select class="form-control" @onchange="HandleChangeNewAttr">
+                        @foreach (var attr in availableAttributes) {
+                            <option value="@attr.ID">(@attr.ID) @attr.Name - @attr.Type</option>
+                        }
+                    </select>
+                </div>
+            </form>
+        </ChildContent>
+        <Footer>
+            <button type="button" class="btn btn-primary" @onclick="Confirm">Confirm</button>
+            <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+        </Footer>
+    </DialogLayout>
+}
+else {
+    <DialogLayout>
+        <ChildContent>
+            No attributes available
+        </ChildContent>
+        <Footer>
+            <button type="button" class="btn btn-secondary" @onclick="Cancel">Close</button>
+        </Footer>
+    </DialogLayout>
+}
+
+@code {
+    [CascadingParameter]
+    public BlazoredModalInstance BlazoredModal { get; set; }
+
+    [Parameter]
+    public IEnumerable<int> Attributes { get; set; }
+
+    private IEnumerable<AttrData> availableAttributes = Array.Empty<AttrData>();
+    private AttrData newAttr;
+
+    protected async override Task OnInitializedAsync() {
+        var attrs = await Engine.Storage.GetAttributes();
+        attrs = attrs.Where(a => !Attributes.Contains(a.ID));
+        availableAttributes = await Task.WhenAll(attrs.Select(l => AttrData.Instantiate(l)));
+        newAttr = availableAttributes.FirstOrDefault();
+    }
+
+    private void HandleChangeNewAttr(ChangeEventArgs e) {
+        if (Int32.TryParse((string)e.Value, out var id)) {
+            newAttr = availableAttributes.Where(a => a.ID == id).Single();
+        }
+    }
+
+    private async Task Cancel() {
+        await BlazoredModal.Close();
+    }
+
+    private async Task Confirm() {
+        await BlazoredModal.Close(ModalResult.Ok(newAttr.ID));
+    }
+}

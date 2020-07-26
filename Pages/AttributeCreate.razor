@@ -17,11 +17,11 @@
 
             <div class="form-group">
                 <label for="dataType">Data type</label>
-                <InputSelect @bind-Value="model.DataType" class="form-control">
+                <select class="form-control" @onchange="HandleDataTypeChange">
                     @foreach (var (dtID, dtName) in dataTypes) {
                         <option value="@dtID">@dtName</option>
                     }
-                </InputSelect>
+                </select>
             </div>
 
             <hr/>
@@ -49,6 +49,12 @@
         }
         dataTypes = result;
         model.DataType = dataTypes.First().Item1;
+    }
+
+    private void HandleDataTypeChange(ChangeEventArgs e) {
+        if (e.Value is string strValue && Int32.TryParse(strValue, out var intValue)) {
+            model.DataType = intValue;
+        }
     }
 
     private async Task HandleSubmit() {

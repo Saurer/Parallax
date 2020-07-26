@@ -1,5 +1,6 @@
 ﻿@page "/entities"
 @inject EngineBase Engine
+@inject IModalService Modal
 
 <Scaffold>
     <Title>Entities</Title>
@@ -10,20 +11,11 @@
         </NavLink>
     </TitleRight>
     <ChildContent>
-        @foreach (var role in entities) {
-            <div class="card">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-sm-1">
-                            @role.ID
-                        </div>
-                        <div class="col-sm-11">
-                            <strong>@role.Name</strong>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        }
+        <div class="card-columns">
+            @foreach (var item in entities) {
+                <IndividualCard Value="@item" OnAssignAttribute="@(e => HandleAssignAttribute(item, e))" />
+            }
+        </div>
     </ChildContent>
 </Scaffold>
 
@@ -31,7 +23,22 @@
     private IEnumerable<IndividualData> entities = Array.Empty<IndividualData>();
 
     protected override async Task OnInitializedAsync() {
-        var values = await Engine.Storage.GetEntities();
-        entities = await Task.WhenAll(values.Select(a => IndividualData.Instantiate(a)));
+        await Refresh();
+    }
+
+    private async Task Refresh() {
+        var entities = await Engine.Storage.GetEntities();
+        this.entities = await Task.WhenAll(entities.Select(i => IndividualData.Instantiate(i)));
+    }
+
+    private async Task HandleAssignAttribute(IndividualData individual, int attrID) {
+        var parameters = new ModalParameters();
+        parameters.Add("EventID", individual.ID);
+        parameters.Add("AttrID", attrID);
+        var modal = Modal.Show<AssignAttribute>($"Assign attribute to '{individual.Name}'", parameters);
+        var result = (await modal.Result).Data is true;
+        if (result) {
+            await Refresh();
+        }
     }
 }

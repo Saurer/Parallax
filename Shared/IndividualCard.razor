@@ -1,0 +1,54 @@
+﻿<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">
+            <strong>(@Value.ID) @Value.Name</strong>
+            @if (Value.Valid) {
+                <span class="badge badge-success float-right">Valid</span>
+            }
+            else {
+                <span class="badge badge-danger float-right">Invalid</span>
+            }
+        </h5>
+        <div class="row">
+            <div class="col-sm">
+                <span class="oi oi-fork text-muted"></span>
+                <span>Model</span>
+            </div>
+            <div class="col-sm text-right">
+                <NavLink href="@($"/models/{Value.Model.ID}")">@Value.Model.Name</NavLink>
+            </div>
+        </div>
+        <hr/>
+        @foreach (var attr in Value.Model.Attributes) {
+            <div class="row">
+                <div class="col-sm">
+                    <strong>@attr.Name</strong>
+                </div>
+                <div class="col-sm text-right">
+                    @if (Value.Attributes.ContainsKey(attr.ID)) {
+                        <span>@Value.Attributes[attr.ID]</span>
+                    }
+                    else {
+                        <button class="btn btn-link p-0 border-bottom" @onclick="@(() => HandleAssignAttribute(attr.ID))">
+                            <span class="oi oi-warning text-warning"></span>
+                            <span class="text-muted">Unassigned</span>
+                        </button>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+
+@code {
+    [Parameter]
+    public IndividualData Value { get; set; }
+
+    [Parameter]
+    public EventCallback<int> OnAssignAttribute { get; set; }
+
+    private async Task HandleAssignAttribute(int attrID) {
+        await OnAssignAttribute.InvokeAsync(attrID);
+    }
+}

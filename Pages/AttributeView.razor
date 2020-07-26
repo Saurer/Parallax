@@ -38,11 +38,13 @@
                 </table>
             }
 
-            <hr/>
-            <button class="btn btn-primary" @onclick="HandleAddValue">
-                <span class="oi oi-plus mr-1"></span>
-                <span>Add value</span>
-            </button>
+            @if (attr.IsBoxed) {
+                <hr/>
+                <button class="btn btn-primary" @onclick="HandleAddValue">
+                    <span class="oi oi-plus mr-1"></span>
+                    <span>Add value</span>
+                </button>
+            }
         </ChildContent>
     </Scaffold>
 }

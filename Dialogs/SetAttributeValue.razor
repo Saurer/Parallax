@@ -8,7 +8,7 @@
                     <strong>Attribute</strong>
                 </label>
                 <div class="col-sm-9">
-                    <input type="text" readonly class="form-control-plaintext" id="attr" value="@(attr?.Value)"/>
+                    <input type="text" readonly class="form-control-plaintext" id="attr" value="@(attr?.Name)"/>
                 </div>
             </div>
             <div class="form-group row">
@@ -16,7 +16,7 @@
                     <strong>Data type</strong>
                 </label>
                 <div class="col-sm-9">
-                    <input type="text" readonly class="form-control-plaintext" id="dataType" value="@dataType?.Name"/>
+                    <input type="text" readonly class="form-control-plaintext" id="dataType" value="@(attr?.DataType?.Name)"/>
                 </div>
             </div>
             <div class="form-group row">
@@ -24,7 +24,16 @@
                     <strong>Value</strong>
                 </label>
                 <div class="col-sm-9">
-                    <input type="text" value="@value" @onchange="HandleChange" class="form-control @(valid ? "is-valid" : "is-invalid")" id="value"/>
+                    @if (attr?.DataType.IsBoxed is true) {
+                        <select class="form-control @(Valid ? "is-valid" : "is-invalid")" @bind="value">
+                            @foreach (var value in attr?.Values) {
+                                <option value="@value.EventID.ToString()">@value.Value</option>
+                            }
+                        </select>
+                    }
+                    else {
+                        <input type="text" value="@value" @onchange="HandleChange" class="form-control @(Valid ? "is-valid" : "is-invalid")" id="value"/>
+                    }
                 </div>
             </div>
         </form>
@@ -46,26 +55,31 @@
     [Parameter]
     public string Value { get; set; }
 
-    private IAttr attr;
-    private DataType dataType;
+    private AttrData attr;
     private string value = "";
-    private bool valid = false;
+    private bool Valid {
+        get {
+            if (null == attr) {
+                return false;
+            }
+
+            return attr.DataType.Validate(value);
+        }
+    }
 
     protected override async Task OnInitializedAsync() {
-        attr = await Engine.Storage.GetAttribute(AttrID);
-        dataType = await attr.GetDataType();
+        var attr = await Engine.Storage.GetAttribute(AttrID);
+        this.attr = await AttrData.Instantiate(attr);
         value = Value ?? "";
-        valid = dataType.Validate(value);
     }
 
     private void HandleChange(ChangeEventArgs e) {
         var newValue = (string)e.Value;
-        valid = dataType.Validate(newValue);
         value = newValue;
     }
 
     private async Task Confirm() {
-        if (!valid) {
+        if (!Valid) {
             return;
         }
 
@@ -77,6 +91,6 @@
     }
 
     private void Cancel() {
-        BlazoredModal.Close();
+        BlazoredModal.Cancel();
     }
 }

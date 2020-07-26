@@ -11,17 +11,26 @@
     </TitleRight>
     <ChildContent>
         @foreach (var attr in attributes) {
+            var attrLink = $"/attributes/{attr.ID}";
+
             <div class="card">
                 <div class="card-body">
                     <div class="row">
                         <div class="col-sm-1">
                             @attr.ID
                         </div>
-                        <div class="col-sm-9">
-                            <strong>@attr.Name</strong>
+                        <div class="col-sm-8">
+                            <strong>
+                                <NavLink href="@attrLink">@attr.Name</NavLink>
+                            </strong>
+                        </div>
+                        <div class="col-sm-1">
+                            <div>
+                                @(attr.IsBoxed ? "Boxed" : "Basic")
+                            </div>
                         </div>
                         <div class="col-sm-2">
-                            <div class="text-muted">@attr.Type</div>
+                            <div class="text-muted">@attr.DataType.Name</div>
                         </div>
                     </div>
                 </div>

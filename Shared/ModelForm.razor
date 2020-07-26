@@ -13,7 +13,7 @@
             @foreach (var attr in model.AllAttributes) {
                 <tr>
                     <td>@attr.Name</td>
-                    <td>@attr.Type</td>
+                    <td>@attr.DataType.Name</td>
                     <td>
                         <button type="button" class="btn btn-link p-0 border-bottom" @onclick="@(() => HandleAssignAttribute(attr.ID))">
                             @if (Values.ContainsKey(attr.ID)) {

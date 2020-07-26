@@ -1,0 +1,53 @@
+@inject EngineBase Engine
+@inject EngineService EngineService
+
+<DialogLayout>
+    <ChildContent>
+        <form>
+            <div class="form-group">
+                <label for="dataType">Value</label>
+                <input class="form-control @(valid ? "is-valid" : "is-invalid")" @onchange="HandleChangeValue" value="@value" />
+            </div>
+        </form>
+    </ChildContent>
+    <Footer>
+        <button type="button" class="btn btn-primary" @onclick="Confirm">Confirm</button>
+        <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+    </Footer>
+</DialogLayout>
+
+@code {
+    [CascadingParameter]
+    public BlazoredModalInstance BlazoredModal { get; set; }
+
+    [Parameter]
+    public int ID { get; set; }
+
+    private AttrData attr;
+    private string value = "";
+    private bool valid = false;
+
+    protected async override Task OnInitializedAsync() {
+        var attr = await Engine.Storage.GetAttribute(ID);
+        this.attr = await AttrData.Instantiate(attr);
+    }
+
+    private void HandleChangeValue(ChangeEventArgs e) {
+        if (e.Value is string strValue) {
+            value = strValue;
+            valid = attr.DataType.Validate(value);
+        }
+    }
+
+    private async Task Cancel() {
+        await BlazoredModal.Cancel();
+    }
+
+    private async Task Confirm() {
+        if (!attr.DataType.Validate(value)) {
+            return;
+        }
+
+        await BlazoredModal.Close(ModalResult.Ok(value));
+    }
+}

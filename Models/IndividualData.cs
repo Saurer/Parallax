@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AuroraCore.Storage;
@@ -16,15 +17,32 @@ namespace Parallax.Models {
 
         public static async Task<IndividualData> Instantiate(IIndividual individual) {
             var plainModel = await individual.GetModel();
+            var plainAttributes = await plainModel.GetAllAttributes();
             var attributes = await individual.GetAttributes();
             var model = await IndividualModelData.Instantiate(plainModel, attributes);
-            var values = await individual.GetAttributes();
-            var valid = await plainModel.Validate(values);
+            var valid = await plainModel.Validate(attributes);
+            var attrValues = new Dictionary<int, string>();
+
+            foreach (var attr in plainAttributes) {
+                if (!attributes.ContainsKey(attr.ID)) {
+                    continue;
+                }
+
+                var value = attributes[attr.ID];
+                var boxed = await attr.IsBoxed();
+                if (boxed) {
+                    var valueEvent = await attr.GetValue(Int32.Parse(value));
+                    attrValues.Add(attr.ID, valueEvent.Value);
+                }
+                else {
+                    attrValues.Add(attr.ID, value);
+                }
+            }
 
             return new IndividualData {
                 ID = individual.ID,
                 Name = individual.Value,
-                Attributes = attributes,
+                Attributes = attrValues,
                 Model = model,
                 Valid = valid
             };

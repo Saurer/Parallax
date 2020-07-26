@@ -9,7 +9,7 @@
                     <label for="dataType">Attribute</label>
                     <select class="form-control" @onchange="HandleChangeNewAttr">
                         @foreach (var attr in availableAttributes) {
-                            <option value="@attr.ID">(@attr.ID) @attr.Name - @attr.Type</option>
+                            <option value="@attr.ID">(@attr.ID) @attr.Name - @attr.DataType.Name</option>
                         }
                     </select>
                 </div>
@@ -56,7 +56,7 @@ else {
     }
 
     private async Task Cancel() {
-        await BlazoredModal.Close();
+        await BlazoredModal.Cancel();
     }
 
     private async Task Confirm() {

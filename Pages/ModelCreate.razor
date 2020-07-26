@@ -46,14 +46,14 @@
                     @foreach (var attr in parentAttrs) {
                         <tr>
                             <td>@attr.Name</td>
-                            <td>@attr.Type</td>
+                            <td>@attr.DataType.Name</td>
                             <td>Inherited</td>
                         </tr>
                     }
                     @foreach (var attr in model.Attributes) {
                         <tr>
                             <td>@attr.Name</td>
-                            <td>@attr.Type</td>
+                            <td>@attr.DataType.Name</td>
                             <td>
                                 <button type="button" class="btn btn-danger" @onclick="() => HandleRemoveAttribute(attr)">
                                     <span class="oi oi-trash"></span>

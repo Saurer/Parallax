@@ -1,0 +1,82 @@
+﻿@page "/attributes/{id:int}"
+@inject EngineBase Engine
+@inject IModalService ModalService
+@inject CredentialsService CredentialsService
+
+@if (null != attr) {
+    <Scaffold>
+        <Title>(@attr.ID) @attr.Name</Title>
+        <ChildContent>
+            <h4>Type</h4>
+            @if (attr.IsBoxed) {
+                <span>Boxed</span>
+            }
+            else {
+                <span>Basic</span>
+            }
+
+            <hr/>
+
+            @if (attr.IsBoxed) {
+                <h4 class="mt-5">Values</h4>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th style="width:1px">ID</th>
+                            <th>Name</th>
+                            <th style="width:1px"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var value in attr.Values) {
+                            <tr>
+                                <td>@value.EventID</td>
+                                <td colspan="2">@value.Value</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+
+            <hr/>
+            <button class="btn btn-primary" @onclick="HandleAddValue">
+                <span class="oi oi-plus mr-1"></span>
+                <span>Add value</span>
+            </button>
+        </ChildContent>
+    </Scaffold>
+}
+
+@code {
+    [Parameter]
+    public int ID { get; set; }
+
+    private AttrData attr = null;
+
+    protected override async Task OnInitializedAsync() {
+        await Redraw();
+    }
+
+    private async Task Redraw() {
+        var attr = await Engine.Storage.GetAttribute(ID);
+        this.attr = await AttrData.Instantiate(attr);
+    }
+
+    private async Task HandleAddValue() {
+        var parameters = new ModalParameters();
+        parameters.Add("ID", ID);
+        var modal = ModalService.Show<AddAttributeValue>("Add attribute value", parameters);
+        var result = await modal.Result;
+
+        if (!result.Cancelled && result.Data is string strResult) {
+            await CredentialsService.ProcessEvent(Engine, new FederatedEvent(
+                ID,
+                StaticEvent.AttributeValue,
+                ID,
+                strResult
+            ));
+
+            await Redraw();
+        }
+    }
+}

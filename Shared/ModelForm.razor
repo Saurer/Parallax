@@ -1,4 +1,5 @@
 @inject IModalService ModalService
+@inject EngineBase Engine
 
 <table class="table">
     <thead>
@@ -16,8 +17,8 @@
                     <td>@attr.DataType.Name</td>
                     <td>
                         <button type="button" class="btn btn-link p-0 border-bottom" @onclick="@(() => HandleAssignAttribute(attr.ID))">
-                            @if (Values.ContainsKey(attr.ID)) {
-                                <span>@Values[attr.ID]</span>
+                            @if (values.ContainsKey(attr.ID)) {
+                                <span>@values[attr.ID]</span>
                             }
                             else {
                                 <span class="oi oi-warning text-warning"></span>
@@ -39,9 +40,33 @@
     public Dictionary<int, string> Values { get; set; }
 
     private ModelData model;
+    private Dictionary<int, string> values = new Dictionary<int, string>();
 
     protected async override Task OnInitializedAsync() {
         model = await ModelData.Instantiate(Model);
+        await UpdateValues();
+    }
+
+    protected async override Task OnParametersSetAsync() {
+        await UpdateValues();
+    }
+
+    private async Task UpdateValues() {
+        var result = new Dictionary<int, string>();
+        var attrs = model.AllAttributes;
+
+        foreach (var kv in Values) {
+            var attr = attrs.Where(a => a.ID == kv.Key).Single();
+            if (attr.IsBoxed && Int32.TryParse(kv.Value, out var intValue)) {
+                var valueIndividual = await Engine.Storage.GetEvent(intValue);
+                result.Add(kv.Key, valueIndividual.Value);
+            }
+            else {
+                result.Add(kv.Key, kv.Value);
+            }
+        }
+
+        values = result;
     }
 
     private async Task HandleAssignAttribute(int attrID) {
@@ -57,5 +82,6 @@
         else if (result is null) {
             Values.Remove(attrID);
         }
+        await UpdateValues();
     }
 }

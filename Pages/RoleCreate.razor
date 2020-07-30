@@ -6,7 +6,7 @@
 <Scaffold>
     <Title>Create role</Title>
     <ChildContent>
-        <IndividualCreateForm Type="@IndividualCreateType.Role" OnSubmit="@HandleSubmit" />
+        <IndividualCreateForm BaseEvent="@StaticEvent.Role" ModelID="@StaticEvent.RoleModel" OnSubmit="@HandleSubmit" />
     </ChildContent>
 </Scaffold>
 

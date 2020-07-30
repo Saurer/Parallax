@@ -13,8 +13,9 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th>ID</th>
+                    <th style="width:1px">ID</th>
                     <th>Name</th>
+                    <th>Event base</th>
                     <th>Parent</th>
                 </tr>
             </thead>
@@ -27,6 +28,9 @@
                     <td>@model.ID</td>
                     <td>
                         <NavLink href="@link">@model.Name</NavLink>
+                    </td>
+                    <td>
+                        (@model.EventBase) @model.EventBaseName
                     </td>
                     <td>
                         @if (StaticEvent.Event == model.Parent) {

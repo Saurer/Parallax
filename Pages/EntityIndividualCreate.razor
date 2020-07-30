@@ -1,0 +1,77 @@
+﻿@page "/entities/{id:int}/create-individual"
+@inject EngineBase Engine
+@inject CredentialsService CredentialsService
+@inject NavigationManager NavigationManager
+
+<Scaffold>
+    <Title>Create entity individual</Title>
+    <ChildContent>
+        <EditForm Model="@individual" OnValidSubmit="@HandleSubmit">
+            <DataAnnotationsValidator/>
+
+            <div class="form-group">
+                <label for="name">Name</label>
+                <InputText class="form-control" @bind-Value="individual.Name" />
+            </div>
+
+            <div class="form-group">
+                <label>Entity</label>
+                <input class="form-control" type="text" disabled value="@entity?.Value" />
+            </div>
+
+            <div class="form-group">
+                <label>Model</label>
+                <select class="form-control" @onchange="HandleChangeModel">
+                    @foreach (var model in models) {
+                        <option value="@model.ID.ToString()">@model.Value</option>
+                    }
+                </select>
+            </div>
+
+            <h4 class="mt-5">Attributes</h4>
+            @if (null != selectedModel) {
+                <ModelForm Model="@selectedModel" Values="@individual.Attributes" />
+            }
+
+            <hr/>
+            <button type="submit" class="btn btn-primary">
+                <span class="oi oi-plus mr-1"></span>
+                <span>Confirm</span>
+            </button>
+        </EditForm>
+    </ChildContent>
+</Scaffold>
+
+@code {
+    [Parameter]
+    public int ID { get; set; }
+
+    private IndividualCreateData individual;
+    private IModel selectedModel;
+    private IEntity entity;
+    private IEnumerable<IModel> models = Array.Empty<IModel>();
+
+    protected override async Task OnInitializedAsync() {
+        individual = new IndividualCreateData(ID);
+        entity = await Engine.Storage.GetEntity(ID);
+        models = await Engine.Storage.GetEntityModels(ID);
+        await SetModel(models.First().ID);
+    }
+
+    private async Task HandleChangeModel(ChangeEventArgs e) {
+        if (e.Value is string strValue && Int32.TryParse(strValue, out var intValue)) {
+            await SetModel(intValue);
+        }
+    }
+
+    private async Task SetModel(int modelID) {
+        individual.Attributes.Clear();
+        individual.ModelID = modelID;
+        selectedModel = await Engine.Storage.GetModel(modelID);
+    }
+
+    private async Task HandleSubmit() {
+        await individual.Execute(Engine, CredentialsService);
+        NavigationManager.NavigateTo($"/entities/{ID}");
+    }
+}

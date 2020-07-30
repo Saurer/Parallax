@@ -8,14 +8,21 @@
         <Title>(@model.ID) @model.Name</Title>
         <ChildContent>
             <h4>Parent</h4>
-            @if (StaticEvent.Event == model.Parent) {
-                <span>Root</span>
-            }
-            else {
-                var parentLink = $"/models/{model.Parent}";
-                <NavLink href="@parentLink">@model.ParentName</NavLink>
-            }
+            <div>
+                @if (StaticEvent.Event == model.Parent) {
+                    <span>Root</span>
+                }
+                else {
+                    var parentLink = $"/models/{model.Parent}";
+                    <NavLink href="@parentLink">@model.ParentName</NavLink>
+                }
+            </div>
 
+            <hr/>
+            <h4>Event base</h4>
+            <div>
+                (@model.EventBase) @model.EventBaseName
+            </div>
             <hr/>
 
             @if (model.OwnAttributes.Any()) {

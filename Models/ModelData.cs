@@ -10,6 +10,8 @@ namespace Parallax.Models {
         public string Name { get; private set; }
         public int Parent { get; private set; }
         public string ParentName { get; private set; }
+        public int EventBase { get; private set; }
+        public string EventBaseName { get; private set; }
         public IEnumerable<AttrData> OwnAttributes { get; private set; }
         public IEnumerable<AttrData> InheritedAttributes { get; private set; }
         public IEnumerable<AttrData> AllAttributes {
@@ -28,12 +30,13 @@ namespace Parallax.Models {
 
         public static async Task<ModelData> Instantiate(IModel model) {
             var parent = await model.GetParent();
+            var eventBase = await model.GetBaseEvent();
             var plainAttributes = await model.GetOwnAttributes();
             var ownAttributes = await Task.WhenAll(plainAttributes.Select(attr => AttrData.Instantiate(attr)));
             var inheritedAttributes = Array.Empty<AttrData>();
 
             if (null != parent) {
-                var plainOwnAttributes = await parent.GetOwnAttributes();
+                var plainOwnAttributes = await parent.GetAllAttributes();
                 inheritedAttributes = await Task.WhenAll(plainOwnAttributes.Select(attr => AttrData.Instantiate(attr)));
             }
 
@@ -42,6 +45,8 @@ namespace Parallax.Models {
                 Name = model.Value,
                 Parent = parent?.ID ?? 0,
                 ParentName = parent?.Value,
+                EventBase = eventBase.ID,
+                EventBaseName = eventBase.Value,
                 OwnAttributes = ownAttributes,
                 InheritedAttributes = inheritedAttributes
             };

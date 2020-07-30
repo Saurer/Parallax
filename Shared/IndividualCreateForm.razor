@@ -11,8 +11,8 @@
     </div>
 
     <h4 class="mt-5">Attributes</h4>
-    @if (null != actorModel) {
-        <ModelForm Model="@actorModel" Values="@model.Attributes" />
+    @if (null != dbModel) {
+        <ModelForm Model="@dbModel" Values="@model.Attributes" />
     }
 
     <hr/>
@@ -24,17 +24,21 @@
 
 @code {
     [Parameter]
-    public IndividualCreateType Type { get; set; }
+    public int BaseEvent { get; set; }
+
+    [Parameter]
+    public int ModelID { get; set; }
 
     [Parameter]
     public EventCallback OnSubmit { get; set; }
 
     private IndividualCreateData model;
-    private IModel actorModel;
+    private IModel dbModel;
 
     protected async override Task OnInitializedAsync() {
-        model = new IndividualCreateData(Type);
-        actorModel = await Engine.Storage.GetModel(model.ModelID);
+        model = new IndividualCreateData(BaseEvent);
+        dbModel = await Engine.Storage.GetModel(ModelID);
+        model.ModelID = ModelID;
     }
 
     private async Task HandleSubmit() {

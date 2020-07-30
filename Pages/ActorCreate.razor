@@ -1,12 +1,10 @@
 ﻿@page "/actors/create"
-@inject EngineBase Engine
 @inject NavigationManager NavigationManager
-@inject CredentialsService CredentialsService
 
 <Scaffold>
     <Title>Create actor</Title>
     <ChildContent>
-        <IndividualCreateForm Type="@IndividualCreateType.Actor" OnSubmit="@HandleSubmit" />
+        <IndividualCreateForm BaseEvent="@StaticEvent.Actor" ModelID="@StaticEvent.ActorModel" OnSubmit="@HandleSubmit" />
     </ChildContent>
 </Scaffold>
 

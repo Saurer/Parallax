@@ -5,39 +5,23 @@ using AuroraCore;
 using Parallax.Services;
 
 namespace Parallax.Models {
-    public enum IndividualCreateType {
-        Actor = StaticEvent.Actor,
-        Entity = StaticEvent.Entity,
-        Role = StaticEvent.Role
-    }
-
     public class IndividualCreateData {
         [Required, MinLength(1)]
         public string Name { get; set; }
 
         public Dictionary<int, string> Attributes { get; private set; } = new Dictionary<int, string>();
 
-        public IndividualCreateType Type { get; private set; }
+        public int BaseEvent { get; private set; }
 
-        public int ModelID {
-            get {
-                return Type switch
-                {
-                    IndividualCreateType.Actor => StaticEvent.ActorModel,
-                    IndividualCreateType.Entity => StaticEvent.EntityModel,
-                    IndividualCreateType.Role => StaticEvent.RoleModel,
-                    _ => throw new System.Exception("Invalid type")
-                };
-            }
-        }
+        public int ModelID { get; set; }
 
-        public IndividualCreateData(IndividualCreateType type) {
-            Type = type;
+        public IndividualCreateData(int baseEvent) {
+            BaseEvent = baseEvent;
         }
 
         public async Task<int> Execute(EngineBase engine, CredentialsService service) {
             int eventID = await service.ProcessEvent(engine, new FederatedEvent(
-                (int)Type,
+                BaseEvent,
                 StaticEvent.Individual,
                 ModelID,
                 Name

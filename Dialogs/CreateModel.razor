@@ -1,36 +1,13 @@
-﻿@page "/models/create"
 @inject EngineBase Engine
-@inject EngineService EngineService
 @inject CredentialsService CredentialsService
-@inject NavigationManager NavigationManager
 
-<Scaffold>
-    <Title>Create model</Title>
-    <ChildContent>
-        <EditForm Model="@model" OnValidSubmit="@HandleSubmit">
-            <DataAnnotationsValidator/>
-
+<EditForm Model="@model" OnValidSubmit="@HandleSubmit">
+    <DataAnnotationsValidator/>
+    <DialogLayout>
+        <ChildContent>
             <div class="form-group">
                 <label for="name">Model name</label>
                 <InputText class="form-control" @bind-Value="model.Name" />
-            </div>
-
-            <div class="form-group">
-                <label for="type">Event base</label>
-                <InputSelect @bind-Value="model.EventType" class="form-control">
-                    <option value="@EventType.Actor">Actor</option>
-                    <option value="@EventType.Entity">Entity</option>
-                    <option value="@EventType.Attribute">Attribute</option>
-                </InputSelect>
-            </div>
-
-            <div class="form-group">
-                <label for="parent">Parent model</label>
-                <select class="form-control" id="parent" @onchange="e => HandleChangeParent(e.Value)">
-                    @foreach (var model in models) {
-                        <option value="@model.ID">@model.Value</option>
-                    }
-                </select>
             </div>
 
             <h4 class="mt-5">Attributes</h4>
@@ -43,13 +20,6 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var attr in parentAttrs) {
-                        <tr>
-                            <td>@attr.Name</td>
-                            <td>@attr.DataType.Name</td>
-                            <td>Inherited</td>
-                        </tr>
-                    }
                     @foreach (var attr in model.Attributes) {
                         <tr>
                             <td>@attr.Name</td>
@@ -79,26 +49,42 @@
                     }
                 </tbody>
             </table>
-            <hr/>
-            <button type="submit" class="btn btn-primary">
-                <span class="oi oi-plus mr-1"></span>
-                <span>Confirm</span>
-            </button>
-        </EditForm>
-    </ChildContent>
-</Scaffold>
+        </ChildContent>
+        <Footer>
+            <button class="btn btn-danger" type="submit">Confirm</button>
+            <button class="btn btn-secondary" type="button" @onclick="Cancel">Cancel</button>
+        </Footer>
+    </DialogLayout>
+</EditForm>
 
 @code {
+    [CascadingParameter]
+    public BlazoredModalInstance BlazoredModal { get;set; }
+
+    [Parameter]
+    public int BaseEventID { get; set; }
+
+    [Parameter]
+    public int ParentModelID { get; set; }
+
     private ModelCreateData model = new ModelCreateData();
-    private IEnumerable<IModel> models = Array.Empty<IModel>();
     private IEnumerable<AttrData> parentAttrs = Array.Empty<AttrData>();
     private IEnumerable<AttrData> attributes = Array.Empty<AttrData>();
     private AttrData newAttr;
 
-    protected async override Task OnInitializedAsync() {
-        models = await Engine.Storage.GetModels();
-        await HandleChangeParent(models.First().ID.ToString());
+    protected override async Task OnInitializedAsync() {
+        var parent = await Engine.Storage.GetModel(ParentModelID);
+        var attrs = await parent.GetAllAttributes();
+        var result = new List<AttrData>();
+
+        foreach (var attr in attrs) {
+            var dt = await attr.GetDataType();
+            var attrData = await AttrData.Instantiate(attr);
+            result.Add(attrData);
+        }
+        parentAttrs = result;
         newAttr = attributes.FirstOrDefault();
+        await FilterAttributes();
     }
 
     private async Task HandleAddAttribute() {
@@ -120,27 +106,17 @@
         await FilterAttributes();
     }
 
-    private async Task HandleChangeParent(object value) {
-        if (Int32.TryParse((string)value, out var id)) {
-            var parent = await Engine.Storage.GetModel(id);
-            var attrs = await parent.GetAllAttributes();
-            var result = new List<AttrData>();
-
-            foreach (var attr in attrs) {
-                var dt = await attr.GetDataType();
-                var attrData = await AttrData.Instantiate(attr);
-                result.Add(attrData);
-            }
-            parentAttrs = result;
-            model.Parent = parent.ID;
-            await FilterAttributes();
-        }
-    }
-
     private void HandleChangeNewAttr(ChangeEventArgs e) {
         if (Int32.TryParse((string)e.Value, out var id)) {
             newAttr = attributes.Where(a => a.ID == id).Single();
         }
+    }
+
+    private async Task HandleSubmit() {
+        model.EventType = BaseEventID;
+        model.Parent = ParentModelID;
+        int modelID = await model.Execute(Engine, CredentialsService);
+        await BlazoredModal.Close(ModalResult.Ok(modelID));
     }
 
     private async Task FilterAttributes() {
@@ -154,8 +130,7 @@
         newAttr = attributes.FirstOrDefault();
     }
 
-    private async Task HandleSubmit() {
-        int modelID = await model.Execute(Engine, CredentialsService);
-        NavigationManager.NavigateTo($"/models/{modelID}");
+    private void Cancel() {
+        BlazoredModal.Close(ModalResult.Cancel());
     }
 }

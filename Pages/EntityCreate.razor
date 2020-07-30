@@ -6,12 +6,28 @@
 <Scaffold>
     <Title>Create entity</Title>
     <ChildContent>
-        <IndividualCreateForm Type="@IndividualCreateType.Entity" OnSubmit="@HandleSubmit" />
+        <EditForm Model="@model" OnValidSubmit="@HandleSubmit">
+            <DataAnnotationsValidator/>
+
+            <div class="form-group">
+                <label for="name">Name</label>
+                <InputText class="form-control" @bind-Value="model.Name" />
+            </div>
+
+            <hr/>
+            <button type="submit" class="btn btn-primary">
+                <span class="oi oi-plus mr-1"></span>
+                <span>Confirm</span>
+            </button>
+        </EditForm>
     </ChildContent>
 </Scaffold>
 
 @code {
-    private void HandleSubmit() {
-        NavigationManager.NavigateTo("/entities");
+    private EntityCreateData model = new EntityCreateData();
+
+    private async Task HandleSubmit() {
+        int entityID = await model.Execute(Engine, CredentialsService);
+        NavigationManager.NavigateTo($"/entities/{entityID}");
     }
 }

@@ -1,0 +1,112 @@
+﻿@page "/entities/{id:int}"
+@inject EngineBase Engine
+@inject NavigationManager NavigationManager
+@inject IModalService ModalService
+
+@if (null != entity) {
+    <Scaffold>
+        <Title>(@entity.ID) @entity.Name</Title>
+        <ChildContent>
+            <div>
+                <div class="float-right">
+                    <button class="btn btn-link" @onclick="HandleCreateModel">
+                        <span class="oi oi-plus mr-1"></span>
+                        <span>Create model</span>
+                    </button>
+                </div>
+                <h4>Models</h4>
+            </div>
+            @if (entity.Models.Any()) {
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th style="width:1px">ID</th>
+                            <th>Name</th>
+                            <th>Parent</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var model in entity.Models) {
+                            var modelLink = $"/models/{model.ID}";
+                            <tr>
+                                <td>@model.ID</td>
+                                <td>
+                                    <NavLink href="@modelLink">
+                                        @model.Name
+                                    </NavLink>
+                                </td>
+                                <td>@model.ParentName</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else {
+                <div class="text-muted">No models defined</div>
+            }
+
+            <div class="mt-5">
+                <div class="float-right">
+                    <button class="btn btn-link" disabled="@(!entity.Models.Any())" @onclick="HandleCreateIndividual">
+                        <span class="oi oi-plus mr-1"></span>
+                        <span>Create individual</span>
+                    </button>
+                </div>
+                <h4>Individuals</h4>
+            </div>
+            @if (entity.Individuals.Any()) {
+                <div class="card-columns">
+                    @foreach (var individual in entity.Individuals) {
+                        <IndividualCard Value="@individual" OnAssignAttribute="@(e => HandleAssignAttribute(individual, e))" />
+                    }
+                </div>
+            }
+            else {
+                <div class="text-muted">No individuals defined</div>
+            }
+        </ChildContent>
+    </Scaffold>
+}
+
+@code {
+    [Parameter]
+    public int ID { get; set; }
+
+    private EntityData entity = null;
+
+    protected override async Task OnInitializedAsync() {
+        await Redraw();
+    }
+
+    private async Task Redraw() {
+        var entity = await Engine.Storage.GetEntity(ID);
+        this.entity = await EntityData.Instantiate(entity);
+    }
+
+    private async Task HandleCreateModel() {
+        var parameters = new ModalParameters();
+        parameters.Add("BaseEventID", ID);
+        parameters.Add("ParentModelID", StaticEvent.EntityModel);
+        var modal = ModalService.Show<CreateModel>("Create entity model", parameters);
+        var result = await modal.Result;
+
+        if (!result.Cancelled) {
+            await Redraw();
+        }
+    }
+
+    private void HandleCreateIndividual() {
+        NavigationManager.NavigateTo($"/entities/{ID}/create-individual");
+    }
+
+    private async Task HandleAssignAttribute(IndividualData individual, int attrID) {
+        var parameters = new ModalParameters();
+        parameters.Add("EventID", individual.ID);
+        parameters.Add("AttrID", attrID);
+        var modal = ModalService.Show<AssignAttribute>($"Assign attribute to '{individual.Name}'", parameters);
+        var result = (await modal.Result).Data is true;
+        if (result) {
+            await Redraw();
+        }
+    }
+}

@@ -6,12 +6,6 @@ using AuroraCore;
 using Parallax.Services;
 
 namespace Parallax.Models {
-    public enum EventType {
-        Actor = StaticEvent.Actor,
-        Attribute = StaticEvent.Attribute,
-        Entity = StaticEvent.Entity,
-    }
-
     public class ModelCreateData {
         private List<AttrData> attributes = new List<AttrData>();
 
@@ -22,7 +16,7 @@ namespace Parallax.Models {
         public int Parent { get; set; }
 
         [Required]
-        public EventType EventType { get; set; } = EventType.Attribute;
+        public int EventType { get; set; }
 
         public IEnumerable<AttrData> Attributes {
             get {
@@ -48,7 +42,7 @@ namespace Parallax.Models {
 
         public async Task<int> Execute(EngineBase engine, CredentialsService service) {
             // Create model
-            int modelID = await service.ProcessEvent(engine, new FederatedEvent((int)EventType, StaticEvent.Model, Parent, Name));
+            int modelID = await service.ProcessEvent(engine, new FederatedEvent(EventType, StaticEvent.Model, Parent, Name));
 
             // Attach attributes
             foreach (var attr in attributes) {

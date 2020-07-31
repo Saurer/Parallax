@@ -72,6 +72,9 @@
     [Parameter]
     public int ParentModelID { get; set; }
 
+    [Parameter]
+    public string DefaultName { get; set; }
+
     private ModelCreateData model = new ModelCreateData();
     private IEnumerable<AttrData> parentAttrs = Array.Empty<AttrData>();
     private IEnumerable<AttrData> attributes = Array.Empty<AttrData>();
@@ -80,6 +83,7 @@
 
     protected override async Task OnInitializedAsync() {
         parentModel = await Engine.Storage.GetModel(ParentModelID);
+        model.Name = DefaultName;
         var attrs = await parentModel.GetAllAttributes();
         var result = new List<AttrData>();
 

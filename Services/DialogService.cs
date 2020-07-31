@@ -75,10 +75,11 @@ namespace Parallax.Services {
             }
         }
 
-        public async Task<int?> CreateModel(int baseEvent, int parentModel) {
+        public async Task<int?> CreateModel(int baseEvent, int parentModel, string defaultName = null) {
             var parameters = new ModalParameters();
             parameters.Add("BaseEventID", baseEvent);
             parameters.Add("ParentModelID", parentModel);
+            parameters.Add("DefaultName", defaultName);
             var modal = instance.Show<CreateModel>("Create model", parameters);
             var result = await modal.Result;
 

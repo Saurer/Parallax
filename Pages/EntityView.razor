@@ -95,7 +95,7 @@
     }
 
     private async Task HandleCreateModel(int modelID = StaticEvent.EntityModel) {
-        var result = await Dialog.CreateModel(ID, modelID);
+        var result = await Dialog.CreateModel(ID, modelID, $"Model_{entity.Name}");
         if (null != result) {
             await Redraw();
         }

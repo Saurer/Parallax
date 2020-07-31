@@ -1,6 +1,7 @@
 ﻿@page "/roles/create"
 @inject EngineBase Engine
 @inject NavigationManager NavigationManager
+@inject RoutingService Routing
 @inject CredentialsService CredentialsService
 
 <Scaffold>
@@ -12,6 +13,6 @@
 
 @code {
     private void HandleSubmit() {
-        NavigationManager.NavigateTo("/roles");
+        NavigationManager.NavigateTo(Routing.Roles());
     }
 }

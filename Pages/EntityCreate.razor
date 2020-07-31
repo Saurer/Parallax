@@ -1,6 +1,7 @@
 ﻿@page "/entities/create"
 @inject EngineBase Engine
 @inject NavigationManager NavigationManager
+@inject RoutingService Routing
 @inject CredentialsService CredentialsService
 
 <Scaffold>
@@ -28,6 +29,6 @@
 
     private async Task HandleSubmit() {
         int entityID = await model.Execute(Engine, CredentialsService);
-        NavigationManager.NavigateTo($"/entities/{entityID}");
+        NavigationManager.NavigateTo(Routing.EntitiesView(entityID));
     }
 }

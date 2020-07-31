@@ -1,5 +1,6 @@
 ﻿@page "/actors/create"
 @inject NavigationManager NavigationManager
+@inject RoutingService Routing
 
 <Scaffold>
     <Title>Create actor</Title>
@@ -10,6 +11,6 @@
 
 @code {
     private void HandleSubmit() {
-        NavigationManager.NavigateTo("/actors");
+        NavigationManager.NavigateTo(Routing.Actors());
     }
 }

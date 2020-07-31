@@ -102,7 +102,7 @@
     }
 
     private void HandleCreateIndividual() {
-        NavigationManager.NavigateTo($"/entities/{ID}/create-individual");
+        NavigationManager.NavigateTo(Routing.EntitiesCreateIndividual(ID));
     }
 
     private async Task HandleAssignAttribute(IndividualData individual, int attrID) {

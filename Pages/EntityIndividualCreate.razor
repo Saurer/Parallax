@@ -1,4 +1,5 @@
 ﻿@page "/entities/{id:int}/create-individual"
+@using Microsoft.AspNetCore.WebUtilities
 @inject EngineBase Engine
 @inject CredentialsService CredentialsService
 @inject NavigationManager NavigationManager
@@ -21,7 +22,7 @@
 
             <div class="form-group">
                 <label>Model</label>
-                <select class="form-control" @onchange="HandleChangeModel">
+                <select class="form-control" @onchange="HandleChangeModel" value="@(individual?.ModelID.ToString())">
                     @foreach (var model in models) {
                         <option value="@model.ID.ToString()">@model.Value</option>
                     }
@@ -55,7 +56,14 @@
         individual = new IndividualCreateData(ID);
         entity = await Engine.Storage.GetEntity(ID);
         models = await Engine.Storage.GetEntityModels(ID);
-        await SetModel(models.First().ID);
+
+        var query = new Uri(NavigationManager.Uri).Query;
+        if (QueryHelpers.ParseQuery(query).TryGetValue("model", out var strValue) && Int32.TryParse(strValue, out var intValue)) {
+            await SetModel(intValue);
+        }
+        else {
+            await SetModel(models.First().ID);
+        }
     }
 
     private async Task HandleChangeModel(ChangeEventArgs e) {

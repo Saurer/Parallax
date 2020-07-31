@@ -9,7 +9,7 @@
         <ChildContent>
             <div>
                 <div class="float-right">
-                    <button class="btn btn-link" @onclick="HandleCreateModel">
+                    <button class="btn btn-link" @onclick="() => HandleCreateModel()">
                         <span class="oi oi-plus mr-1"></span>
                         <span>Create model</span>
                     </button>
@@ -23,11 +23,13 @@
                             <th style="width:1px">ID</th>
                             <th>Name</th>
                             <th>Parent</th>
+                            <th style="width:1px"></th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var model in entity.Models) {
                             var modelLink = $"/models/{model.ID}";
+                            var createIndividualLink = $"/entities/{ID}/create-individual?model={model.ID}";
                             <tr>
                                 <td>@model.ID</td>
                                 <td>
@@ -36,6 +38,16 @@
                                     </NavLink>
                                 </td>
                                 <td>@model.ParentName</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button class="btn btn-light" title="Derive model" @onclick="() => HandleCreateModel(model.ID)">
+                                            <span class="oi oi-fork"></span>
+                                        </button>
+                                        <a href="@createIndividualLink" class="btn btn-light" title="Create individual using this model">
+                                            <span class="oi oi-plus"></span>
+                                        </a>
+                                    </div>
+                                </td>
                             </tr>
                         }
                     </tbody>
@@ -83,10 +95,10 @@
         this.entity = await EntityData.Instantiate(entity);
     }
 
-    private async Task HandleCreateModel() {
+    private async Task HandleCreateModel(int modelID = StaticEvent.EntityModel) {
         var parameters = new ModalParameters();
         parameters.Add("BaseEventID", ID);
-        parameters.Add("ParentModelID", StaticEvent.EntityModel);
+        parameters.Add("ParentModelID", modelID);
         var modal = ModalService.Show<CreateModel>("Create entity model", parameters);
         var result = await modal.Result;
 

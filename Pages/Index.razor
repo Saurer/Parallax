@@ -8,99 +8,7 @@
         <Paginator CurrentPage="@currentPage" TotalPages="@totalPages" OnChange="@HandlePageChange" />
     </TitleRight>
     <ChildContent>
-        <div class="row">
-            <div class="col-sm-8">
-                <EventList Items="@events" OnClick="@HandleSelect" SelectedItemID="@(selection?.ID)"/>
-            </div>
-            <div class="col-sm">
-                @if (null == selection) {
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">
-                                <strong>Information</strong>
-                            </h5>
-                            <p class="card-text">Select event that you wish to inspect. Detailed information about that event will appear here</p>
-                        </div>
-                    </div>
-                }
-                else {
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">
-                                <strong>Event #@selection.Value.ID - @selection.Value.Value</strong>
-                            </h5>
-
-                            <table class="table table-borderless table-sm">
-                                <tbody>
-                                    <tr>
-                                        <td class="text-left">
-                                            <span class="oi oi-flag text-muted"></span>
-                                            <span>Base event</span>
-                                        </td>
-                                        <td class="text-right">
-                                            <button class="btn btn-link p-0" @onclick="() => HandleSelect(selection.Value.BaseEvent)">
-                                                (@selection.Value.BaseEvent.ID) @selection.Value.BaseEvent.Value
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="text-left">
-                                            <span class="oi oi-tag text-muted"></span>
-                                            <span>Value type</span>
-                                        </td>
-                                        <td class="text-right">
-                                            <button class="btn btn-link p-0" @onclick="() => HandleSelect(selection.Value.ValueEvent)">
-                                                (@selection.Value.ValueEvent.ID) @selection.Value.ValueEvent.Value
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="text-left">
-                                            <span class="oi oi-script text-muted"></span>
-                                            <span>Value</span>
-                                        </td>
-                                        @if (selection.Value.ValueDescriptor == null) {
-                                            <td class="text-right">
-                                                @selection.Value.Value
-                                            </td>
-                                        }
-                                        else {
-                                            <td class="text-right">
-                                                <button class="btn btn-link p-0" @onclick="() => HandleSelect(selection.Value.ValueDescriptor)">
-                                                    (@selection.Value.Value) @selection.Value.ValueDescriptor.Value
-                                                </button>
-                                            </td>
-                                        }
-                                    </tr>
-                                    <tr>
-                                        <td class="text-left">
-                                            <span class="oi oi-task text-muted"></span>
-                                            <span>Condition</span>
-                                        </td>
-                                        <td class="text-right">
-                                            <button class="btn btn-link p-0" @onclick="() => HandleSelect(selection.Value.ConditionEvent)">
-                                                (@selection.Value.ConditionEvent.ID) @selection.Value.ConditionEvent.Value
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="text-left">
-                                            <span class="oi oi-person text-muted"></span>
-                                            <span>Actor</span>
-                                        </td>
-                                        <td class="text-right">
-                                            <button class="btn btn-link p-0" @onclick="() => HandleSelect(selection.Value.ActorEvent)">
-                                                (@selection.Value.ActorEvent.ID) @selection.Value.ActorEvent.Value
-                                            </button>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                }
-            </div>
-        </div>
+        <EventList Items="@events" />
 
         <hr/>
 
@@ -146,17 +54,6 @@
     private const int ITEMS_PER_PAGE = 15;
     private int currentPage = 1;
     private int totalPages = 1;
-    private SelectedEventData? selection;
-
-    private struct SelectedEventData {
-        public int ID { get; set; }
-        public string Value { get; set; }
-        public IEvent ValueDescriptor { get; set; }
-        public IEvent BaseEvent { get; set; }
-        public IEvent ValueEvent { get; set; }
-        public IEvent ConditionEvent { get; set; }
-        public IEvent ActorEvent { get; set; }
-    }
 
     private EngineBase Engine {
         get {
@@ -178,25 +75,6 @@
         currentPage = page;
         events = await LoadPage(page);
     }
-
-    private async Task HandleSelect(IEvent e) {
-        IEvent valueDescriptor = null;
-
-        if (Int32.TryParse(e.Value, out var val)) {
-            valueDescriptor = await Engine.Storage.GetEvent(val);
-        }
-
-        selection = new SelectedEventData {
-            ID = e.ID,
-            Value = e.Value,
-            ValueDescriptor = valueDescriptor,
-            BaseEvent = await Engine.Storage.GetEvent(e.BaseEventID),
-            ValueEvent = await Engine.Storage.GetEvent(e.ValueID),
-            ConditionEvent = await Engine.Storage.GetEvent(e.ConditionEventID),
-            ActorEvent = await Engine.Storage.GetEvent(e.ActorEventID)
-        };
-    }
-
     private async Task HandleReset() {
         var dialog = Modal.Show<ResetGraph>("Confirmation");
         var result = (await dialog.Result).Data is true;

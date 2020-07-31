@@ -1,3 +1,5 @@
+@inject EngineBase Engine
+
 <table class="table table-bordered table-hover table-sm">
     <thead>
         <tr>
@@ -10,14 +12,14 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Items) {
-            <tr class="@(item.ID == SelectedItemID ? "table-secondary" : "")" @onclick="() => HandleClick(item)">
+        @foreach (var item in detailedEvents) {
+            <tr>
                 <td class="text-center">@item.ID</td>
-                <td>@item.BaseEventID</td>
-                <td>@item.ValueID</td>
+                <td>(@item.BaseEvent.ID) @item.BaseEvent.Value</td>
+                <td>(@item.ValueTypeEvent.ID) @item.ValueTypeEvent.Value</td>
                 <td>@item.Value</td>
-                <td>@item.ConditionEventID</td>
-                <td>@item.ActorEventID</td>
+                <td>(@item.ConditionEvent.ID) @item.ConditionEvent.Value</td>
+                <td>(@item.ActorEvent.ID) @item.ActorEvent.Value</td>
             </tr>
         }
     </tbody>
@@ -27,13 +29,40 @@
     [Parameter]
     public IEnumerable<IEvent> Items { get; set; }
 
-    [Parameter]
-    public EventCallback<IEvent> OnClick { get;set; }
+    private IEnumerable<DetailedEvent> detailedEvents = Array.Empty<DetailedEvent>();
 
-    [Parameter]
-    public int? SelectedItemID { get;set; }
+    private struct DetailedEvent {
+        public int ID { get; set; }
+        public IEvent BaseEvent { get; set; }
+        public IEvent ValueTypeEvent { get; set; }
+        public string Value { get; set; }
+        public IEvent ConditionEvent { get; set; }
+        public IEvent ActorEvent { get; set; }
+        public DateTime Date { get; set; }
+    }
 
-    private async Task HandleClick(IEvent item) {
-        await OnClick.InvokeAsync(item);
+    protected override async Task OnInitializedAsync() {
+        await Refresh();
+    }
+
+    protected override async Task OnParametersSetAsync() {
+        await Refresh();
+    }
+
+    private async Task<DetailedEvent> GetDetailedEvent(IEvent e) {
+        return new DetailedEvent {
+            ID = e.ID,
+            BaseEvent = await Engine.Storage.GetEvent(e.BaseEventID),
+            ValueTypeEvent = await Engine.Storage.GetEvent(e.ValueID),
+            Value = e.Value,
+            ConditionEvent = await Engine.Storage.GetEvent(e.ConditionEventID),
+            ActorEvent = await Engine.Storage.GetEvent(e.ActorEventID),
+            Date = e.Date
+        };
+    }
+
+    public async Task Refresh() {
+        var result = await Task.WhenAll(Items.Select(GetDetailedEvent));
+        detailedEvents = result;
     }
 }

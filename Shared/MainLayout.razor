@@ -10,13 +10,13 @@
     <div class="top-row px-4">
         <div class="dropdown">
             <button class="btn btn-light dropdown-toggle" @onclick="HandleMenuClick">
-                <span class="oi oi-person mr-1"></span>
+                <i class="icon feather-user mr-1"></i>
                 <span>@(Credentials.CurrentActor.Value)</span>
             </button>
             <div class="dropdown-menu" style="left:auto;right:0;display:@(userDropdown ? "block" : "none")">
                 @foreach (var actor in actors) {
                     <button class="dropdown-item" disabled="@(Credentials.CurrentActor.ID == actor.ID)" @onclick="() => HandleUserClick(actor)">
-                        <span class="oi oi-person mr-1"></span>
+                        <i class="icon feather-user mr-1"></i>
                         <span>@actor.Value</span>
                     </button>
                 }

@@ -20,7 +20,7 @@
                     <h5 class="card-title">Backup data</h5>
                     <p class="card-text">Save current graph state to file. You can restore your workload and continue your work any time later</p>
                     <button class="btn btn-warning btn-block" @onclick="HandleBackupData">
-                        <span class="oi oi-cloud-download mr-1"></span>
+                        <i class="icon feather-download-cloud mr-1"></i>
                         <span>Backup now</span>
                     </button>
                 </div>
@@ -31,7 +31,7 @@
                     <h5 class="card-title">Restore data</h5>
                     <p class="card-text">Load graph state from existing file. This will replay graph events in order of their appearance</p>
                     <button class="btn btn-primary btn-block" @onclick="HandleRestoreData">
-                        <span class="oi oi-cloud-upload mr-1"></span>
+                        <i class="icon feather-upload-cloud mr-1"></i>
                         <span>Load from file</span>
                     </button>
                 </div>
@@ -42,7 +42,7 @@
                     <h5 class="card-title">Reset state</h5>
                     <p class="card-text">Reset current state to genesis table. This will erase all events that were invoked by the user</p>
                     <button class="btn btn-danger btn-block" @onclick="HandleReset">
-                        <span class="oi oi-cloud-upload mr-1"></span>
+                        <i class="icon feather-alert-triangle mr-1"></i>
                         <span>Reset graph</span>
                     </button>
                 </div>

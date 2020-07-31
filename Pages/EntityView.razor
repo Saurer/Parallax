@@ -10,7 +10,7 @@
             <div>
                 <div class="float-right">
                     <button class="btn btn-link" @onclick="() => HandleCreateModel()">
-                        <span class="oi oi-plus mr-1"></span>
+                        <i class="icon feather-plus mr-1"></i>
                         <span>Create model</span>
                     </button>
                 </div>
@@ -41,10 +41,10 @@
                                 <td>
                                     <div class="btn-group">
                                         <button class="btn btn-light" title="Derive model" @onclick="() => HandleCreateModel(model.ID)">
-                                            <span class="oi oi-fork"></span>
+                                            <i class="icon feather-code"></i>
                                         </button>
                                         <a href="@createIndividualLink" class="btn btn-light" title="Create individual using this model">
-                                            <span class="oi oi-plus"></span>
+                                            <i class="icon feather-plus"></i>
                                         </a>
                                     </div>
                                 </td>
@@ -60,7 +60,7 @@
             <div class="mt-5">
                 <div class="float-right">
                     <button class="btn btn-link" disabled="@(!entity.Models.Any())" @onclick="HandleCreateIndividual">
-                        <span class="oi oi-plus mr-1"></span>
+                        <i class="icon feather-plus mr-1"></i>
                         <span>Create individual</span>
                     </button>
                 </div>

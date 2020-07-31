@@ -24,6 +24,7 @@ namespace Parallax {
             builder.Services.AddTransient(sp => engineService.Instance);
             builder.Services.AddSingleton(sp => engineService);
             builder.Services.AddSingleton(sp => credentialsService);
+            builder.Services.AddSingleton(sp => new BackupService());
             builder.Services.AddBlazoredModal();
 
             await builder.Build().RunAsync();

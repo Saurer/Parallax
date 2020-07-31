@@ -1,0 +1,44 @@
+@inject IJSRuntime JSRuntime
+
+@if (Hidden) {
+    <div style="position:absolute;top:-50000px;left:-50000px">
+        <input type="file" @onchange="HandleInputChange" @ref="inputRef" />
+    </div>
+}
+else {
+    <input type="file" @onchange="HandleInputChange" @ref="inputRef" />
+}
+
+@code {
+    [Parameter]
+    public EventCallback<IEnumerable<FileInfo>> OnChange { get; set; }
+
+    [Parameter]
+    public bool Hidden { get; set; } = false;
+
+    private ElementReference inputRef;
+
+    public class FileInfo {
+        public string Name { get; set; }
+        public string Data { get; set; }
+    }
+
+    public async Task Clear() {
+        await JSRuntime.InvokeVoidAsync("inputFile.clear", inputRef);
+    }
+
+    public async Task OpenDialog() {
+        await JSRuntime.InvokeVoidAsync("inputFile.click", inputRef);
+    }
+
+    [JSInvokable]
+    public async Task HandleIncomingFiles(IEnumerable<FileInfo> files) {
+        await this.InvokeAsync(async () => {
+            await OnChange.InvokeAsync(files);
+        });
+    }
+
+    private async Task HandleInputChange(ChangeEventArgs e) {
+        await JSRuntime.InvokeVoidAsync("inputFile.handleChange", DotNetObjectReference.Create(this), inputRef);
+    }
+}

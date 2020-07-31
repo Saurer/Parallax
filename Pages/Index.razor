@@ -1,6 +1,8 @@
 ﻿@page "/"
 @inject IModalService Modal
 @inject EngineService EngineService
+@inject BackupService BackupService
+@inject IJSRuntime JSRuntime
 
 <Scaffold>
     <Title>Event log</Title>
@@ -8,7 +10,7 @@
         <Paginator CurrentPage="@currentPage" TotalPages="@totalPages" OnChange="@HandlePageChange" />
     </TitleRight>
     <ChildContent>
-        <EventList Items="@events" />
+        <EventList Items="@events" @key="@Engine" />
 
         <hr/>
 
@@ -17,7 +19,7 @@
                 <div class="card-body">
                     <h5 class="card-title">Backup data</h5>
                     <p class="card-text">Save current graph state to file. You can restore your workload and continue your work any time later</p>
-                    <button class="btn btn-warning btn-block">
+                    <button class="btn btn-warning btn-block" @onclick="HandleBackupData">
                         <span class="oi oi-cloud-download mr-1"></span>
                         <span>Backup now</span>
                     </button>
@@ -28,7 +30,7 @@
                 <div class="card-body">
                     <h5 class="card-title">Restore data</h5>
                     <p class="card-text">Load graph state from existing file. This will replay graph events in order of their appearance</p>
-                    <button class="btn btn-primary btn-block">
+                    <button class="btn btn-primary btn-block" @onclick="HandleRestoreData">
                         <span class="oi oi-cloud-upload mr-1"></span>
                         <span>Load from file</span>
                     </button>
@@ -46,6 +48,9 @@
                 </div>
             </div>
         </div>
+
+
+        <InputFile OnChange="@HandleFileChange" @ref="inputFile" Hidden />
     </ChildContent>
 </Scaffold>
 
@@ -54,6 +59,7 @@
     private const int ITEMS_PER_PAGE = 15;
     private int currentPage = 1;
     private int totalPages = 1;
+    private InputFile inputFile;
 
     private EngineBase Engine {
         get {
@@ -63,11 +69,11 @@
 
     protected override async Task OnInitializedAsync() {
         events = await LoadPage(currentPage);
-        totalPages = (int)Math.Ceiling(Engine.Position / (double)ITEMS_PER_PAGE);
     }
 
     private async Task<IEnumerable<IEvent>> LoadPage(int page) {
         int offset = (page - 1) * ITEMS_PER_PAGE;
+        totalPages = (int)Math.Ceiling(Engine.Position / (double)ITEMS_PER_PAGE);
         return await Engine.Storage.GetEvents(offset, ITEMS_PER_PAGE);
     }
 
@@ -75,12 +81,49 @@
         currentPage = page;
         events = await LoadPage(page);
     }
+
     private async Task HandleReset() {
         var dialog = Modal.Show<ResetGraph>("Confirmation");
         var result = (await dialog.Result).Data is true;
         if (result) {
             await EngineService.InitEngine();
             events = await LoadPage(currentPage);
+        }
+    }
+
+    private async Task HandleBackupData() {
+        var backupEvents = await Engine.Storage.GetEvents(0, Engine.Position);
+        var result = await BackupService.Encode(backupEvents);
+        await JSRuntime.InvokeVoidAsync("io.saveFile", result, "backup.xml", "application/xml");
+    }
+
+    private async Task HandleRestoreData() {
+        await inputFile.OpenDialog();
+    }
+
+    private async Task HandleFileChange(IEnumerable<InputFile.FileInfo> files) {
+        if (!files.Any()) {
+            return;
+        }
+
+        await inputFile.Clear();
+
+        try {
+            var file = files.First();
+            var result = BackupService.DecodeFromBase64(file.Data);
+
+            var parameters = new ModalParameters();
+            parameters.Add("Payload", result);
+            var modal = Modal.Show<RestoreBackup>("Confirmation", parameters);
+            var modalResult = await modal.Result;
+            if (modalResult.Data is true) {
+                await LoadPage(1);
+            }
+        }
+        catch (Exception) {
+            var parameters = new ModalParameters();
+            parameters.Add("Text", "Provided file contains invalid data");
+            Modal.Show<Alert>("Error", parameters);
         }
     }
 }

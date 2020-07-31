@@ -1,4 +1,6 @@
-﻿<div class="top-row pl-4 navbar navbar-dark">
+﻿@inject RoutingService Routing
+
+<div class="top-row pl-4 navbar navbar-dark">
     <a class="navbar-brand" href="">Parallax</a>
     <button class="navbar-toggler" @onclick="ToggleNavMenu">
         <span class="navbar-toggler-icon"></span>
@@ -8,32 +10,32 @@
 <div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
     <ul class="nav flex-column">
         <li class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+            <NavLink class="nav-link" href="/" Match="NavLinkMatch.All">
                 <i class="nav-icon feather-activity"></i> Event log
             </NavLink>
         </li>
         <li class="nav-item px-3">
-            <NavLink class="nav-link" href="models">
+            <NavLink class="nav-link" href="@Routing.Models()">
                 <i class="nav-icon feather-code"></i> Models
             </NavLink>
         </li>
         <li class="nav-item px-3">
-            <NavLink class="nav-link" href="attributes">
+            <NavLink class="nav-link" href="@Routing.Attributes()">
                 <i class="nav-icon feather-check-circle"></i> Attributes
             </NavLink>
         </li>
         <li class="nav-item px-3">
-            <NavLink class="nav-link" href="actors">
+            <NavLink class="nav-link" href="@Routing.Actors()">
                 <i class="nav-icon feather-user"></i> Actors
             </NavLink>
         </li>
         <li class="nav-item px-3">
-            <NavLink class="nav-link" href="roles">
+            <NavLink class="nav-link" href="@Routing.Roles()">
                 <i class="nav-icon feather-shield"></i> Roles
             </NavLink>
         </li>
         <li class="nav-item px-3">
-            <NavLink class="nav-link" href="entities">
+            <NavLink class="nav-link" href="@Routing.Entities()">
                 <i class="nav-icon feather-target"></i> Entities
             </NavLink>
         </li>

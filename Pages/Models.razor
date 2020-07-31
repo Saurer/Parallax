@@ -1,5 +1,6 @@
 ﻿@page "/models"
 @inject EngineBase Engine
+@inject RoutingService Routing
 
 <Scaffold>
     <Title>Models</Title>
@@ -15,13 +16,10 @@
             </thead>
             <tbody>
             @foreach(var model in models) {
-                var link = $"/models/{model.ID}";
-                var parentLink = $"/models/{model.Parent}";
-
                 <tr>
                     <td>@model.ID</td>
                     <td>
-                        <NavLink href="@link">@model.Name</NavLink>
+                        <NavLink href="@Routing.ModelsView(model.ID)">@model.Name</NavLink>
                     </td>
                     <td>
                         (@model.EventBase) @model.EventBaseName
@@ -31,7 +29,7 @@
                             <span>Root</span>
                         }
                         else {
-                            <NavLink href="@parentLink">@model.ParentName</NavLink>
+                            <NavLink href="@Routing.ModelsView(model.Parent)">@model.ParentName</NavLink>
                         }
                     </td>
                 </tr>

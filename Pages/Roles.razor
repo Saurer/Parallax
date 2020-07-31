@@ -1,11 +1,12 @@
 ﻿@page "/roles"
 @inject EngineBase Engine
 @inject IModalService Modal
+@inject RoutingService Routing
 
 <Scaffold>
     <Title>Roles</Title>
     <TitleRight>
-        <NavLink href="/roles/create" class="btn btn-light">
+        <NavLink href="@Routing.RolesCreate()" class="btn btn-light">
             <i class="icon feather-plus mr-1"></i>
             <span>Create</span>
         </NavLink>

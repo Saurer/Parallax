@@ -2,6 +2,7 @@
 @inject EngineBase Engine
 @inject IModalService ModalService
 @inject CredentialsService CredentialsService
+@inject RoutingService Routing
 
 @if (null != model) {
     <Scaffold>
@@ -13,8 +14,7 @@
                     <span>Root</span>
                 }
                 else {
-                    var parentLink = $"/models/{model.Parent}";
-                    <NavLink href="@parentLink">@model.ParentName</NavLink>
+                    <NavLink href="@Routing.ModelsView(model.Parent)">@model.ParentName</NavLink>
                 }
             </div>
 

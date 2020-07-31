@@ -1,18 +1,17 @@
 ﻿@page "/attributes"
 @inject EngineBase Engine
+@inject RoutingService Routing
 
 <Scaffold>
     <Title>Attributes</Title>
     <TitleRight>
-        <NavLink href="/attributes/create" class="btn btn-light">
+        <NavLink href="@Routing.AttributesCreate()" class="btn btn-light">
             <i class="icon feather-plus mr-1"></i>
             <span>Create</span>
         </NavLink>
     </TitleRight>
     <ChildContent>
         @foreach (var attr in attributes) {
-            var attrLink = $"/attributes/{attr.ID}";
-
             <div class="card">
                 <div class="card-body">
                     <div class="row">
@@ -21,7 +20,7 @@
                         </div>
                         <div class="col-sm-8">
                             <strong>
-                                <NavLink href="@attrLink">@attr.Name</NavLink>
+                                <NavLink href="@Routing.AttributesView(attr.ID)">@attr.Name</NavLink>
                             </strong>
                         </div>
                         <div class="col-sm-1">

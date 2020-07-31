@@ -1,11 +1,12 @@
 ﻿@page "/entities"
 @inject EngineBase Engine
 @inject IModalService Modal
+@inject RoutingService Routing
 
 <Scaffold>
     <Title>Entities</Title>
     <TitleRight>
-        <NavLink href="/entities/create" class="btn btn-light">
+        <NavLink href="@Routing.EntitiesCreate()" class="btn btn-light">
             <i class="icon feather-plus mr-1"></i>
             <span>Create</span>
         </NavLink>
@@ -22,11 +23,10 @@
             </thead>
             <tbody>
                 @foreach (var entity in entities) {
-                    var entityLink = $"/entities/{entity.ID}";
                     <tr>
                         <td>@entity.ID</td>
                         <td>
-                            <NavLink href="@entityLink">@entity.Name</NavLink>
+                            <NavLink href="@Routing.EntitiesView(entity.ID)">@entity.Name</NavLink>
                         </td>
                         <td>@entity.Models.Count()</td>
                         <td>@entity.Individuals.Count()</td>

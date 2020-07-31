@@ -2,6 +2,7 @@
 @inject EngineBase Engine
 @inject NavigationManager NavigationManager
 @inject IModalService ModalService
+@inject RoutingService Routing
 
 @if (null != entity) {
     <Scaffold>
@@ -28,12 +29,10 @@
                     </thead>
                     <tbody>
                         @foreach (var model in entity.Models) {
-                            var modelLink = $"/models/{model.ID}";
-                            var createIndividualLink = $"/entities/{ID}/create-individual?model={model.ID}";
                             <tr>
                                 <td>@model.ID</td>
                                 <td>
-                                    <NavLink href="@modelLink">
+                                    <NavLink href="@Routing.ModelsView(model.ID)">
                                         @model.Name
                                     </NavLink>
                                 </td>
@@ -43,9 +42,9 @@
                                         <button class="btn btn-light" title="Derive model" @onclick="() => HandleCreateModel(model.ID)">
                                             <i class="icon feather-code"></i>
                                         </button>
-                                        <a href="@createIndividualLink" class="btn btn-light" title="Create individual using this model">
+                                        <NavLink href="@Routing.EntitiesCreateIndividual(ID, model.ID)" class="btn btn-light" title="Create individual using this model">
                                             <i class="icon feather-plus"></i>
-                                        </a>
+                                        </NavLink>
                                     </div>
                                 </td>
                             </tr>

@@ -1,11 +1,12 @@
 ﻿@page "/actors"
 @inject EngineBase Engine
 @inject IModalService Modal
+@inject RoutingService Routing
 
 <Scaffold>
     <Title>Actors</Title>
     <TitleRight>
-        <NavLink href="/actors/create" class="btn btn-light">
+        <NavLink href="@Routing.ActorsCreate()" class="btn btn-light">
             <i class="icon feather-plus mr-1"></i>
             <span>Create</span>
         </NavLink>

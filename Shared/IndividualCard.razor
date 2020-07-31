@@ -1,4 +1,6 @@
-﻿<div class="card">
+﻿@inject RoutingService Routing
+
+<div class="card">
     <div class="card-body">
         <h5 class="card-title">
             <strong>(@Value.ID) @Value.Name</strong>
@@ -15,7 +17,7 @@
                 <span>Model</span>
             </div>
             <div class="col-sm text-right">
-                <NavLink href="@($"/models/{Value.Model.ID}")">@Value.Model.Name</NavLink>
+                <NavLink href="@Routing.ModelsView(Value.Model.ID)">@Value.Model.Name</NavLink>
             </div>
         </div>
         <hr/>

@@ -1,4 +1,4 @@
-@inject IModalService ModalService
+@inject DialogService Dialog
 @inject EngineBase Engine
 
 <table class="table">
@@ -70,18 +70,15 @@
     }
 
     private async Task HandleAssignAttribute(int attrID) {
-        var parameters = new ModalParameters();
-        parameters.Add("AttrID", attrID);
-        parameters.Add("Value", Values.ContainsKey(attrID) ? Values[attrID] : "");
-        var modal = ModalService.Show<SetAttributeValue>("Set attribute", parameters);
-        var result = (await modal.Result).Data;
+        var result = await Dialog.SetAttributeValue(attrID, Values.ContainsKey(attrID) ? Values[attrID] : "");
 
-        if (result is string value) {
-            Values[attrID] = value;
-        }
-        else if (result is null) {
+        if (null == result) {
             Values.Remove(attrID);
         }
+        else {
+            Values[attrID] = result;
+        }
+
         await UpdateValues();
     }
 }

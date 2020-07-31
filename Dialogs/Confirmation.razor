@@ -1,9 +1,6 @@
-@inject EngineService EngineService
-
 <DialogLayout>
     <ChildContent>
-        <p>Do you really want to restore graph from this file?</p>
-        <p>Backup payload contains @(Payload.Events.Count()) event(s)</p>
+        <p style="white-space: pre">@Text</p>
     </ChildContent>
     <Footer>
         <button type="button" class="btn btn-danger" @onclick="Confirm">Confirm</button>
@@ -16,10 +13,9 @@
     public BlazoredModalInstance BlazoredModal { get;set; }
 
     [Parameter]
-    public BackupData Payload { get; set; }
+    public string Text { get; set; }
 
     private async Task Confirm() {
-        await EngineService.InitEngine(Payload.Events);
         await BlazoredModal.Close(ModalResult.Ok(true));
     }
 

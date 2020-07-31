@@ -1,6 +1,6 @@
 ﻿@page "/attributes/{id:int}"
 @inject EngineBase Engine
-@inject IModalService ModalService
+@inject DialogService Dialog
 @inject CredentialsService CredentialsService
 
 @if (null != attr) {
@@ -65,17 +65,13 @@
     }
 
     private async Task HandleAddValue() {
-        var parameters = new ModalParameters();
-        parameters.Add("ID", ID);
-        var modal = ModalService.Show<AddAttributeValue>("Add attribute value", parameters);
-        var result = await modal.Result;
-
-        if (!result.Cancelled && result.Data is string strResult) {
+        var result = await Dialog.AddAttributeValue(ID);
+        if (null != result) {
             await CredentialsService.ProcessEvent(Engine, new FederatedEvent(
                 ID,
                 StaticEvent.AttributeValue,
                 ID,
-                strResult
+                result
             ));
 
             await Redraw();

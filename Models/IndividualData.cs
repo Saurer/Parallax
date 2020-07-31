@@ -5,6 +5,7 @@ using AuroraCore.Storage;
 
 namespace Parallax.Models {
     public class IndividualData {
+        public IIndividual Event { get; private set; }
         public int ID { get; private set; }
         public string Name { get; private set; }
         public IndividualModelData Model { get; private set; }
@@ -40,6 +41,7 @@ namespace Parallax.Models {
             }
 
             return new IndividualData {
+                Event = individual,
                 ID = individual.ID,
                 Name = individual.Value,
                 Attributes = attrValues,

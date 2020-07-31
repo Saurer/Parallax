@@ -1,8 +1,9 @@
 ﻿@page "/"
-@inject IModalService Modal
+@inject DialogService Dialog
 @inject EngineService EngineService
 @inject BackupService BackupService
 @inject IJSRuntime JSRuntime
+@inject Parallax.Services.DialogService ModalService
 
 <Scaffold>
     <Title>Event log</Title>
@@ -83,8 +84,7 @@
     }
 
     private async Task HandleReset() {
-        var dialog = Modal.Show<ResetGraph>("Confirmation");
-        var result = (await dialog.Result).Data is true;
+        var result = await Dialog.ResetGraph();
         if (result) {
             await EngineService.InitEngine();
             events = await LoadPage(currentPage);
@@ -110,20 +110,15 @@
 
         try {
             var file = files.First();
-            var result = BackupService.DecodeFromBase64(file.Data);
-
-            var parameters = new ModalParameters();
-            parameters.Add("Payload", result);
-            var modal = Modal.Show<RestoreBackup>("Confirmation", parameters);
-            var modalResult = await modal.Result;
-            if (modalResult.Data is true) {
+            var payload = BackupService.DecodeFromBase64(file.Data);
+            var result = await Dialog.Confirm($"Do you really want to restore graph from this file?\nBackup payload contains {payload.Events.Count()} event(s)");
+            if (result) {
+                await EngineService.InitEngine(payload.Events);
                 await LoadPage(1);
             }
         }
         catch (Exception) {
-            var parameters = new ModalParameters();
-            parameters.Add("Text", "Provided file contains invalid data");
-            Modal.Show<Alert>("Error", parameters);
+            await Dialog.Error("Provided file is corrupted or contains invalid data");
         }
     }
 }

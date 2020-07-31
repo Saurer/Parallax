@@ -1,6 +1,6 @@
 ﻿@page "/roles"
 @inject EngineBase Engine
-@inject IModalService Modal
+@inject DialogService Dialog
 @inject RoutingService Routing
 
 <Scaffold>
@@ -33,11 +33,7 @@
     }
 
     private async Task HandleAssignAttribute(IndividualData individual, int attrID) {
-        var parameters = new ModalParameters();
-        parameters.Add("EventID", individual.ID);
-        parameters.Add("AttrID", attrID);
-        var modal = Modal.Show<AssignAttribute>($"Assign attribute to '{individual.Name}'", parameters);
-        var result = (await modal.Result).Data is true;
+        var result = await Dialog.AssignIndividualAttribute(individual.Event, attrID);
         if (result) {
             await Refresh();
         }

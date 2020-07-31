@@ -1,7 +1,7 @@
 ﻿@page "/entities/{id:int}"
 @inject EngineBase Engine
 @inject NavigationManager NavigationManager
-@inject IModalService ModalService
+@inject DialogService Dialog
 @inject RoutingService Routing
 
 @if (null != entity) {
@@ -95,13 +95,8 @@
     }
 
     private async Task HandleCreateModel(int modelID = StaticEvent.EntityModel) {
-        var parameters = new ModalParameters();
-        parameters.Add("BaseEventID", ID);
-        parameters.Add("ParentModelID", modelID);
-        var modal = ModalService.Show<CreateModel>("Create entity model", parameters);
-        var result = await modal.Result;
-
-        if (!result.Cancelled) {
+        var result = await Dialog.CreateModel(ID, modelID);
+        if (null != result) {
             await Redraw();
         }
     }
@@ -111,11 +106,7 @@
     }
 
     private async Task HandleAssignAttribute(IndividualData individual, int attrID) {
-        var parameters = new ModalParameters();
-        parameters.Add("EventID", individual.ID);
-        parameters.Add("AttrID", attrID);
-        var modal = ModalService.Show<AssignAttribute>($"Assign attribute to '{individual.Name}'", parameters);
-        var result = (await modal.Result).Data is true;
+        var result = await Dialog.AssignIndividualAttribute(individual.Event, attrID);
         if (result) {
             await Redraw();
         }

@@ -120,11 +120,18 @@
         var result = await Dialog.AddModelAttribute(attributeIDs);
 
         if (null != result) {
-            await CredentialsService.ProcessEvent(Engine, new FederatedEvent(
+            var eventID = await CredentialsService.ProcessEvent(Engine, new FederatedEvent(
                 ID,
                 StaticEvent.Attribute,
                 ID,
-                result.ToString()
+                result.ID.ToString()
+            ));
+
+            await CredentialsService.ProcessEvent(Engine, new FederatedEvent(
+                eventID,
+                StaticEvent.Required,
+                result.ID,
+                result.Required ? "1" : "0"
             ));
             await Redraw();
         }

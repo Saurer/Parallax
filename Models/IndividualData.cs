@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using AuroraCore.Storage;
 
@@ -18,7 +19,8 @@ namespace Parallax.Models {
 
         public static async Task<IndividualData> Instantiate(IIndividual individual) {
             var plainModel = await individual.GetModel();
-            var plainAttributes = await plainModel.GetAllAttributes();
+            var plainModelAttributes = await plainModel.GetAllAttributes();
+            var plainAttributes = await Task.WhenAll(plainModelAttributes.Select(attr => attr.GetAttribute()));
             var attributes = await individual.GetAttributes();
             var model = await IndividualModelData.Instantiate(plainModel, attributes);
             var valid = await plainModel.Validate(attributes);

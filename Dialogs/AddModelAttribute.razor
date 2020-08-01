@@ -13,6 +13,10 @@
                         }
                     </select>
                 </div>
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="required" @bind="required"/>
+                    <label class="form-check-label" for="required">Required</label>
+                </div>
             </form>
         </ChildContent>
         <Footer>
@@ -41,6 +45,7 @@ else {
 
     private IEnumerable<AttrData> availableAttributes = Array.Empty<AttrData>();
     private AttrData newAttr;
+    private bool required;
 
     protected async override Task OnInitializedAsync() {
         var attrs = await Engine.Storage.GetAttributes();
@@ -60,6 +65,8 @@ else {
     }
 
     private async Task Confirm() {
-        await BlazoredModal.Close(ModalResult.Ok(newAttr.ID));
+        await BlazoredModal.Close(ModalResult.Ok(
+            new AttributeAssignData{ ID = newAttr.ID, Required = required }
+        ));
     }
 }

@@ -4,6 +4,7 @@ using AuroraCore.Storage;
 using Blazored.Modal;
 using Blazored.Modal.Services;
 using Parallax.Dialogs;
+using Parallax.Models;
 
 namespace Parallax.Services {
     public class DialogService {
@@ -91,14 +92,14 @@ namespace Parallax.Services {
             }
         }
 
-        public async Task<int?> AddModelAttribute(IEnumerable<int> availableAttributes) {
+        public async Task<AttributeAssignData> AddModelAttribute(IEnumerable<int> availableAttributes) {
             var parameters = new ModalParameters();
             parameters.Add("Attributes", availableAttributes);
             var modal = instance.Show<AddModelAttribute>("Add attribute", parameters);
             var result = await modal.Result;
 
-            if (result.Data is int intValue) {
-                return intValue;
+            if (result.Data is AttributeAssignData data) {
+                return data;
             }
             else {
                 return null;

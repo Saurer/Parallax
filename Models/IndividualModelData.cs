@@ -16,7 +16,8 @@ namespace Parallax.Models {
 
         public static async Task<IndividualModelData> Instantiate(IModel model, IReadOnlyDictionary<int, string> values) {
             var parent = await model.GetParent();
-            var plainAttributes = await model.GetAllAttributes();
+            var plainModelAttributes = await model.GetAllAttributes();
+            var plainAttributes = await Task.WhenAll(plainModelAttributes.Select(attr => attr.GetAttribute()));
             var attributes = await Task.WhenAll(plainAttributes.Select(a =>
                 IndividualAttrData.Instantiate(a, values.ContainsKey(a.ID) ? values[a.ID] : null)
             ));

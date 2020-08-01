@@ -31,12 +31,14 @@ namespace Parallax.Models {
         public static async Task<ModelData> Instantiate(IModel model) {
             var parent = await model.GetParent();
             var eventBase = await model.GetBaseEvent();
-            var plainAttributes = await model.GetOwnAttributes();
+            var plainModelAttributes = await model.GetOwnAttributes();
+            var plainAttributes = await Task.WhenAll(plainModelAttributes.Select(attr => attr.GetAttribute()));
             var ownAttributes = await Task.WhenAll(plainAttributes.Select(attr => AttrData.Instantiate(attr)));
             var inheritedAttributes = Array.Empty<AttrData>();
 
             if (null != parent) {
-                var plainOwnAttributes = await parent.GetAllAttributes();
+                var plainOwnModelAttributes = await parent.GetAllAttributes();
+                var plainOwnAttributes = await Task.WhenAll(plainOwnModelAttributes.Select(attr => attr.GetAttribute()));
                 inheritedAttributes = await Task.WhenAll(plainOwnAttributes.Select(attr => AttrData.Instantiate(attr)));
             }
 

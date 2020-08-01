@@ -84,7 +84,8 @@
     protected override async Task OnInitializedAsync() {
         parentModel = await Engine.Storage.GetModel(ParentModelID);
         model.Name = DefaultName;
-        var attrs = await parentModel.GetAllAttributes();
+        var modelAttrs = await parentModel.GetAllAttributes();
+        var attrs = await Task.WhenAll(modelAttrs.Select(attr => attr.GetAttribute()));
         var result = new List<AttrData>();
 
         foreach (var attr in attrs) {

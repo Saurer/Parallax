@@ -11,6 +11,7 @@ namespace Parallax.Models {
         public string Name { get; private set; }
         public IndividualModelData Model { get; private set; }
         public IReadOnlyDictionary<int, string> Attributes { get; private set; }
+        public string ActorName { get; private set; }
         public bool Valid { get; private set; }
 
         private IndividualData() {
@@ -24,6 +25,7 @@ namespace Parallax.Models {
             var attributes = await individual.GetAttributes();
             var model = await IndividualModelData.Instantiate(plainModel, attributes);
             var valid = await plainModel.Validate(attributes);
+            var actorEvent = await individual.GetActor();
             var attrValues = new Dictionary<int, string>();
 
             foreach (var attr in plainAttributes) {
@@ -46,6 +48,7 @@ namespace Parallax.Models {
                 Event = individual,
                 ID = individual.ID,
                 Name = individual.Value,
+                ActorName = actorEvent?.Value,
                 Attributes = attrValues,
                 Model = model,
                 Valid = valid

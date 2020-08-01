@@ -20,6 +20,15 @@
                 <NavLink href="@Routing.ModelsView(Value.Model.ID)">@Value.Model.Name</NavLink>
             </div>
         </div>
+        <div class="row">
+            <div class="col-sm">
+                <i class="icon feather-user text-muted"></i>
+                <span>Creator</span>
+            </div>
+            <div class="col-sm text-right">
+                @(Value.ActorName ?? "System")
+            </div>
+        </div
         <hr/>
         @foreach (var attr in Value.Model.Attributes) {
             <div class="row">

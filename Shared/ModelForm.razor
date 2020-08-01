@@ -48,6 +48,7 @@
     }
 
     protected async override Task OnParametersSetAsync() {
+        model = await ModelData.Instantiate(Model);
         await UpdateValues();
     }
 

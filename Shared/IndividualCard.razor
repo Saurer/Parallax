@@ -75,16 +75,16 @@
             return true;
         }
 
-        if (null == attr.Values?.Count()) {
+        if (null == attr.PlainValues?.Count()) {
             return true;
         }
 
-        return attr.Values.Count() < attr.Cardinality;
+        return attr.PlainValues.Count() < attr.Cardinality;
     }
 
     private string RenderValues(IndividualAttrData attr) {
         if (Value.Attributes.ContainsKey(attr.ID)) {
-            return String.Join(',', Value.Attributes[attr.ID].Values);
+            return String.Join(',', Value.Attributes[attr.ID].ProcessedValues);
         }
         else {
             return null;
@@ -93,7 +93,7 @@
 
     private async Task HandleAssignAttribute(IndividualAttrData attr) {
         var modelAttrData = await ModelAttrData.Instantiate(attr.ModelAttr);
-        var resultValues = await Dialog.SetAttributeValue(modelAttrData, attr.Values ?? Array.Empty<string>());
+        var resultValues = await Dialog.SetAttributeValue(modelAttrData, attr.PlainValues ?? Array.Empty<string>());
 
         if (null == resultValues) {
             return;

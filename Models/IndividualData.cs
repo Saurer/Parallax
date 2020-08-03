@@ -35,24 +35,6 @@ namespace Parallax.Models {
 
                 var attrData = await IndividualAttrData.Instantiate(modelAttr, attributes[attrID]);
                 attrValues.Add(attrID, attrData);
-
-                // var values = attributes[attr.ID];
-                // var boxed = await attr.IsBoxed();
-                // foreach (var value in values) {
-                //     if (!attrValues.ContainsKey(attr.ID)) {
-                //         attrValues.Add(attr.ID, new List<string>());
-                //     }
-
-                //     var list = (List<string>)attrValues[attr.ID];
-
-                //     if (boxed) {
-                //         var valueEvent = await attr.GetValue(Int32.Parse(value));
-                //         list.Add(valueEvent.Value);
-                //     }
-                //     else {
-                //         list.Add(value);
-                //     }
-                // }
             }
 
             return new IndividualData {

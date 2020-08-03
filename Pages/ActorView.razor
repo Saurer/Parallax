@@ -1,0 +1,10 @@
+﻿@page "/actors/{id:int}"
+@inject EngineBase Engine
+@inject RoutingService Routing
+
+<IndividualForm ID="@ID" Badge="Actor" />
+
+@code {
+    [Parameter]
+    public int ID { get; set; }
+}

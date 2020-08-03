@@ -15,6 +15,9 @@ namespace Parallax.Services {
         public string ActorsCreate() =>
             Actors() + "/create";
 
+        public string ActorsView(int id) =>
+            Actors() + $"/{id}";
+
         public string Entities() =>
             "/entities";
 
@@ -23,6 +26,9 @@ namespace Parallax.Services {
 
         public string EntitiesView(int id) =>
             Entities() + $"/{id}";
+
+        public string EntitiesViewIndividual(int entityID) =>
+            Entities() + $"/individual/{entityID}";
 
         public string EntitiesCreateIndividual(int entityID) =>
             Entities() + $"/{entityID}/create-individual";
@@ -41,5 +47,8 @@ namespace Parallax.Services {
 
         public string RolesCreate() =>
             Roles() + "/create";
+
+        public string RolesView(int id) =>
+            Roles() + $"/{id}";
     }
 }

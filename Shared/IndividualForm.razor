@@ -1,0 +1,66 @@
+﻿@inject EngineBase Engine
+@inject RoutingService Routing
+
+@if (null != individual) {
+    <Scaffold>
+        <Title>
+            @individual?.Name
+        </Title>
+        <TitleRight>
+            @if (Badge != null) {
+                <h3>
+                    <span class="badge badge-success">@Badge</span>
+                </h3>
+            }
+        </TitleRight>
+        <ChildContent>
+            <h4>Model</h4>
+            <div>
+                <NavLink href="@(Routing.ModelsView(individual.Model.ID))">
+                    (@individual.Model.ID) @individual.Model.Name
+                </NavLink>
+            </div>
+            <hr/>
+
+            @if (individual.Actor.HasValue) {
+                <h4>Creator</h4>
+                <div>
+                    <NavLink href="@(Routing.ActorsView(individual.Actor.Value))">
+                        (@individual.Actor.Value) @individual.ActorName
+                    </NavLink>
+                </div>
+                <hr/>
+            }
+
+            <h4>Attributes</h4>
+            <ModelForm IndividualID="@ID" Model="@model" Values="@values" OnAssignAttribute="@Refresh" />
+        </ChildContent>
+    </Scaffold>
+}
+
+@code {
+    [Parameter]
+    public int ID { get; set; }
+
+    [Parameter]
+    public string Badge { get; set; }
+
+    private IndividualData individual;
+    private ModelData model;
+    private Dictionary<int, IEnumerable<string>> values;
+
+    protected override async Task OnInitializedAsync() {
+        await Refresh();
+    }
+
+    protected override async Task OnParametersSetAsync() {
+        await Refresh();
+    }
+
+    private async Task Refresh() {
+        var actor = await Engine.Storage.GetIndividual(ID);
+        individual = await IndividualData.Instantiate(actor);
+        model = await ModelData.Instantiate(individual.Model.Value);
+        values = individual.Attributes.ToDictionary(k => k.Key, v => v.Value.PlainValues);
+    }
+}

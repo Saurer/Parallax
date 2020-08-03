@@ -1,30 +1,49 @@
 @inject DialogService Dialog
 @inject EngineBase Engine
+@inject CredentialsService Credentials
 
 <table class="table">
     <thead>
         <tr>
             <th>Name</th>
             <th>Type</th>
+            <th>Cardinality</th>
             <th>Value</th>
         </tr>
     </thead>
     <tbody>
-        @if (null != model) {
-            @foreach (var attr in model.AllAttributes) {
+        @if (null != Model) {
+            @foreach (var attr in Model.AllAttributes) {
                 <tr>
-                    <td>@attr.Attribute.Name</td>
-                    <td>@attr.Attribute.DataType.Name</td>
                     <td>
-                        <button type="button" class="btn btn-link p-0 border-bottom" @onclick="@(() => HandleAssignAttribute(attr))">
-                            @if (values.ContainsKey(attr.Attribute.ID)) {
+                        <span>@attr.Attribute.Name</span>
+                        @if (attr.Required) {
+                            <span class="text-danger text-bold">(required)</span>
+                        }
+                    </td>
+                    <td>@attr.Attribute.DataType.Name</td>
+                    <td>@attr.Cardinality</td>
+                    <td>
+                        @if (IsFull(attr)) {
+                            if (values.ContainsKey(attr.Attribute.ID)) {
                                 <span>@String.Join(',', @values[attr.Attribute.ID])</span>
                             }
                             else {
                                 <i class="icon feather-alert-triangle text-warning"></i>
                                 <span class="text-muted">Unassigned</span>
                             }
-                        </button>
+                        }
+                        else {
+                            <button type="button" class="btn btn-link p-0 border-bottom" @onclick="@(() => HandleAssignAttribute(attr))">
+                                @if (values.ContainsKey(attr.Attribute.ID)) {
+                                    <span>@String.Join(',', @values[attr.Attribute.ID])</span>
+                                }
+                                else {
+                                    <i class="icon feather-alert-triangle text-warning"></i>
+                                    <span class="text-muted">Unassigned</span>
+                                }
+                            </button>
+                        }
                     </td>
                 </tr>
             }
@@ -34,27 +53,30 @@
 
 @code {
     [Parameter]
-    public IModel Model { get; set; }
+    public int? IndividualID { get; set; }
+
+    [Parameter]
+    public ModelData Model { get; set; }
 
     [Parameter]
     public Dictionary<int, IEnumerable<string>> Values { get; set; }
 
-    private ModelData model;
+    [Parameter]
+    public EventCallback OnAssignAttribute { get; set; }
+
     private Dictionary<int, IEnumerable<string>> values = new Dictionary<int, IEnumerable<string>>();
 
     protected async override Task OnInitializedAsync() {
-        model = await ModelData.Instantiate(Model);
         await UpdateValues();
     }
 
     protected async override Task OnParametersSetAsync() {
-        model = await ModelData.Instantiate(Model);
         await UpdateValues();
     }
 
     private async Task UpdateValues() {
         var result = new Dictionary<int, IEnumerable<string>>();
-        var attrs = model.AllAttributes;
+        var attrs = Model.AllAttributes;
 
         foreach (var kv in Values) {
             var modelAttr = attrs.Where(a => a.Attribute.ID == kv.Key).Single();
@@ -82,18 +104,46 @@
         values = result;
     }
 
+    private bool IsFull(ModelAttrData attr) {
+        if (!values.ContainsKey(attr.Attribute.ID)) {
+            return false;
+        }
+
+        if (attr.Cardinality == 0) {
+            return false;
+        }
+
+        var items = values[attr.Attribute.ID];
+
+        return items.Count() >= attr.Cardinality;
+    }
+
     private async Task HandleAssignAttribute(ModelAttrData attr) {
-        var result = await Dialog.SetAttributeValue(
+        var resultValues = await Dialog.SetAttributeValue(
             attr,
             Values.ContainsKey(attr.Attribute.ID) ? Values[attr.Attribute.ID] : Array.Empty<string>(),
-            true
+            !IndividualID.HasValue
         );
             
-        if (null == result) {
+        if (null == resultValues) {
             return;
         }
 
-        Values[attr.Attribute.ID] = result;
-        await UpdateValues();
+        if (IndividualID.HasValue) {
+            foreach (var value in resultValues) {
+                await Credentials.ProcessEvent(Engine, new FederatedEvent(
+                    IndividualID.Value,
+                    attr.Attribute.ID,
+                    IndividualID.Value,
+                    value
+                ));
+            }
+        }
+        else {
+            Values[attr.Attribute.ID] = resultValues;
+            await UpdateValues();
+        }
+
+        await OnAssignAttribute.InvokeAsync(null);
     }
 }

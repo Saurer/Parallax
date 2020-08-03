@@ -6,7 +6,19 @@
 <div class="card">
     <div class="card-body">
         <h5 class="card-title">
-            <strong>(@Value.ID) @Value.Name</strong>
+            @if (OnClick.HasDelegate) {
+                <button class="btn btn-link p-0" @onclick="OnClick">
+                    <strong>
+                        <span>(@Value.ID) @Value.Name</span>
+                    </strong>
+                </button>
+            }
+            else {
+                <strong>
+                    <span>(@Value.ID) @Value.Name</span>
+                </strong>
+            }
+
             @if (Value.Valid) {
                 <span class="badge badge-success float-right">Valid</span>
             }
@@ -69,6 +81,9 @@
 
     [Parameter]
     public EventCallback<int> OnAssignAttribute { get; set; }
+
+    [Parameter]
+    public EventCallback OnClick { get; set; }
 
     private bool IsEditable(IndividualAttrData attr) {
         if (attr.Cardinality == 0) {

@@ -1,6 +1,7 @@
 ﻿@page "/roles"
 @inject EngineBase Engine
 @inject DialogService Dialog
+@inject NavigationManager Navigation
 @inject RoutingService Routing
 
 <Scaffold>
@@ -14,7 +15,7 @@
     <ChildContent>
         <div class="card-columns">
             @foreach (var item in roles) {
-                <IndividualCard Value="@item" OnAssignAttribute="@Refresh" />
+                <IndividualCard Value="@item" OnAssignAttribute="@Refresh" OnClick="@(() => NavigateRole(item.ID))" />
             }
         </div>
     </ChildContent>
@@ -30,5 +31,9 @@
     private async Task Refresh() {
         var roles = await Engine.Storage.GetRoles();
         this.roles = await Task.WhenAll(roles.Select(i => IndividualData.Instantiate(i)));
+    }
+
+    private void NavigateRole(int id) {
+        Navigation.NavigateTo(Routing.RolesView(id));
     }
 }

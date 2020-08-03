@@ -9,6 +9,7 @@ namespace Parallax.Models {
         public int ID { get; private set; }
         public string Name { get; private set; }
         public int Parent { get; private set; }
+        public IModel Value { get; private set; }
         public IEnumerable<IndividualAttrData> Attributes { get; private set; }
 
         private IndividualModelData() {
@@ -30,6 +31,7 @@ namespace Parallax.Models {
                 ID = model.ID,
                 Name = model.Value,
                 Parent = parent?.ID ?? 0,
+                Value = model,
                 Attributes = attributes
             };
         }

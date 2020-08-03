@@ -32,11 +32,12 @@
     public EventCallback OnSubmit { get; set; }
 
     private IndividualCreateData model;
-    private IModel dbModel;
+    private ModelData dbModel;
 
     protected async override Task OnInitializedAsync() {
         model = new IndividualCreateData(BaseEvent);
-        dbModel = await Engine.Storage.GetModel(ModelID);
+        var dbModel = await Engine.Storage.GetModel(ModelID);
+        this.dbModel = await ModelData.Instantiate(dbModel);
         model.ModelID = ModelID;
     }
 

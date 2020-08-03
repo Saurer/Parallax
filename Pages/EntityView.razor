@@ -69,7 +69,7 @@
             @if (entity.Individuals.Any()) {
                 <div class="card-columns">
                     @foreach (var individual in entity.Individuals) {
-                        <IndividualCard Value="@individual" OnAssignAttribute="@Redraw" />
+                        <IndividualCard Value="@individual" OnAssignAttribute="@Redraw" OnClick="@(() => NavigateIndividual(individual.ID))" />
                     }
                 </div>
             }
@@ -104,5 +104,9 @@
 
     private void HandleCreateIndividual() {
         NavigationManager.NavigateTo(Routing.EntitiesCreateIndividual(ID));
+    }
+
+    private void NavigateIndividual(int id) {
+        NavigationManager.NavigateTo(Routing.EntitiesViewIndividual(id));
     }
 }

@@ -10,6 +10,7 @@ namespace Parallax.Models {
         public string Name { get; private set; }
         public IndividualModelData Model { get; private set; }
         public IReadOnlyDictionary<int, IndividualAttrData> Attributes { get; private set; }
+        public int? Actor { get; private set; }
         public string ActorName { get; private set; }
         public bool Valid { get; private set; }
 
@@ -41,6 +42,7 @@ namespace Parallax.Models {
                 Event = individual,
                 ID = individual.ID,
                 Name = individual.Value,
+                Actor = actorEvent?.ID,
                 ActorName = actorEvent?.Value,
                 Attributes = attrValues,
                 Model = model,

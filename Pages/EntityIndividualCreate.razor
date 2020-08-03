@@ -49,7 +49,7 @@
     public int ID { get; set; }
 
     private IndividualCreateData individual;
-    private IModel selectedModel;
+    private ModelData selectedModel;
     private IEntity entity;
     private IEnumerable<IModel> models = Array.Empty<IModel>();
 
@@ -76,7 +76,8 @@
     private async Task SetModel(int modelID) {
         individual.Attributes.Clear();
         individual.ModelID = modelID;
-        selectedModel = await Engine.Storage.GetModel(modelID);
+        var model = await Engine.Storage.GetModel(modelID);
+        selectedModel = await ModelData.Instantiate(model);
     }
 
     private async Task HandleSubmit() {

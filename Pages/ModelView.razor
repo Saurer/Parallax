@@ -33,23 +33,18 @@
                             <th>ID</th>
                             <th>Name</th>
                             <th>Type</th>
-                            <th>Properties</th>
+                            <th>Required</th>
+                            <th>Cardinality</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var attr in model.OwnAttributes) {
                             <tr>
-                                <td>@attr.ID</td>
-                                <td>@attr.Name</td>
-                                <td>@attr.DataType.Name</td>
-                                <td>
-                                    <dl>
-                                        @foreach (var prop in attr.Properties) {
-                                            <dt>@prop.PropertyID</dt>
-                                            <dd>@prop.ValueID</dd>
-                                        }
-                                    </dl>
-                                </td>
+                                <td>@attr.Attribute.ID</td>
+                                <td>@attr.Attribute.Name</td>
+                                <td>@attr.Attribute.DataType.Name</td>
+                                <td>@attr.Required</td>
+                                <td>@attr.Cardinality</td>
                             </tr>
                         }
                     </tbody>
@@ -64,23 +59,18 @@
                             <th>ID</th>
                             <th>Name</th>
                             <th>Type</th>
-                            <th>Properties</th>
+                            <th>Required</th>
+                            <th>Cardinality</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var attr in model.InheritedAttributes) {
                             <tr>
-                                <td>@attr.ID</td>
-                                <td>@attr.Name</td>
-                                <td>@attr.DataType.Name</td>
-                                <td>
-                                    <dl>
-                                        @foreach (var prop in attr.Properties) {
-                                            <dt>@prop.PropertyID</dt>
-                                            <dd>@prop.ValueID</dd>
-                                        }
-                                    </dl>
-                                </td>
+                                <td>@attr.Attribute.ID</td>
+                                <td>@attr.Attribute.Name</td>
+                                <td>@attr.Attribute.DataType.Name</td>
+                                <td>@attr.Required</td>
+                                <td>@attr.Cardinality</td>
                             </tr>
                         }
                     </tbody>
@@ -116,7 +106,7 @@
     }
 
     private async Task HandleAddAttribute() {
-        var attributeIDs = model.AllAttributes.Select(l => l.ID);
+        var attributeIDs = model.AllAttributes.Select(l => l.Attribute.ID);
         var result = await Dialog.AddModelAttribute(attributeIDs);
 
         if (null != result) {
@@ -127,12 +117,24 @@
                 result.ID.ToString()
             ));
 
-            await CredentialsService.ProcessEvent(Engine, new FederatedEvent(
-                eventID,
-                StaticEvent.Required,
-                result.ID,
-                result.Required ? "1" : "0"
-            ));
+            if ((Const.DefaultRequired == 1) != result.Required) {
+                await CredentialsService.ProcessEvent(Engine, new FederatedEvent(
+                    eventID,
+                    StaticEvent.Required,
+                    result.ID,
+                    result.Required ? "1" : "0"
+                ));
+            }
+
+            if (Const.DefaultCardinality != result.Cardinality) {
+                await CredentialsService.ProcessEvent(Engine, new FederatedEvent(
+                    eventID,
+                    StaticEvent.Cardinality,
+                    result.ID,
+                    result.Cardinality.ToString()
+                ));
+            }
+
             await Redraw();
         }
     }

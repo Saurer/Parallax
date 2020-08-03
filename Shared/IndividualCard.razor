@@ -1,4 +1,7 @@
-﻿@inject RoutingService Routing
+﻿@inject EngineBase Engine
+@inject CredentialsService Credentials
+@inject RoutingService Routing
+@inject DialogService Dialog
 
 <div class="card">
     <div class="card-body">
@@ -36,21 +39,29 @@
                     <strong>@attr.Name</strong>
                 </div>
                 <div class="col-sm text-right">
-                    @if (Value.Attributes.ContainsKey(attr.ID)) {
-                        <span>@Value.Attributes[attr.ID]</span>
+                    @if (IsEditable(attr)) {
+                        var values = RenderValues(attr);
+                        <button class="btn btn-link p-0 border-bottom" @onclick="@(() => HandleAssignAttribute(attr))">
+                            @if (null == values) {
+                                <i class="icon feather-alert-triangle text-warning"></i>
+                                <span class="text-muted">Unassigned</span>
+                            }
+                            else {
+                                @values
+                            }
+                        </button>
+
                     }
                     else {
-                        <button class="btn btn-link p-0 border-bottom" @onclick="@(() => HandleAssignAttribute(attr.ID))">
-                            <i class="icon feather-alert-triangle text-warning"></i>
-                            <span class="text-muted">Unassigned</span>
-                        </button>
+                        <span>
+                            @RenderValues(attr)
+                        </span>
                     }
                 </div>
             </div>
         }
     </div>
 </div>
-
 
 @code {
     [Parameter]
@@ -59,7 +70,44 @@
     [Parameter]
     public EventCallback<int> OnAssignAttribute { get; set; }
 
-    private async Task HandleAssignAttribute(int attrID) {
-        await OnAssignAttribute.InvokeAsync(attrID);
+    private bool IsEditable(IndividualAttrData attr) {
+        if (attr.Cardinality == 0) {
+            return true;
+        }
+
+        if (null == attr.Values?.Count()) {
+            return true;
+        }
+
+        return attr.Values.Count() < attr.Cardinality;
+    }
+
+    private string RenderValues(IndividualAttrData attr) {
+        if (Value.Attributes.ContainsKey(attr.ID)) {
+            return String.Join(',', Value.Attributes[attr.ID].Values);
+        }
+        else {
+            return null;
+        }
+    }
+
+    private async Task HandleAssignAttribute(IndividualAttrData attr) {
+        var modelAttrData = await ModelAttrData.Instantiate(attr.ModelAttr);
+        var resultValues = await Dialog.SetAttributeValue(modelAttrData, attr.Values ?? Array.Empty<string>());
+
+        if (null == resultValues) {
+            return;
+        }
+
+        foreach (var value in resultValues) {
+            await Credentials.ProcessEvent(Engine, new FederatedEvent(
+                Value.ID,
+                attr.ID,
+                Value.ID,
+                value
+            ));
+        }
+
+        await OnAssignAttribute.InvokeAsync(attr.ID);
     }
 }

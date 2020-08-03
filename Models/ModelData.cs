@@ -12,9 +12,9 @@ namespace Parallax.Models {
         public string ParentName { get; private set; }
         public int EventBase { get; private set; }
         public string EventBaseName { get; private set; }
-        public IEnumerable<AttrData> OwnAttributes { get; private set; }
-        public IEnumerable<AttrData> InheritedAttributes { get; private set; }
-        public IEnumerable<AttrData> AllAttributes {
+        public IEnumerable<ModelAttrData> OwnAttributes { get; private set; }
+        public IEnumerable<ModelAttrData> InheritedAttributes { get; private set; }
+        public IEnumerable<ModelAttrData> AllAttributes {
             get {
                 foreach (var attr in InheritedAttributes) {
                     yield return attr;
@@ -32,14 +32,12 @@ namespace Parallax.Models {
             var parent = await model.GetParent();
             var eventBase = await model.GetBaseEvent();
             var plainModelAttributes = await model.GetOwnAttributes();
-            var plainAttributes = await Task.WhenAll(plainModelAttributes.Select(attr => attr.GetAttribute()));
-            var ownAttributes = await Task.WhenAll(plainAttributes.Select(attr => AttrData.Instantiate(attr)));
-            var inheritedAttributes = Array.Empty<AttrData>();
+            var ownAttributes = await Task.WhenAll(plainModelAttributes.Select(attr => ModelAttrData.Instantiate(attr)));
+            var inheritedAttributes = Array.Empty<ModelAttrData>();
 
             if (null != parent) {
-                var plainOwnModelAttributes = await parent.GetAllAttributes();
-                var plainOwnAttributes = await Task.WhenAll(plainOwnModelAttributes.Select(attr => attr.GetAttribute()));
-                inheritedAttributes = await Task.WhenAll(plainOwnAttributes.Select(attr => AttrData.Instantiate(attr)));
+                var plainInheritedModelAttributes = await parent.GetAllAttributes();
+                inheritedAttributes = await Task.WhenAll(plainInheritedModelAttributes.Select(attr => ModelAttrData.Instantiate(attr)));
             }
 
             return new ModelData() {

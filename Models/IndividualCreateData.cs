@@ -9,7 +9,7 @@ namespace Parallax.Models {
         [Required, MinLength(1)]
         public string Name { get; set; }
 
-        public Dictionary<int, string> Attributes { get; private set; } = new Dictionary<int, string>();
+        public Dictionary<int, IEnumerable<string>> Attributes { get; private set; } = new Dictionary<int, IEnumerable<string>>();
 
         public int BaseEvent { get; private set; }
 
@@ -28,7 +28,9 @@ namespace Parallax.Models {
             ));
 
             foreach (var attr in Attributes) {
-                await service.ProcessEvent(engine, new FederatedEvent(eventID, attr.Key, eventID, attr.Value));
+                foreach (var value in attr.Value) {
+                    await service.ProcessEvent(engine, new FederatedEvent(eventID, attr.Key, eventID, value));
+                }
             }
 
             return eventID;

@@ -13,12 +13,12 @@
         @if (null != model) {
             @foreach (var attr in model.AllAttributes) {
                 <tr>
-                    <td>@attr.Name</td>
-                    <td>@attr.DataType.Name</td>
+                    <td>@attr.Attribute.Name</td>
+                    <td>@attr.Attribute.DataType.Name</td>
                     <td>
-                        <button type="button" class="btn btn-link p-0 border-bottom" @onclick="@(() => HandleAssignAttribute(attr.ID))">
-                            @if (values.ContainsKey(attr.ID)) {
-                                <span>@values[attr.ID]</span>
+                        <button type="button" class="btn btn-link p-0 border-bottom" @onclick="@(() => HandleAssignAttribute(attr))">
+                            @if (values.ContainsKey(attr.Attribute.ID)) {
+                                <span>@String.Join(',', @values[attr.Attribute.ID])</span>
                             }
                             else {
                                 <i class="icon feather-alert-triangle text-warning"></i>
@@ -37,10 +37,10 @@
     public IModel Model { get; set; }
 
     [Parameter]
-    public Dictionary<int, string> Values { get; set; }
+    public Dictionary<int, IEnumerable<string>> Values { get; set; }
 
     private ModelData model;
-    private Dictionary<int, string> values = new Dictionary<int, string>();
+    private Dictionary<int, IEnumerable<string>> values = new Dictionary<int, IEnumerable<string>>();
 
     protected async override Task OnInitializedAsync() {
         model = await ModelData.Instantiate(Model);
@@ -53,33 +53,47 @@
     }
 
     private async Task UpdateValues() {
-        var result = new Dictionary<int, string>();
+        var result = new Dictionary<int, IEnumerable<string>>();
         var attrs = model.AllAttributes;
 
         foreach (var kv in Values) {
-            var attr = attrs.Where(a => a.ID == kv.Key).Single();
-            if (attr.IsBoxed && Int32.TryParse(kv.Value, out var intValue)) {
-                var valueIndividual = await Engine.Storage.GetEvent(intValue);
-                result.Add(kv.Key, valueIndividual.Value);
+            var modelAttr = attrs.Where(a => a.Attribute.ID == kv.Key).Single();
+
+            if (!kv.Value.Any()) {
+                continue;
             }
-            else {
-                result.Add(kv.Key, kv.Value);
+
+            if (!result.ContainsKey(kv.Key)) {
+                result.Add(kv.Key, new List<string>());
+            }
+
+            var list = (List<string>)result[kv.Key];
+            foreach (var value in kv.Value) {
+                if (modelAttr.Attribute.IsBoxed) {
+                    var valueIndividual = await Engine.Storage.GetEvent(Int32.Parse(value));
+                    list.Add(valueIndividual.Value);
+                }
+                else {
+                    list.Add(value);
+                }
             }
         }
 
         values = result;
     }
 
-    private async Task HandleAssignAttribute(int attrID) {
-        var result = await Dialog.SetAttributeValue(attrID, Values.ContainsKey(attrID) ? Values[attrID] : "");
-
+    private async Task HandleAssignAttribute(ModelAttrData attr) {
+        var result = await Dialog.SetAttributeValue(
+            attr,
+            Values.ContainsKey(attr.Attribute.ID) ? Values[attr.Attribute.ID] : Array.Empty<string>(),
+            true
+        );
+            
         if (null == result) {
-            Values.Remove(attrID);
-        }
-        else {
-            Values[attrID] = result;
+            return;
         }
 
+        Values[attr.Attribute.ID] = result;
         await UpdateValues();
     }
 }

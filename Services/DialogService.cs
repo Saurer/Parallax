@@ -35,16 +35,6 @@ namespace Parallax.Services {
             return modalResult.Data is true;
         }
 
-        public async Task<bool> AssignIndividualAttribute(IIndividual individual, int attrID) {
-            var parameters = new ModalParameters();
-            parameters.Add("EventID", individual.ID);
-            parameters.Add("AttrID", attrID);
-
-            var modal = instance.Show<AssignAttribute>($"Assign attribute to '{individual.Value}'", parameters);
-            var result = await modal.Result;
-            return result.Data is true;
-        }
-
         public async Task<string> AddAttributeValue(int attributeID) {
             var parameters = new ModalParameters();
             parameters.Add("ID", attributeID);
@@ -60,16 +50,17 @@ namespace Parallax.Services {
             }
         }
 
-        public async Task<string> SetAttributeValue(int attributeID, string value) {
+        public async Task<IEnumerable<string>> SetAttributeValue(ModelAttrData attr, IEnumerable<string> values, bool editable = false) {
             var parameters = new ModalParameters();
-            parameters.Add("AttrID", attributeID);
-            parameters.Add("Value", value);
+            parameters.Add("ModelAttr", attr);
+            parameters.Add("Values", values);
+            parameters.Add("Editable", editable);
 
             var modal = instance.Show<SetAttributeValue>("Set attribute", parameters);
             var result = await modal.Result;
 
-            if (result.Data is string strValue) {
-                return strValue;
+            if (result.Data is IEnumerable<string> strValues) {
+                return strValues;
             }
             else {
                 return null;

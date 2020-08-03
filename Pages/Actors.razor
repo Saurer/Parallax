@@ -14,7 +14,7 @@
     <ChildContent>
         <div class="card-columns">
             @foreach (var item in actors) {
-                <IndividualCard Value="@item" OnAssignAttribute="@(e => HandleAssignAttribute(item, e))" />
+                <IndividualCard Value="@item" OnAssignAttribute="@Refresh" />
             }
         </div>
     </ChildContent>
@@ -30,12 +30,5 @@
     private async Task Refresh() {
         var actors = await Engine.Storage.GetActors();
         this.actors = await Task.WhenAll(actors.Select(i => IndividualData.Instantiate(i)));
-    }
-
-    private async Task HandleAssignAttribute(IndividualData individual, int attrID) {
-        var result = await Dialog.AssignIndividualAttribute(individual.Event, attrID);
-        if (result) {
-            await Refresh();
-        }
     }
 }

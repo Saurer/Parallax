@@ -2,6 +2,7 @@ using System.Linq;
 using System.Collections.Generic;
 using AuroraCore.Storage;
 using System.Threading.Tasks;
+using System;
 
 namespace Parallax.Models {
     public class IndividualModelData {
@@ -14,13 +15,16 @@ namespace Parallax.Models {
 
         }
 
-        public static async Task<IndividualModelData> Instantiate(IModel model, IReadOnlyDictionary<int, string> values) {
+        public static async Task<IndividualModelData> Instantiate(IModel model, IReadOnlyDictionary<int, IEnumerable<string>> values) {
             var parent = await model.GetParent();
             var plainModelAttributes = await model.GetAllAttributes();
-            var plainAttributes = await Task.WhenAll(plainModelAttributes.Select(attr => attr.GetAttribute()));
-            var attributes = await Task.WhenAll(plainAttributes.Select(a =>
-                IndividualAttrData.Instantiate(a, values.ContainsKey(a.ID) ? values[a.ID] : null)
-            ));
+            var attributes = await Task.WhenAll(plainModelAttributes.Select(modelAttr => {
+                var attrID = Int32.Parse(modelAttr.Value);
+                return IndividualAttrData.Instantiate(
+                    modelAttr,
+                    values.ContainsKey(attrID) ? values[attrID] : null
+                );
+            }));
 
             return new IndividualModelData {
                 ID = model.ID,

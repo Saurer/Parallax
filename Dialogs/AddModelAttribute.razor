@@ -2,9 +2,10 @@
 @inject EngineService EngineService
 
 @if (availableAttributes.Any()) {
-    <DialogLayout>
-        <ChildContent>
-            <form>
+    <EditForm model="@model" OnValidSubmit="@HandleSubmit">
+        <DialogLayout>
+            <ChildContent>
+                <DataAnnotationsValidator/>
                 <div class="form-group">
                     <label for="dataType">Attribute</label>
                     <select class="form-control" @onchange="HandleChangeNewAttr">
@@ -13,17 +14,36 @@
                         }
                     </select>
                 </div>
+
+                <hr/>
+
+                <div class="form-group">
+                    <label>Cardinality</label>
+                    <InputNumber
+                        class="form-control"
+                        type="number"
+                        disabled="@model.CardinalityInfinite"
+                        @bind-Value="model.Cardinality"
+                    />
+                    <div class="form-check mt-2">
+                        <input type="checkbox" class="form-check-input" id="cardinalityInfinite" @bind="model.CardinalityInfinite" />
+                        <label class="form-check-label" for="cardinalityInfinite">Allows infinite amount of values</label>
+                    </div>
+                </div>
+
+                <hr/>
+
                 <div class="form-check">
-                    <input type="checkbox" class="form-check-input" id="required" @bind="required"/>
+                    <input type="checkbox" class="form-check-input" id="required" @bind="model.Required"/>
                     <label class="form-check-label" for="required">Required</label>
                 </div>
-            </form>
-        </ChildContent>
-        <Footer>
-            <button type="button" class="btn btn-primary" @onclick="Confirm">Confirm</button>
-            <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
-        </Footer>
-    </DialogLayout>
+            </ChildContent>
+            <Footer>
+                <button type="submit" class="btn btn-primary">Confirm</button>
+                <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+            </Footer>
+        </DialogLayout>
+    </EditForm>
 }
 else {
     <DialogLayout>
@@ -43,20 +63,19 @@ else {
     [Parameter]
     public IEnumerable<int> Attributes { get; set; }
 
+    private AddModelAttributeData model = new AddModelAttributeData();
     private IEnumerable<AttrData> availableAttributes = Array.Empty<AttrData>();
-    private AttrData newAttr;
-    private bool required;
 
     protected async override Task OnInitializedAsync() {
         var attrs = await Engine.Storage.GetAttributes();
         attrs = attrs.Where(a => !Attributes.Contains(a.ID));
         availableAttributes = await Task.WhenAll(attrs.Select(l => AttrData.Instantiate(l)));
-        newAttr = availableAttributes.FirstOrDefault();
+        model.Attribute = availableAttributes.FirstOrDefault();
     }
 
     private void HandleChangeNewAttr(ChangeEventArgs e) {
         if (Int32.TryParse((string)e.Value, out var id)) {
-            newAttr = availableAttributes.Where(a => a.ID == id).Single();
+            model.Attribute = availableAttributes.Where(a => a.ID == id).Single();
         }
     }
 
@@ -64,9 +83,13 @@ else {
         await BlazoredModal.Cancel();
     }
 
-    private async Task Confirm() {
+    private async Task HandleSubmit() {
         await BlazoredModal.Close(ModalResult.Ok(
-            new AttributeAssignData{ ID = newAttr.ID, Required = required }
+            new AttributeAssignData {
+                ID = model.Attribute.ID,
+                Required = model.Required,
+                Cardinality = model.CardinalityInfinite ? 0 : model.Cardinality
+            }
         ));
     }
 }

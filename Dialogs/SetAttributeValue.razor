@@ -8,7 +8,7 @@
                     <strong>Attribute</strong>
                 </label>
                 <div class="col-sm-9">
-                    <input type="text" readonly class="form-control-plaintext" id="attr" value="@(attr?.Name)"/>
+                    <input type="text" readonly class="form-control-plaintext" id="attr" value="@(ModelAttr?.Attribute.Name)"/>
                 </div>
             </div>
             <div class="form-group row">
@@ -16,81 +16,137 @@
                     <strong>Data type</strong>
                 </label>
                 <div class="col-sm-9">
-                    <input type="text" readonly class="form-control-plaintext" id="dataType" value="@(attr?.DataType?.Name)"/>
+                    <input type="text" readonly class="form-control-plaintext" id="dataType" value="@(ModelAttr?.Attribute.DataType.Name)"/>
                 </div>
             </div>
             <div class="form-group row">
-                <label for="value" class="col-sm-3 col-form-label">
+                <label class="col-sm-3 col-form-label">
                     <strong>Value</strong>
                 </label>
                 <div class="col-sm-9">
-                    @if (attr?.DataType.IsBoxed is true) {
-                        <select class="form-control @(Valid ? "is-valid" : "is-invalid")" @bind="value">
-                            @foreach (var value in attr?.Values) {
-                                <option value="@value.EventID.ToString()">@value.Value</option>
+                    @foreach (var value in editorValues) {
+                        <div class="row mt-2">
+                            <div class="@(AllowsMultiple ? "col-sm-9" : "col-sm-12")">
+                                @if (ModelAttr?.Attribute.DataType.IsBoxed is true) {
+                                    <select class="form-control @(IsValid(value.Value) ? "is-valid" : "is-invalid")" disabled="@value.ReadOnly" @bind="value.Value">
+                                        @foreach (var item in ModelAttr?.Attribute.Values) {
+                                            <option value="@item.EventID.ToString()">@item.Value</option>
+                                        }
+                                    </select>
+                                }
+                                else {
+                                    <input
+                                        type="text"
+                                        disabled="@value.ReadOnly"
+                                        @bind-value="value.Value"
+                                        class="form-control @(IsValid(value.Value) ? "is-valid" : "is-invalid")"
+                                    />
+                                }
+                            </div>
+                            @if (AllowsMultiple) {
+                                <div class="col-sm-3">
+                                    <button type="button" class="btn btn-danger" disabled="@(editorValues.Count() == 1 || value.ReadOnly)" @onclick="() => HandleRemoveValue(value)">
+                                        <i class="icon feather-trash"></i>
+                                    </button>
+                                </div>
                             }
-                        </select>
+                        </div>
                     }
-                    else {
-                        <input type="text" value="@value" @onchange="HandleChange" class="form-control @(Valid ? "is-valid" : "is-invalid")" id="value"/>
+                    @if (AllowsMultiple && !IsFull) {
+                        <div>
+                            <button type="button" class="btn btn-link" @onclick="() => HandleAddValue()">Add another value</button>
+                        </div>
                     }
                 </div>
             </div>
         </form>
     </ChildContent>
     <Footer>
-        <button type="button" class="btn btn-link" @onclick="Clear">Clear value</button>
+        @if (Editable) {
+            <button type="button" class="btn btn-link" @onclick="Clear">Clear value</button>
+        }
         <button type="button" class="btn btn-primary" @onclick="Confirm">Confirm</button>
         <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
     </Footer>
 </DialogLayout>
 
 @code {
+    private class BoxedValue {
+        public bool ReadOnly { get; set; } = false;
+        public string Value { get; set; } = "";
+    }
+
     [CascadingParameter]
     public BlazoredModalInstance BlazoredModal { get; set; }
 
     [Parameter]
-    public int AttrID { get; set; }
+    public ModelAttrData ModelAttr { get; set; }
 
     [Parameter]
-    public string Value { get; set; }
+    public IEnumerable<string> Values { get; set; }
 
-    private AttrData attr;
-    private string value = "";
-    private bool Valid {
-        get {
-            if (null == attr) {
-                return false;
-            }
+    [Parameter]
+    public bool Editable { get; set; } = false;
 
-            return attr.DataType.Validate(value);
+    private List<BoxedValue> editorValues = new List<BoxedValue>();
+
+    private bool ValidAll =>
+        editorValues.All(value => ModelAttr?.Attribute.DataType.Validate(value.Value) ?? false);
+
+    private bool AllowsMultiple =>
+        ModelAttr?.Cardinality == 0 || ModelAttr?.Cardinality > 1;
+
+    private bool IsFull =>
+        ModelAttr?.Cardinality != 0 && editorValues.Count >= ModelAttr?.Cardinality;
+
+    protected override void OnInitialized() {
+        if (!Values.Any()) {
+            editorValues = new List<BoxedValue>(){
+                new BoxedValue()
+            };
+        }
+        else {
+            editorValues = Values.Select(v => new BoxedValue{ ReadOnly = !Editable, Value = v }).ToList();
         }
     }
 
-    protected override async Task OnInitializedAsync() {
-        var attr = await Engine.Storage.GetAttribute(AttrID);
-        this.attr = await AttrData.Instantiate(attr);
-        value = Value ?? "";
-    }
-
-    private void HandleChange(ChangeEventArgs e) {
-        var newValue = (string)e.Value;
-        value = newValue;
-    }
-
-    private async Task Confirm() {
-        if (!Valid) {
+    private void HandleAddValue() {
+        if (IsFull) {
             return;
         }
 
-        await BlazoredModal.Close(ModalResult.Ok(value));
+        editorValues.Add(new BoxedValue{
+            ReadOnly = false,
+            Value = ""
+        });
+    }
+
+    private void HandleRemoveValue(BoxedValue value) {
+        editorValues.Remove(value);
+    }
+
+    private bool IsValid(string value) =>
+        ModelAttr?.Attribute.DataType.Validate(value) ?? false;
+
+    private async Task Confirm() {
+        if (!ValidAll) {
+            return;
+        }
+
+        var resultValues = editorValues.Where(v => !v.ReadOnly).Select(v => v.Value);
+
+        if (!resultValues.Any()) {
+            await BlazoredModal.Cancel();
+        }
+
+        await BlazoredModal.Close(ModalResult.Ok(resultValues));
     }
 
     private async Task Clear() {
-        await BlazoredModal.Close(ModalResult.Ok<string>(null));
+        await BlazoredModal.Close(ModalResult.Ok(Array.Empty<string>()));
     }
 
-    private void Cancel() {
-        BlazoredModal.Cancel();
+    private async Task Cancel() {
+        await BlazoredModal.Cancel();
     }
 }

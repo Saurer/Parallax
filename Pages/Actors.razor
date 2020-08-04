@@ -2,7 +2,6 @@
 @inject EngineBase Engine
 @inject DialogService Dialog
 @inject RoutingService Routing
-@inject NavigationManager Navigation
 
 <Scaffold>
     <Title>Actors</Title>
@@ -15,7 +14,7 @@
     <ChildContent>
         <div class="card-columns">
             @foreach (var item in actors) {
-                <IndividualCard Value="@item" OnAssignAttribute="@Refresh" OnClick="@(() => NavigateActor(item.ID))" />
+                <IndividualCard Value="@item" OnAssignAttribute="@Refresh" />
             }
         </div>
     </ChildContent>
@@ -31,9 +30,5 @@
     private async Task Refresh() {
         var actors = await Engine.Storage.GetActors();
         this.actors = await Task.WhenAll(actors.Select(i => IndividualData.Instantiate(i)));
-    }
-
-    private void NavigateActor(int id) {
-        Navigation.NavigateTo(Routing.ActorsView(id));
     }
 }

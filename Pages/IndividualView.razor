@@ -1,8 +1,8 @@
-﻿@page "/entities/individual/{id:int}"
+﻿@page "/individuals/{id:int}"
 @inject EngineBase Engine
 @inject RoutingService Routing
 
-<IndividualForm ID="@ID" Badge="Entity" />
+<IndividualForm ID="@ID" />
 
 @code {
     [Parameter]

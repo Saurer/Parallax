@@ -7,9 +7,9 @@
             @individual?.Name
         </Title>
         <TitleRight>
-            @if (Badge != null) {
+            @if (badge != null) {
                 <h3>
-                    <span class="badge badge-success">@Badge</span>
+                    <span class="badge badge-success">@badge</span>
                 </h3>
             }
         </TitleRight>
@@ -25,7 +25,7 @@
             @if (individual.Actor.HasValue) {
                 <h4>Creator</h4>
                 <div>
-                    <NavLink href="@(Routing.ActorsView(individual.Actor.Value))">
+                    <NavLink href="@(Routing.IndividualsView(individual.Actor.Value))">
                         (@individual.Actor.Value) @individual.ActorName
                     </NavLink>
                 </div>
@@ -42,12 +42,10 @@
     [Parameter]
     public int ID { get; set; }
 
-    [Parameter]
-    public string Badge { get; set; }
-
     private IndividualData individual;
     private ModelData model;
     private Dictionary<int, IEnumerable<string>> values;
+    private string badge = null;
 
     protected override async Task OnInitializedAsync() {
         await Refresh();
@@ -62,5 +60,7 @@
         individual = await IndividualData.Instantiate(actor);
         model = await ModelData.Instantiate(individual.Model.Value);
         values = individual.Attributes.ToDictionary(k => k.Key, v => v.Value.PlainValues);
+        var parentEvent = await Engine.Storage.GetEvent(individual.Event.BaseEventID);
+        badge = parentEvent.Value;
     }
 }

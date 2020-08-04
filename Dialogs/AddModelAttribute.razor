@@ -22,13 +22,8 @@
                     <InputNumber
                         class="form-control"
                         type="number"
-                        disabled="@model.CardinalityInfinite"
                         @bind-Value="model.Cardinality"
                     />
-                    <div class="form-check mt-2">
-                        <input type="checkbox" class="form-check-input" id="cardinalityInfinite" @bind="model.CardinalityInfinite" />
-                        <label class="form-check-label" for="cardinalityInfinite">Allows infinite amount of values</label>
-                    </div>
                 </div>
 
                 <hr/>
@@ -88,7 +83,7 @@ else {
             new AttributeAssignData {
                 ID = model.Attribute.ID,
                 Required = model.Required,
-                Cardinality = model.CardinalityInfinite ? 0 : model.Cardinality
+                Cardinality = model.Cardinality
             }
         ));
     }

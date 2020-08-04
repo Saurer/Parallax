@@ -19,16 +19,18 @@
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Name</th>
-                        <th>Type</th>
-                        <th style="width:1px"></th>
+                        <th style="width:100%">Name</th>
+                        <th>Cardinality</th>
+                        <th>Required</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var attr in model.Attributes) {
                         <tr>
-                            <td>@attr.Name</td>
-                            <td>@attr.DataType.Name</td>
+                            <td>@attr.Attribute.Name</td>
+                            <td>@attr.Cardinality</td>
+                            <td>@attr.Required</td>
                             <td>
                                 <button type="button" class="btn btn-danger" @onclick="() => HandleRemoveAttribute(attr)">
                                     <i class="icon feather-trash-2"></i>
@@ -38,12 +40,18 @@
                     }
                     @if (attributes.Any()) {
                         <tr>
-                            <td colspan="2">
-                                <select class="form-control" value="@newAttr.ID" @onchange="HandleChangeNewAttr">
+                            <td>
+                                <select class="form-control" value="@newAttrModel.Attribute.ID" @onchange="HandleChangeNewAttr">
                                     @foreach (var attr in attributes) {
                                         <option value="@attr.ID">@attr.Name</option>
                                     }
                                 </select>
+                            </td>
+                            <td>
+                                <InputNumber class="form-control" @bind-Value="newAttrModel.Cardinality" />
+                            </td>
+                            <td>
+                                <input type="checkbox" @bind="newAttrModel.Required" />
                             </td>
                             <td>
                                 <button type="button" class="btn btn-primary" @onclick="HandleAddAttribute">
@@ -79,7 +87,7 @@
     private IEnumerable<AttrData> parentAttrs = Array.Empty<AttrData>();
     private IEnumerable<AttrData> attributes = Array.Empty<AttrData>();
     private IModel parentModel;
-    private AttrData newAttr;
+    private AddModelAttributeData newAttrModel;
 
     protected override async Task OnInitializedAsync() {
         parentModel = await Engine.Storage.GetModel(ParentModelID);
@@ -94,32 +102,35 @@
             result.Add(attrData);
         }
         parentAttrs = result;
-        newAttr = attributes.FirstOrDefault();
         await FilterAttributes();
     }
 
     private async Task HandleAddAttribute() {
-        if (model.HasAttribute(newAttr)) {
+        if (!newAttrModel.Valid){
             return;
         }
 
-        if (parentAttrs.Any(a => a.ID == newAttr.ID)) {
+        if (model.HasAttribute(newAttrModel.Attribute.ID)) {
             return;
         }
 
-        var attrData = attributes.Where(a => a.ID == newAttr.ID).Single();
-        model.AddAttribute(attrData);
+        if (parentAttrs.Any(a => a.ID == newAttrModel.Attribute.ID)) {
+            return;
+        }
+
+        var attrData = attributes.Where(a => a.ID == newAttrModel.Attribute.ID).Single();
+        model.AddAttribute(newAttrModel);
         await FilterAttributes();
     }
 
-    public async Task HandleRemoveAttribute(AttrData value) {
-        model.RemoveAttribute(value);
+    public async Task HandleRemoveAttribute(AddModelAttributeData value) {
+        model.RemoveAttribute(value.Attribute.ID);
         await FilterAttributes();
     }
 
     private void HandleChangeNewAttr(ChangeEventArgs e) {
         if (Int32.TryParse((string)e.Value, out var id)) {
-            newAttr = attributes.Where(a => a.ID == id).Single();
+            newAttrModel.Attribute = attributes.Where(a => a.ID == id).Single();
         }
     }
 
@@ -138,7 +149,9 @@
                 !parentAttrs.Any(p => a.ID == p.ID)
             ).Select(a => AttrData.Instantiate(a))
         );
-        newAttr = attributes.FirstOrDefault();
+        newAttrModel = new AddModelAttributeData {
+            Attribute = attributes.FirstOrDefault()
+        };
     }
 
     private void Cancel() {

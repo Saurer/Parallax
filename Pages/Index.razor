@@ -1,6 +1,6 @@
 ﻿@page "/"
+@inject EngineBase Engine
 @inject DialogService Dialog
-@inject EngineService EngineService
 @inject BackupService BackupService
 @inject IJSRuntime JSRuntime
 @inject Parallax.Services.DialogService ModalService
@@ -11,7 +11,7 @@
         <Paginator CurrentPage="@currentPage" TotalPages="@totalPages" OnChange="@HandlePageChange" />
     </TitleRight>
     <ChildContent>
-        <EventList Items="@events" @key="@Engine" />
+        <EventList Items="@events" />
 
         <hr/>
 
@@ -62,12 +62,6 @@
     private int totalPages = 1;
     private InputFile inputFile;
 
-    private EngineBase Engine {
-        get {
-            return EngineService.Instance;
-        }
-    }
-
     protected override async Task OnInitializedAsync() {
         events = await LoadPage(currentPage);
     }
@@ -86,7 +80,7 @@
     private async Task HandleReset() {
         var result = await Dialog.ResetGraph();
         if (result) {
-            await EngineService.InitEngine();
+            await Engine.Restore(Graph.GenesisData);
             events = await LoadPage(currentPage);
         }
     }
@@ -113,7 +107,7 @@
             var payload = BackupService.DecodeFromBase64(file.Data);
             var result = await Dialog.Confirm($"Do you really want to restore graph from this file?\nBackup payload contains {payload.Events.Count()} event(s)");
             if (result) {
-                await EngineService.InitEngine(payload.Events);
+                await Engine.Restore(payload.Events);
                 await LoadPage(1);
             }
         }

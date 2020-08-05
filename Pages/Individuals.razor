@@ -1,6 +1,5 @@
 ﻿@page "/individuals"
-@inject EngineBase Engine
-@inject DialogService Dialog
+@inject IStorageAPI Storage
 @inject RoutingService Routing
 
 <Scaffold>
@@ -22,7 +21,7 @@
     }
 
     private async Task Refresh() {
-        var values = await Engine.Storage.GetIndividuals();
+        var values = await Storage.GetIndividuals();
         this.values = await Task.WhenAll(values.Select(i => IndividualData.Instantiate(i)));
     }
 }

@@ -1,5 +1,5 @@
-﻿@inject EngineBase Engine
-@inject CredentialsService Credentials
+﻿@inject IStorageAPI Storage
+@inject TransactionsService Tx
 @inject RoutingService Routing
 @inject DialogService Dialog
 
@@ -157,12 +157,7 @@
         }
 
         foreach (var value in resultValues) {
-            await Credentials.ProcessEvent(Engine, new FederatedEvent(
-                Value.ID,
-                attr.ID,
-                Value.ID,
-                value
-            ));
+            await Tx.AssignIndividualProperty(Value.ID, attr.ID, value);
         }
 
         await OnUpdate.InvokeAsync(null);
@@ -177,12 +172,7 @@
         }
 
         foreach (var value in resultValues) {
-            await Credentials.ProcessEvent(Engine, new FederatedEvent(
-                Value.ID,
-                relation.ID,
-                Value.ID,
-                value
-            ));
+            await Tx.AssignIndividualProperty(Value.ID, relation.ID, value);
         }
 
         await OnUpdate.InvokeAsync(null);

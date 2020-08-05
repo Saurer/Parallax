@@ -1,7 +1,5 @@
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using AuroraCore;
-using AuroraCore.Storage;
 using AuroraCore.Storage.Implementation;
 using AuroraCore.Types;
 
@@ -10,21 +8,20 @@ namespace Parallax.Services {
         public EngineBase Instance { get; private set; }
         public TypeManager Types { get; private set; }
 
-        public async Task<EngineBase> InitEngine() {
-            return await InitEngine(Graph.GenesisData);
+        private EngineService(EngineBase engine, TypeManager types) {
+            Instance = engine;
+            Types = types;
         }
 
-        public async Task<EngineBase> InitEngine(IEnumerable<IEvent> initialGraph) {
+        public static async Task<EngineService> Instantiate() {
             var typeManager = new TypeManager();
             var engine = new EngineBase(new MemoryStorage(typeManager));
 
-            foreach (var e in initialGraph) {
+            foreach (var e in Graph.GenesisData) {
                 await engine.ProcessEvent(e);
             }
 
-            Instance = engine;
-            Types = typeManager;
-            return Instance;
+            return new EngineService(engine, typeManager);
         }
     }
 }

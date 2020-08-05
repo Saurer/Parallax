@@ -1,5 +1,5 @@
 ﻿@page "/attributes"
-@inject EngineBase Engine
+@inject IStorageAPI Storage
 @inject RoutingService Routing
 
 <Scaffold>
@@ -42,7 +42,7 @@
     private IEnumerable<AttrData> attributes = Array.Empty<AttrData>();
 
     protected override async Task OnInitializedAsync() {
-        var values = await Engine.Storage.GetAttributes();
+        var values = await Storage.GetAttributes();
         attributes = await Task.WhenAll(values.Select(a => AttrData.Instantiate(a)));
     }
 }

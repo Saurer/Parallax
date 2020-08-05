@@ -1,5 +1,4 @@
-@inject EngineBase Engine
-@inject EngineService EngineService
+@inject IStorageAPI Storage
 
 @if (availableAttributes.Any()) {
     <EditForm model="@model" OnValidSubmit="@HandleSubmit">
@@ -62,7 +61,7 @@ else {
     private IEnumerable<AttrData> availableAttributes = Array.Empty<AttrData>();
 
     protected async override Task OnInitializedAsync() {
-        var attrs = await Engine.Storage.GetAttributes();
+        var attrs = await Storage.GetAttributes();
         attrs = attrs.Where(a => !Attributes.Contains(a.ID));
         availableAttributes = await Task.WhenAll(attrs.Select(l => AttrData.Instantiate(l)));
         model.Attribute = availableAttributes.FirstOrDefault();

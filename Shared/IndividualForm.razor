@@ -1,4 +1,4 @@
-﻿@inject EngineBase Engine
+﻿@inject IStorageAPI Storage
 @inject RoutingService Routing
 
 @if (null != individual) {
@@ -63,12 +63,12 @@
     }
 
     private async Task Refresh() {
-        var actor = await Engine.Storage.GetIndividual(ID);
+        var actor = await Storage.GetIndividual(ID);
         individual = await IndividualData.Instantiate(actor);
         model = await ModelData.Instantiate(individual.Model.Value);
         attributes = individual.Attributes.ToDictionary(k => k.Key, v => v.Value.PlainValues);
         relations = individual.Relations.ToDictionary(k => k.Key, v => v.Value.PlainValues);
-        var parentEvent = await Engine.Storage.GetEvent(individual.Event.BaseEventID);
+        var parentEvent = await Storage.GetEvent(individual.Event.BaseEventID);
         badge = parentEvent.Value;
     }
 }

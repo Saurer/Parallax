@@ -1,5 +1,4 @@
-@inject EngineBase Engine
-@inject EngineService EngineService
+@inject IStorageAPI Storage
 
 @if (availableRelations.Any()) {
     <EditForm model="@model" OnValidSubmit="@HandleSubmit">
@@ -62,7 +61,7 @@ else {
     private IEnumerable<IRelation> availableRelations = Array.Empty<IRelation>();
 
     protected async override Task OnInitializedAsync() {
-        var relations = await Engine.Storage.GetRelations();
+        var relations = await Storage.GetRelations();
         availableRelations = relations.Where(a => !Relations.Contains(a.ID));
         model.Relation = availableRelations.FirstOrDefault();
     }

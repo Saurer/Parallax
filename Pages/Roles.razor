@@ -1,5 +1,5 @@
 ﻿@page "/roles"
-@inject EngineBase Engine
+@inject IStorageAPI Storage
 @inject DialogService Dialog
 @inject RoutingService Routing
 
@@ -28,7 +28,7 @@
     }
 
     private async Task Refresh() {
-        var roles = await Engine.Storage.GetRoles();
+        var roles = await Storage.GetRoles();
         this.roles = await Task.WhenAll(roles.Select(i => IndividualData.Instantiate(i)));
     }
 }

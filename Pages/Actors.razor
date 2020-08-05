@@ -1,6 +1,5 @@
 ﻿@page "/actors"
-@inject EngineBase Engine
-@inject DialogService Dialog
+@inject IStorageAPI Storage
 @inject RoutingService Routing
 
 <Scaffold>
@@ -28,7 +27,7 @@
     }
 
     private async Task Refresh() {
-        var actors = await Engine.Storage.GetActors();
+        var actors = await Storage.GetActors();
         this.actors = await Task.WhenAll(actors.Select(i => IndividualData.Instantiate(i)));
     }
 }

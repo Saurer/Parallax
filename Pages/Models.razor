@@ -1,5 +1,5 @@
 ﻿@page "/models"
-@inject EngineBase Engine
+@inject IStorageAPI Storage
 @inject RoutingService Routing
 
 <Scaffold>
@@ -43,7 +43,7 @@
     private IEnumerable<ModelData> models = Array.Empty<ModelData>();
 
     protected override async Task OnInitializedAsync() {
-        var models = await Engine.Storage.GetModels();
+        var models = await Storage.GetModels();
         this.models = await Task.WhenAll(models.Select(m => ModelData.Instantiate(m)));
     }
 }

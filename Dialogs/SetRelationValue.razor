@@ -1,4 +1,4 @@
-@inject EngineBase Engine
+@inject IStorageAPI Storage
 
 <DialogLayout>
     <ChildContent>
@@ -80,7 +80,7 @@
         ModelRelation?.Cardinality != 0 && editorValues.Count >= ModelRelation?.Cardinality;
 
     protected override async Task OnInitializedAsync() {
-        candidateValues = await Engine.Storage.GetRelationCandidates();
+        candidateValues = await Storage.GetRelationCandidates();
 
         if (!Values.Any()) {
             editorValues = new List<BoxedValue>(){

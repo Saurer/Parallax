@@ -1,5 +1,5 @@
 ﻿@page "/entities/{id:int}"
-@inject EngineBase Engine
+@inject IStorageAPI Storage
 @inject NavigationManager NavigationManager
 @inject DialogService Dialog
 @inject RoutingService Routing
@@ -91,7 +91,7 @@
     }
 
     private async Task Redraw() {
-        var entity = await Engine.Storage.GetEntity(ID);
+        var entity = await Storage.GetEntity(ID);
         this.entity = await EntityData.Instantiate(entity);
     }
 

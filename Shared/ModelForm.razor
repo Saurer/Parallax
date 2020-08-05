@@ -1,6 +1,6 @@
 @inject DialogService Dialog
-@inject EngineBase Engine
-@inject CredentialsService Credentials
+@inject IStorageAPI Storage
+@inject TransactionsService Tx
 
 <table class="table">
     <thead>
@@ -131,7 +131,7 @@
             var list = (List<string>)resultAttributes[kv.Key];
             foreach (var value in kv.Value) {
                 if (modelAttr.Attribute.IsBoxed) {
-                    var valueIndividual = await Engine.Storage.GetEvent(Int32.Parse(value));
+                    var valueIndividual = await Storage.GetEvent(Int32.Parse(value));
                     list.Add(valueIndividual.Value);
                 }
                 else {
@@ -202,12 +202,7 @@
 
         if (IndividualID.HasValue) {
             foreach (var value in resultValues) {
-                await Credentials.ProcessEvent(Engine, new FederatedEvent(
-                    IndividualID.Value,
-                    attr.Attribute.ID,
-                    IndividualID.Value,
-                    value
-                ));
+                await Tx.AssignIndividualProperty(IndividualID.Value, attr.Attribute.ID, value);
             }
         }
         else {
@@ -231,12 +226,7 @@
 
         if (IndividualID.HasValue) {
             foreach (var value in resultValues) {
-                await Credentials.ProcessEvent(Engine, new FederatedEvent(
-                    IndividualID.Value,
-                    relation.Relation.ID,
-                    IndividualID.Value,
-                    value
-                ));
+                await Tx.AssignIndividualProperty(IndividualID.Value, relation.Relation.ID, value);
             }
         }
         else {

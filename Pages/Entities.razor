@@ -1,5 +1,5 @@
 ﻿@page "/entities"
-@inject EngineBase Engine
+@inject IStorageAPI Storage
 @inject RoutingService Routing
 
 <Scaffold>
@@ -44,7 +44,7 @@
     }
 
     private async Task Refresh() {
-        var entities = await Engine.Storage.GetEntities();
+        var entities = await Storage.GetEntities();
         this.entities = await Task.WhenAll(entities.Select(entity => EntityData.Instantiate(entity)));
     }
 }

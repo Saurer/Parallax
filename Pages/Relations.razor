@@ -1,5 +1,5 @@
 ﻿@page "/relations"
-@inject EngineBase Engine
+@inject IStorageAPI Storage
 @inject RoutingService Routing
 
 <Scaffold>
@@ -27,7 +27,7 @@
     }
 
     private async Task Refresh() {
-        var relations = await Engine.Storage.GetRelations();
+        var relations = await Storage.GetRelations();
         this.relations = await Task.WhenAll(relations.Select(i => IndividualData.Instantiate(i)));
     }
 }

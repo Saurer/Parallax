@@ -1,5 +1,5 @@
-@inject EngineBase Engine
-@inject CredentialsService CredentialsService
+@inject IStorageAPI Storage
+@inject TransactionsService Tx
 
 <EditForm Model="@model" OnValidSubmit="@HandleSubmit">
     <DataAnnotationsValidator/>
@@ -90,7 +90,7 @@
     private AddModelAttributeData newAttrModel;
 
     protected override async Task OnInitializedAsync() {
-        parentModel = await Engine.Storage.GetModel(ParentModelID);
+        parentModel = await Storage.GetModel(ParentModelID);
         model.Name = DefaultName;
         var modelAttrs = await parentModel.GetAllAttributes();
         var attrs = await Task.WhenAll(modelAttrs.Select(attr => attr.GetProperty()));
@@ -135,14 +135,27 @@
     }
 
     private async Task HandleSubmit() {
-        model.EventType = BaseEventID;
-        model.Parent = ParentModelID;
-        int modelID = await model.Execute(Engine, CredentialsService);
+        // Create model
+        int modelID = await Tx.CreateModel(BaseEventID, ParentModelID, model.Name);
+
+        // Attach attributes
+        foreach (var attr in model.Attributes) {
+            var eventID = await Tx.AssignModelAttribute(modelID, attr.Attribute.ID);
+
+            if ((Const.DefaultRequired == 1) != attr.Required) {
+                await Tx.AssignPropertyValueRequirement(eventID, attr.Attribute.ID, attr.Required);
+            }
+
+            if (Const.DefaultCardinality != attr.Cardinality) {
+                await Tx.AssignPropertyValueCardinality(eventID, attr.Attribute.ID, attr.Cardinality);
+            }
+        }
+
         await BlazoredModal.Close(ModalResult.Ok(modelID));
     }
 
     private async Task FilterAttributes() {
-        var values = await Engine.Storage.GetAttributes();
+        var values = await Storage.GetAttributes();
         attributes = await Task.WhenAll(
             values.Where(a =>
                 !model.HasAttribute(a.ID) &&

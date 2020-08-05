@@ -1,4 +1,4 @@
-@inject EngineBase Engine
+@inject IStorageAPI Storage
 
 <table class="table table-bordered table-hover table-sm">
     <thead>
@@ -52,11 +52,11 @@
     private async Task<DetailedEvent> GetDetailedEvent(IEvent e) {
         return new DetailedEvent {
             ID = e.ID,
-            BaseEvent = await Engine.Storage.GetEvent(e.BaseEventID),
-            ValueTypeEvent = await Engine.Storage.GetEvent(e.ValueID),
+            BaseEvent = await Storage.GetEvent(e.BaseEventID),
+            ValueTypeEvent = await Storage.GetEvent(e.ValueID),
             Value = e.Value,
-            ConditionEvent = await Engine.Storage.GetEvent(e.ConditionEventID),
-            ActorEvent = await Engine.Storage.GetEvent(e.ActorEventID),
+            ConditionEvent = await Storage.GetEvent(e.ConditionEventID),
+            ActorEvent = await Storage.GetEvent(e.ActorEventID),
             Date = e.Date
         };
     }

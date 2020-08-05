@@ -1,8 +1,7 @@
 ﻿@page "/entities/create"
-@inject EngineBase Engine
 @inject NavigationManager NavigationManager
 @inject RoutingService Routing
-@inject CredentialsService CredentialsService
+@inject TransactionsService Tx
 
 <Scaffold>
     <Title>Create entity</Title>
@@ -28,7 +27,7 @@
     private EntityCreateData model = new EntityCreateData();
 
     private async Task HandleSubmit() {
-        int entityID = await model.Execute(Engine, CredentialsService);
+        int entityID = await Tx.CreateEntity(model.Name);
         NavigationManager.NavigateTo(Routing.EntitiesView(entityID));
     }
 }

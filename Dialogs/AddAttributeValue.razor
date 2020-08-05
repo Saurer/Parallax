@@ -1,5 +1,4 @@
-@inject EngineBase Engine
-@inject EngineService EngineService
+@inject IStorageAPI Storage
 
 <DialogLayout>
     <ChildContent>
@@ -28,7 +27,7 @@
     private bool valid = false;
 
     protected async override Task OnInitializedAsync() {
-        var attr = await Engine.Storage.GetAttribute(ID);
+        var attr = await Storage.GetAttribute(ID);
         this.attr = await AttrData.Instantiate(attr);
     }
 

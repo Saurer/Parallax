@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Blazored.Modal;
 using Parallax.Services;
 using System.Linq;
+using AuroraCore.Storage;
 
 namespace Parallax {
     public class Program {
@@ -13,20 +14,21 @@ namespace Parallax {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("app");
 
-            var engineService = new EngineService();
-            await engineService.InitEngine();
-
+            var engineService = await EngineService.Instantiate();
             var credentialsService = new CredentialsService();
             var actors = await engineService.Instance.Storage.GetActors();
             credentialsService.SetCurrentActor(actors.First());
 
             builder.Services.AddTransient(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
-            builder.Services.AddTransient(sp => engineService.Instance);
+            builder.Services.AddSingleton(sp => engineService.Instance);
             builder.Services.AddSingleton(sp => engineService);
             builder.Services.AddSingleton(sp => credentialsService);
             builder.Services.AddSingleton(sp => new BackupService());
             builder.Services.AddSingleton(sp => new RoutingService());
+            builder.Services.AddSingleton(typeof(IStorageAPI), engineService.Instance.Storage);
+
             builder.Services.AddScoped(typeof(DialogService));
+            builder.Services.AddScoped(typeof(TransactionsService));
             builder.Services.AddBlazoredModal();
 
             await builder.Build().RunAsync();

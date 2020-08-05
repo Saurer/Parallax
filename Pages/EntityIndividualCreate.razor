@@ -1,7 +1,7 @@
 ﻿@page "/entities/{id:int}/create-individual"
 @using Microsoft.AspNetCore.WebUtilities
-@inject EngineBase Engine
-@inject CredentialsService CredentialsService
+@inject IStorageAPI Storage
+@inject TransactionsService Tx
 @inject RoutingService Routing
 @inject NavigationManager NavigationManager
 
@@ -59,8 +59,8 @@
 
     protected override async Task OnInitializedAsync() {
         individual = new IndividualCreateData(ID);
-        entity = await Engine.Storage.GetEntity(ID);
-        models = await Engine.Storage.GetEntityModels(ID);
+        entity = await Storage.GetEntity(ID);
+        models = await Storage.GetEntityModels(ID);
 
         var query = new Uri(NavigationManager.Uri).Query;
         if (QueryHelpers.ParseQuery(query).TryGetValue("model", out var strValue) && Int32.TryParse(strValue, out var intValue)) {
@@ -80,12 +80,25 @@
     private async Task SetModel(int modelID) {
         individual.Attributes.Clear();
         individual.ModelID = modelID;
-        var model = await Engine.Storage.GetModel(modelID);
+        var model = await Storage.GetModel(modelID);
         selectedModel = await ModelData.Instantiate(model);
     }
 
     private async Task HandleSubmit() {
-        await individual.Execute(Engine, CredentialsService);
+        int eventID = await Tx.CreateIndividual(individual.BaseEvent, individual.ModelID, individual.Name);
+
+        foreach (var attr in individual.Attributes) {
+            foreach (var value in attr.Value) {
+                await Tx.AssignIndividualProperty(eventID, attr.Key, value);
+            }
+        }
+
+        foreach (var relation in individual.Relations) {
+            foreach (var value in relation.Value) {
+                await Tx.AssignIndividualProperty(eventID, relation.Key, value);
+            }
+        }
+
         NavigationManager.NavigateTo(Routing.EntitiesView(ID));
     }
 }

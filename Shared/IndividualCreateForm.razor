@@ -1,5 +1,5 @@
-﻿@inject EngineBase Engine
-@inject CredentialsService CredentialsService
+﻿@inject IStorageAPI Storage
+@inject TransactionsService Tx
 
 <EditForm Model="@model" OnValidSubmit="@HandleSubmit">
     <DataAnnotationsValidator/>
@@ -40,13 +40,26 @@
 
     protected async override Task OnInitializedAsync() {
         model = new IndividualCreateData(BaseEvent);
-        var dbModel = await Engine.Storage.GetModel(ModelID);
+        var dbModel = await Storage.GetModel(ModelID);
         this.dbModel = await ModelData.Instantiate(dbModel);
         model.ModelID = ModelID;
     }
 
     private async Task HandleSubmit() {
-        await model.Execute(Engine, CredentialsService);
+        int eventID = await Tx.CreateIndividual(BaseEvent, ModelID, model.Name);
+
+        foreach (var attr in model.Attributes) {
+            foreach (var value in attr.Value) {
+                await Tx.AssignIndividualProperty(eventID, attr.Key, value);
+            }
+        }
+
+        foreach (var relation in model.Relations) {
+            foreach (var value in relation.Value) {
+                await Tx.AssignIndividualProperty(eventID, relation.Key, value);
+            }
+        }
+
         await OnSubmit.InvokeAsync(null);
     }
 }

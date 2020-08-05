@@ -1,9 +1,9 @@
 ﻿@page "/attributes/create"
-@inject EngineBase Engine
+@inject IStorageAPI Storage
 @inject EngineService EngineService
 @inject NavigationManager NavigationManager
 @inject RoutingService Routing
-@inject CredentialsService CredentialsService
+@inject TransactionsService Tx
 
 <Scaffold>
     <Title>Create attribute</Title>
@@ -42,7 +42,7 @@
         var result = new List<(int, string)>();
         var values = EngineService.Types.GetAll();
         foreach (var dt in values) {
-            var dtIndividual = await Engine.Storage.GetDataTypeIndividual(dt.Name);
+            var dtIndividual = await Storage.GetDataTypeIndividual(dt.Name);
             result.Add((
                 dtIndividual.ID,
                 dt.Name
@@ -59,7 +59,8 @@
     }
 
     private async Task HandleSubmit() {
-        await model.Execute(Engine, CredentialsService);
+        int attrID = await Tx.CreateAttribute(model.Name);
+        await Tx.AssignAttributeDataType(attrID, model.DataType);
         NavigationManager.NavigateTo(Routing.Attributes());
     }
 }

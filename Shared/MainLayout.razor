@@ -1,5 +1,5 @@
 ﻿@inherits LayoutComponentBase
-@inject EngineBase Engine
+@inject IStorageAPI Storage
 @inject CredentialsService Credentials
 
 <div class="sidebar">
@@ -37,7 +37,7 @@
         userDropdown = !userDropdown;
 
         if (userDropdown) {
-            actors = await Engine.Storage.GetActors();
+            actors = await Storage.GetActors();
         }
     }
 

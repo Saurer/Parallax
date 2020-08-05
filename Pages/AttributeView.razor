@@ -1,7 +1,7 @@
 ﻿@page "/attributes/{id:int}"
-@inject EngineBase Engine
+@inject IStorageAPI Storage
 @inject DialogService Dialog
-@inject CredentialsService CredentialsService
+@inject TransactionsService Tx
 
 @if (null != attr) {
     <Scaffold>
@@ -60,20 +60,14 @@
     }
 
     private async Task Redraw() {
-        var attr = await Engine.Storage.GetAttribute(ID);
+        var attr = await Storage.GetAttribute(ID);
         this.attr = await AttrData.Instantiate(attr);
     }
 
     private async Task HandleAddValue() {
         var result = await Dialog.AddAttributeValue(ID);
         if (null != result) {
-            await CredentialsService.ProcessEvent(Engine, new FederatedEvent(
-                ID,
-                StaticEvent.AttributeValue,
-                ID,
-                result
-            ));
-
+            await Tx.AssignAttributeValue(ID, result);
             await Redraw();
         }
     }

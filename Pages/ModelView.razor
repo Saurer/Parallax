@@ -1,7 +1,7 @@
 ﻿@page "/models/{id:int}"
-@inject EngineBase Engine
+@inject IStorageAPI Storage
+@inject TransactionsService Tx
 @inject DialogService Dialog
-@inject CredentialsService CredentialsService
 @inject RoutingService Routing
 
 @if (null != model) {
@@ -106,7 +106,7 @@
     }
 
     private async Task Redraw() {
-        var model = await Engine.Storage.GetModel(ID);
+        var model = await Storage.GetModel(ID);
         this.model = await ModelData.Instantiate(model);
     }
 
@@ -115,29 +115,14 @@
         var result = await Dialog.AddModelAttribute(attributeIDs);
 
         if (null != result) {
-            var eventID = await CredentialsService.ProcessEvent(Engine, new FederatedEvent(
-                ID,
-                StaticEvent.Attribute,
-                ID,
-                result.ID.ToString()
-            ));
+            var eventID = await Tx.AssignModelAttribute(ID, result.ID);
 
             if ((Const.DefaultRequired == 1) != result.Required) {
-                await CredentialsService.ProcessEvent(Engine, new FederatedEvent(
-                    eventID,
-                    StaticEvent.Required,
-                    result.ID,
-                    result.Required ? "1" : "0"
-                ));
+                await Tx.AssignPropertyValueRequirement(eventID, result.ID, result.Required);
             }
 
             if (Const.DefaultCardinality != result.Cardinality) {
-                await CredentialsService.ProcessEvent(Engine, new FederatedEvent(
-                    eventID,
-                    StaticEvent.Cardinality,
-                    result.ID,
-                    result.Cardinality.ToString()
-                ));
+                await Tx.AssignPropertyValueCardinality(eventID, result.ID, result.Cardinality);
             }
 
             await Redraw();
@@ -149,29 +134,14 @@
         var result = await Dialog.AddModelRelation(relationIDs);
 
         if (null != result) {
-            var eventID = await CredentialsService.ProcessEvent(Engine, new FederatedEvent(
-                ID,
-                StaticEvent.Relation,
-                ID,
-                result.ID.ToString()
-            ));
+            var eventID = await Tx.AssignModelRelation(ID, result.ID);
 
             if ((Const.DefaultRequired == 1) != result.Required) {
-                await CredentialsService.ProcessEvent(Engine, new FederatedEvent(
-                    eventID,
-                    StaticEvent.Required,
-                    result.ID,
-                    result.Required ? "1" : "0"
-                ));
+                await Tx.AssignPropertyValueRequirement(eventID, result.ID, result.Required);
             }
 
             if (Const.DefaultCardinality != result.Cardinality) {
-                await CredentialsService.ProcessEvent(Engine, new FederatedEvent(
-                    eventID,
-                    StaticEvent.Cardinality,
-                    result.ID,
-                    result.Cardinality.ToString()
-                ));
+                await Tx.AssignPropertyValueCardinality(eventID, result.ID, result.Cardinality);
             }
 
             await Redraw();

@@ -10,7 +10,7 @@ namespace Parallax.Models {
         public int ID { get; private set; }
         public string Name { get; private set; }
         public string Type { get; private set; }
-        public IModelAttr ModelAttr { get; private set; }
+        public IModelProperty<IAttr> ModelAttr { get; private set; }
         public IEnumerable<string> PlainValues { get; private set; }
         public IEnumerable<string> ProcessedValues { get; private set; }
         public IEnumerable<AttrPropertyData> AttrProperties { get; private set; }
@@ -40,8 +40,8 @@ namespace Parallax.Models {
 
         }
 
-        public static async Task<IndividualAttrData> Instantiate(IModelAttr modelAttr, IEnumerable<string> values = null) {
-            var attr = await modelAttr.GetAttribute();
+        public static async Task<IndividualAttrData> Instantiate(IModelProperty<IAttr> modelAttr, IEnumerable<string> values = null) {
+            var attr = await modelAttr.GetProperty();
             var plainProperties = await attr.GetProperties();
             var dataType = await attr.GetDataType();
             var attrProperties =

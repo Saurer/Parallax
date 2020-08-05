@@ -1,0 +1,33 @@
+﻿@page "/relations"
+@inject EngineBase Engine
+@inject RoutingService Routing
+
+<Scaffold>
+    <Title>Relations</Title>
+    <TitleRight>
+        <NavLink href="@Routing.RelationsCreate()" class="btn btn-light">
+            <i class="icon feather-plus mr-1"></i>
+            <span>Create</span>
+        </NavLink>
+    </TitleRight>
+    <ChildContent>
+        <div class="card-columns">
+            @foreach (var item in relations) {
+                <IndividualCard Value="@item" OnAssignAttribute="@Refresh" />
+            }
+        </div>
+    </ChildContent>
+</Scaffold>
+
+@code {
+    private IEnumerable<IndividualData> relations = Array.Empty<IndividualData>();
+
+    protected override async Task OnInitializedAsync() {
+        await Refresh();
+    }
+
+    private async Task Refresh() {
+        var relations = await Engine.Storage.GetRelations();
+        this.relations = await Task.WhenAll(relations.Select(i => IndividualData.Instantiate(i)));
+    }
+}

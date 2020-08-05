@@ -2,7 +2,6 @@ using System.Linq;
 using System.Collections.Generic;
 using AuroraCore.Storage;
 using System.Threading.Tasks;
-using System;
 
 namespace Parallax.Models {
     public class ModelData {
@@ -12,33 +11,18 @@ namespace Parallax.Models {
         public string ParentName { get; private set; }
         public int EventBase { get; private set; }
         public string EventBaseName { get; private set; }
-        public IEnumerable<ModelAttrData> OwnAttributes { get; private set; }
-        public IEnumerable<ModelAttrData> InheritedAttributes { get; private set; }
-        public IEnumerable<ModelAttrData> AllAttributes {
-            get {
-                foreach (var attr in InheritedAttributes) {
-                    yield return attr;
-                }
-
-                foreach (var attr in OwnAttributes) {
-                    yield return attr;
-                }
-            }
-        }
+        public IEnumerable<ModelAttrData> Attributes { get; private set; }
+        public IEnumerable<ModelRelationData> Relations { get; private set; }
 
         private ModelData() { }
 
         public static async Task<ModelData> Instantiate(IModel model) {
             var parent = await model.GetParent();
             var eventBase = await model.GetBaseEvent();
-            var plainModelAttributes = await model.GetOwnAttributes();
-            var ownAttributes = await Task.WhenAll(plainModelAttributes.Select(attr => ModelAttrData.Instantiate(attr)));
-            var inheritedAttributes = Array.Empty<ModelAttrData>();
-
-            if (null != parent) {
-                var plainInheritedModelAttributes = await parent.GetAllAttributes();
-                inheritedAttributes = await Task.WhenAll(plainInheritedModelAttributes.Select(attr => ModelAttrData.Instantiate(attr)));
-            }
+            var plainModelAttributes = await model.GetAllAttributes();
+            var attributes = await Task.WhenAll(plainModelAttributes.Select(attr => ModelAttrData.Instantiate(attr)));
+            var plainModelRelations = await model.GetAllRelations();
+            var relations = await Task.WhenAll(plainModelRelations.Select(relation => ModelRelationData.Instantiate(relation)));
 
             return new ModelData() {
                 ID = model.ID,
@@ -47,8 +31,8 @@ namespace Parallax.Models {
                 ParentName = parent?.Value,
                 EventBase = eventBase.ID,
                 EventBaseName = eventBase.Value,
-                OwnAttributes = ownAttributes,
-                InheritedAttributes = inheritedAttributes
+                Attributes = attributes,
+                Relations = relations
             };
         }
     }

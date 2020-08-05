@@ -1,16 +1,16 @@
 @inject EngineBase Engine
 @inject EngineService EngineService
 
-@if (availableAttributes.Any()) {
+@if (availableRelations.Any()) {
     <EditForm model="@model" OnValidSubmit="@HandleSubmit">
         <DialogLayout>
             <ChildContent>
                 <DataAnnotationsValidator/>
                 <div class="form-group">
-                    <label for="dataType">Attribute</label>
-                    <select class="form-control" @onchange="HandleChangeNewAttr">
-                        @foreach (var attr in availableAttributes) {
-                            <option value="@attr.ID">(@attr.ID) @attr.Name - @attr.DataType.Name</option>
+                    <label for="dataType">Relation</label>
+                    <select class="form-control" @onchange="HandleChangeNewRelation">
+                        @foreach (var attr in availableRelations) {
+                            <option value="@attr.ID">(@attr.ID) @attr.Value</option>
                         }
                     </select>
                 </div>
@@ -43,7 +43,7 @@
 else {
     <DialogLayout>
         <ChildContent>
-            No attributes available
+            No relations available
         </ChildContent>
         <Footer>
             <button type="button" class="btn btn-secondary" @onclick="Cancel">Close</button>
@@ -56,21 +56,20 @@ else {
     public BlazoredModalInstance BlazoredModal { get; set; }
 
     [Parameter]
-    public IEnumerable<int> Attributes { get; set; }
+    public IEnumerable<int> Relations { get; set; }
 
-    private AddModelAttributeData model = new AddModelAttributeData();
-    private IEnumerable<AttrData> availableAttributes = Array.Empty<AttrData>();
+    private AddModelRelationData model = new AddModelRelationData();
+    private IEnumerable<IRelation> availableRelations = Array.Empty<IRelation>();
 
     protected async override Task OnInitializedAsync() {
-        var attrs = await Engine.Storage.GetAttributes();
-        attrs = attrs.Where(a => !Attributes.Contains(a.ID));
-        availableAttributes = await Task.WhenAll(attrs.Select(l => AttrData.Instantiate(l)));
-        model.Attribute = availableAttributes.FirstOrDefault();
+        var relations = await Engine.Storage.GetRelations();
+        availableRelations = relations.Where(a => !Relations.Contains(a.ID));
+        model.Relation = availableRelations.FirstOrDefault();
     }
 
-    private void HandleChangeNewAttr(ChangeEventArgs e) {
+    private void HandleChangeNewRelation(ChangeEventArgs e) {
         if (Int32.TryParse((string)e.Value, out var id)) {
-            model.Attribute = availableAttributes.Where(a => a.ID == id).Single();
+            model.Relation = availableRelations.Where(a => a.ID == id).Single();
         }
     }
 
@@ -81,7 +80,7 @@ else {
     private async Task HandleSubmit() {
         await BlazoredModal.Close(ModalResult.Ok(
             new PropertyAssignData {
-                ID = model.Attribute.ID,
+                ID = model.Relation.ID,
                 Required = model.Required,
                 Cardinality = model.Cardinality
             }

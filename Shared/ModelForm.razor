@@ -13,7 +13,7 @@
     </thead>
     <tbody>
         @if (null != Model) {
-            @foreach (var attr in Model.AllAttributes) {
+            @foreach (var attr in Model.Attributes) {
                 <tr>
                     <td>
                         <span>@attr.Attribute.Name</span>
@@ -76,10 +76,9 @@
 
     private async Task UpdateValues() {
         var result = new Dictionary<int, IEnumerable<string>>();
-        var attrs = Model.AllAttributes;
 
         foreach (var kv in Values) {
-            var modelAttr = attrs.Where(a => a.Attribute.ID == kv.Key).Single();
+            var modelAttr = Model.Attributes.Where(a => a.Attribute.ID == kv.Key).Single();
 
             if (!kv.Value.Any()) {
                 continue;

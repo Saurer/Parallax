@@ -12,8 +12,8 @@ namespace Parallax.Models {
 
         }
 
-        public static async Task<ModelAttrData> Instantiate(IModelAttr attr) {
-            var plainAttr = await attr.GetAttribute();
+        public static async Task<ModelAttrData> Instantiate(IModelProperty<IAttr> attr) {
+            var plainAttr = await attr.GetProperty();
             var attrData = await AttrData.Instantiate(plainAttr);
             var required = await attr.IsRequired();
             var cardinality = await attr.GetCardinality();

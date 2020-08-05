@@ -1,0 +1,17 @@
+﻿@page "/relations/create"
+@inject EngineBase Engine
+@inject NavigationManager NavigationManager
+@inject RoutingService Routing
+
+<Scaffold>
+    <Title>Create relation</Title>
+    <ChildContent>
+        <IndividualCreateForm BaseEvent="@StaticEvent.Relation" ModelID="@StaticEvent.RelationModel" OnSubmit="@HandleSubmit" />
+    </ChildContent>
+</Scaffold>
+
+@code {
+    private void HandleSubmit() {
+        NavigationManager.NavigateTo(Routing.Relations());
+    }
+}

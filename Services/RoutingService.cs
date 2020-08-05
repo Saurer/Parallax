@@ -42,6 +42,12 @@ namespace Parallax.Services {
         public string RolesCreate() =>
             Roles() + "/create";
 
+        public string Relations() =>
+            "/relations";
+
+        public string RelationsCreate() =>
+            Relations() + "/create";
+
         public string Individuals() =>
             "/individuals";
 

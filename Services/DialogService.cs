@@ -83,13 +83,27 @@ namespace Parallax.Services {
             }
         }
 
-        public async Task<AttributeAssignData> AddModelAttribute(IEnumerable<int> availableAttributes) {
+        public async Task<PropertyAssignData> AddModelAttribute(IEnumerable<int> availableAttributes) {
             var parameters = new ModalParameters();
             parameters.Add("Attributes", availableAttributes);
             var modal = instance.Show<AddModelAttribute>("Add attribute", parameters);
             var result = await modal.Result;
 
-            if (result.Data is AttributeAssignData data) {
+            if (result.Data is PropertyAssignData data) {
+                return data;
+            }
+            else {
+                return null;
+            }
+        }
+
+        public async Task<PropertyAssignData> AddModelRelation(IEnumerable<int> availableRelations) {
+            var parameters = new ModalParameters();
+            parameters.Add("Relations", availableRelations);
+            var modal = instance.Show<AddModelRelation>("Add relation", parameters);
+            var result = await modal.Result;
+
+            if (result.Data is PropertyAssignData data) {
                 return data;
             }
             else {

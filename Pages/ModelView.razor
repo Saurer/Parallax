@@ -25,8 +25,8 @@
             </div>
             <hr/>
 
-            @if (model.OwnAttributes.Any()) {
-                <h4>Own Attributes</h4>
+            @if (model.Attributes.Any()) {
+                <h4>Attributes</h4>
                 <table class="table">
                     <thead>
                         <tr>
@@ -38,7 +38,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var attr in model.OwnAttributes) {
+                        @foreach (var attr in model.Attributes) {
                             <tr>
                                 <td>@attr.Attribute.ID</td>
                                 <td>@attr.Attribute.Name</td>
@@ -51,26 +51,24 @@
                 </table>
             }
 
-            @if (model.InheritedAttributes.Any()) {
-                <h4>Inherited Attributes</h4>
+            @if (model.Relations.Any()) {
+                <h4>Relations</h4>
                 <table class="table">
                     <thead>
                         <tr>
                             <th>ID</th>
                             <th>Name</th>
-                            <th>Type</th>
                             <th>Required</th>
                             <th>Cardinality</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var attr in model.InheritedAttributes) {
+                        @foreach (var relation in model.Relations) {
                             <tr>
-                                <td>@attr.Attribute.ID</td>
-                                <td>@attr.Attribute.Name</td>
-                                <td>@attr.Attribute.DataType.Name</td>
-                                <td>@attr.Required</td>
-                                <td>@attr.Cardinality</td>
+                                <td>@relation.Relation.ID</td>
+                                <td>@relation.Relation.Value</td>
+                                <td>@relation.Required</td>
+                                <td>@relation.Cardinality</td>
                             </tr>
                         }
                     </tbody>
@@ -78,10 +76,17 @@
             }
 
             <hr/>
-            <button class="btn btn-primary" @onclick="HandleAddAttribute">
-                <i class="icon feather-plus mr-1"></i>
-                <span>Add attribute</span>
-            </button>
+            <div>
+                <button class="btn btn-primary" @onclick="HandleAddAttribute">
+                    <i class="icon feather-plus mr-1"></i>
+                    <span>Add attribute</span>
+                </button>
+
+                <button class="btn btn-primary" @onclick="HandleAddRelation">
+                    <i class="icon feather-plus mr-1"></i>
+                    <span>Add relation</span>
+                </button>
+            </div>
         </ChildContent>
     </Scaffold>
 }
@@ -106,13 +111,47 @@
     }
 
     private async Task HandleAddAttribute() {
-        var attributeIDs = model.AllAttributes.Select(l => l.Attribute.ID);
+        var attributeIDs = model.Attributes.Select(l => l.Attribute.ID);
         var result = await Dialog.AddModelAttribute(attributeIDs);
 
         if (null != result) {
             var eventID = await CredentialsService.ProcessEvent(Engine, new FederatedEvent(
                 ID,
                 StaticEvent.Attribute,
+                ID,
+                result.ID.ToString()
+            ));
+
+            if ((Const.DefaultRequired == 1) != result.Required) {
+                await CredentialsService.ProcessEvent(Engine, new FederatedEvent(
+                    eventID,
+                    StaticEvent.Required,
+                    result.ID,
+                    result.Required ? "1" : "0"
+                ));
+            }
+
+            if (Const.DefaultCardinality != result.Cardinality) {
+                await CredentialsService.ProcessEvent(Engine, new FederatedEvent(
+                    eventID,
+                    StaticEvent.Cardinality,
+                    result.ID,
+                    result.Cardinality.ToString()
+                ));
+            }
+
+            await Redraw();
+        }
+    }
+
+    private async Task HandleAddRelation() {
+        var relationIDs = model.Relations.Select(l => l.Relation.ID);
+        var result = await Dialog.AddModelRelation(relationIDs);
+
+        if (null != result) {
+            var eventID = await CredentialsService.ProcessEvent(Engine, new FederatedEvent(
+                ID,
+                StaticEvent.Relation,
                 ID,
                 result.ID.ToString()
             ));

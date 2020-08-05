@@ -10,6 +10,7 @@ namespace Parallax.Models {
         public string Name { get; set; }
 
         public Dictionary<int, IEnumerable<string>> Attributes { get; private set; } = new Dictionary<int, IEnumerable<string>>();
+        public Dictionary<int, IEnumerable<string>> Relations { get; private set; } = new Dictionary<int, IEnumerable<string>>();
 
         public int BaseEvent { get; private set; }
 
@@ -30,6 +31,12 @@ namespace Parallax.Models {
             foreach (var attr in Attributes) {
                 foreach (var value in attr.Value) {
                     await service.ProcessEvent(engine, new FederatedEvent(eventID, attr.Key, eventID, value));
+                }
+            }
+
+            foreach (var relation in Relations) {
+                foreach (var value in relation.Value) {
+                    await service.ProcessEvent(engine, new FederatedEvent(eventID, relation.Key, eventID, value));
                 }
             }
 

@@ -69,7 +69,7 @@
             @if (entity.Individuals.Any()) {
                 <div class="card-columns">
                     @foreach (var individual in entity.Individuals) {
-                        <IndividualCard Value="@individual" OnAssignAttribute="@Redraw" />
+                        <IndividualCard Value="@individual" OnUpdate="@Redraw" />
                     }
                 </div>
             }

@@ -67,6 +67,23 @@ namespace Parallax.Services {
             }
         }
 
+        public async Task<IEnumerable<string>> SetRelationValue(ModelRelationData relation, IEnumerable<string> values, bool editable = false) {
+            var parameters = new ModalParameters();
+            parameters.Add("ModelRelation", relation);
+            parameters.Add("Values", values);
+            parameters.Add("Editable", editable);
+
+            var modal = instance.Show<SetRelationValue>("Set relation", parameters);
+            var result = await modal.Result;
+
+            if (result.Data is IEnumerable<string> strValues) {
+                return strValues;
+            }
+            else {
+                return null;
+            }
+        }
+
         public async Task<int?> CreateModel(int baseEvent, int parentModel, string defaultName = null) {
             var parameters = new ModalParameters();
             parameters.Add("BaseEventID", baseEvent);

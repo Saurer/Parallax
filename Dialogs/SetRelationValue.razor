@@ -1,0 +1,130 @@
+@inject EngineBase Engine
+
+<DialogLayout>
+    <ChildContent>
+        <form>
+            <div class="form-group row">
+                <label for="attr" class="col-sm-3 col-form-label">
+                    <strong>Relation</strong>
+                </label>
+                <div class="col-sm-9">
+                    <input type="text" readonly class="form-control-plaintext" id="attr" value="@(ModelRelation?.Relation.Value)"/>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-3 col-form-label">
+                    <strong>Value</strong>
+                </label>
+                <div class="col-sm-9">
+                    @foreach (var value in editorValues) {
+                        <div class="row mt-2">
+                            <div class="@(AllowsMultiple ? "col-sm-9" : "col-sm-12")">
+                                <select class="form-control" disabled="@value.ReadOnly" @bind="value.Value">
+                                    @foreach (var item in candidateValues) {
+                                        <option value="@item.ID.ToString()">(@item.ID) @item.Value</option>
+                                    }
+                                </select>
+                            </div>
+                            @if (AllowsMultiple) {
+                                <div class="col-sm-3">
+                                    <button type="button" class="btn btn-danger" disabled="@(editorValues.Count() == 1 || value.ReadOnly)" @onclick="() => HandleRemoveValue(value)">
+                                        <i class="icon feather-trash"></i>
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                    }
+                    @if (AllowsMultiple && !IsFull) {
+                        <div>
+                            <button type="button" class="btn btn-link" @onclick="() => HandleAddValue()">Add another value</button>
+                        </div>
+                    }
+                </div>
+            </div>
+        </form>
+    </ChildContent>
+    <Footer>
+        @if (Editable) {
+            <button type="button" class="btn btn-link" @onclick="Clear">Clear value</button>
+        }
+        <button type="button" class="btn btn-primary" @onclick="Confirm">Confirm</button>
+        <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+    </Footer>
+</DialogLayout>
+
+@code {
+    private class BoxedValue {
+        public bool ReadOnly { get; set; } = false;
+        public string Value { get; set; } = "";
+    }
+
+    [CascadingParameter]
+    public BlazoredModalInstance BlazoredModal { get; set; }
+
+    [Parameter]
+    public ModelRelationData ModelRelation { get; set; }
+
+    [Parameter]
+    public IEnumerable<string> Values { get; set; }
+
+    [Parameter]
+    public bool Editable { get; set; } = false;
+
+    private List<BoxedValue> editorValues = new List<BoxedValue>();
+    private IEnumerable<IIndividual> candidateValues = Array.Empty<IIndividual>();
+
+    private bool AllowsMultiple =>
+        ModelRelation?.Cardinality == 0 || ModelRelation?.Cardinality > 1;
+
+    private bool IsFull =>
+        ModelRelation?.Cardinality != 0 && editorValues.Count >= ModelRelation?.Cardinality;
+
+    protected override async Task OnInitializedAsync() {
+        candidateValues = await Engine.Storage.GetRelationCandidates();
+
+        if (!Values.Any()) {
+            editorValues = new List<BoxedValue>(){
+                new BoxedValue {
+                    ReadOnly = false,
+                    Value = candidateValues.First().ID.ToString()
+                }
+            };
+        }
+        else {
+            editorValues = Values.Select(v => new BoxedValue{ ReadOnly = !Editable, Value = v }).ToList();
+        }
+    }
+
+    private void HandleAddValue() {
+        if (IsFull) {
+            return;
+        }
+
+        editorValues.Add(new BoxedValue{
+            ReadOnly = false,
+            Value = candidateValues.First().ID.ToString()
+        });
+    }
+
+    private void HandleRemoveValue(BoxedValue value) {
+        editorValues.Remove(value);
+    }
+
+    private async Task Confirm() {
+        var resultValues = editorValues.Where(v => !v.ReadOnly).Select(v => v.Value);
+
+        if (!resultValues.Any()) {
+            await BlazoredModal.Cancel();
+        }
+
+        await BlazoredModal.Close(ModalResult.Ok(resultValues));
+    }
+
+    private async Task Clear() {
+        await BlazoredModal.Close(ModalResult.Ok(Array.Empty<string>()));
+    }
+
+    private async Task Cancel() {
+        await BlazoredModal.Cancel();
+    }
+}

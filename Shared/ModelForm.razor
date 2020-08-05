@@ -24,9 +24,9 @@
                     <td>@attr.Attribute.DataType.Name</td>
                     <td>@attr.Cardinality</td>
                     <td>
-                        @if (IsFull(attr)) {
-                            if (values.ContainsKey(attr.Attribute.ID)) {
-                                <span>@String.Join(',', @values[attr.Attribute.ID])</span>
+                        @if (IsFull(attr) && IndividualID.HasValue) {
+                            if (attributes.ContainsKey(attr.Attribute.ID)) {
+                                <span>@String.Join(',', attributes[attr.Attribute.ID])</span>
                             }
                             else {
                                 <i class="icon feather-alert-triangle text-warning"></i>
@@ -35,8 +35,43 @@
                         }
                         else {
                             <button type="button" class="btn btn-link p-0 border-bottom" @onclick="@(() => HandleAssignAttribute(attr))">
-                                @if (values.ContainsKey(attr.Attribute.ID)) {
-                                    <span>@String.Join(',', @values[attr.Attribute.ID])</span>
+                                @if (attributes.ContainsKey(attr.Attribute.ID)) {
+                                    <span>@String.Join(',', attributes[attr.Attribute.ID])</span>
+                                }
+                                else {
+                                    <i class="icon feather-alert-triangle text-warning"></i>
+                                    <span class="text-muted">Unassigned</span>
+                                }
+                            </button>
+                        }
+                    </td>
+                </tr>
+            }
+
+            @foreach (var relation in Model.Relations) {
+                <tr>
+                    <td>
+                        <span>@relation.Relation.Value</span>
+                        @if (relation.Required) {
+                            <span class="text-danger text-bold">(required)</span>
+                        }
+                    </td>
+                    <td>Relation</td>
+                    <td>@relation.Cardinality</td>
+                    <td>
+                        @if (IsFull(relation) && IndividualID.HasValue) {
+                            if (relations.ContainsKey(relation.Relation.ID)) {
+                                <span>@String.Join(',', relations[relation.Relation.ID])</span>
+                            }
+                            else {
+                                <i class="icon feather-alert-triangle text-warning"></i>
+                                <span class="text-muted">Unassigned</span>
+                            }
+                        }
+                        else {
+                            <button type="button" class="btn btn-link p-0 border-bottom" @onclick="@(() => HandleAssignRelation(relation))">
+                                @if (relations.ContainsKey(relation.Relation.ID)) {
+                                    <span>@String.Join(',', relations[relation.Relation.ID])</span>
                                 }
                                 else {
                                     <i class="icon feather-alert-triangle text-warning"></i>
@@ -59,12 +94,16 @@
     public ModelData Model { get; set; }
 
     [Parameter]
-    public Dictionary<int, IEnumerable<string>> Values { get; set; }
+    public Dictionary<int, IEnumerable<string>> Attributes { get; set; }
 
     [Parameter]
-    public EventCallback OnAssignAttribute { get; set; }
+    public Dictionary<int, IEnumerable<string>> Relations { get; set; }
 
-    private Dictionary<int, IEnumerable<string>> values = new Dictionary<int, IEnumerable<string>>();
+    [Parameter]
+    public EventCallback OnUpdate { get; set; }
+
+    private Dictionary<int, IEnumerable<string>> attributes = new Dictionary<int, IEnumerable<string>>();
+    private Dictionary<int, IEnumerable<string>> relations = new Dictionary<int, IEnumerable<string>>();
 
     protected async override Task OnInitializedAsync() {
         await UpdateValues();
@@ -75,20 +114,21 @@
     }
 
     private async Task UpdateValues() {
-        var result = new Dictionary<int, IEnumerable<string>>();
+        var resultAttributes = new Dictionary<int, IEnumerable<string>>();
+        var resultRelations = new Dictionary<int, IEnumerable<string>>();
 
-        foreach (var kv in Values) {
+        foreach (var kv in Attributes) {
             var modelAttr = Model.Attributes.Where(a => a.Attribute.ID == kv.Key).Single();
 
             if (!kv.Value.Any()) {
                 continue;
             }
 
-            if (!result.ContainsKey(kv.Key)) {
-                result.Add(kv.Key, new List<string>());
+            if (!resultAttributes.ContainsKey(kv.Key)) {
+                resultAttributes.Add(kv.Key, new List<string>());
             }
 
-            var list = (List<string>)result[kv.Key];
+            var list = (List<string>)resultAttributes[kv.Key];
             foreach (var value in kv.Value) {
                 if (modelAttr.Attribute.IsBoxed) {
                     var valueIndividual = await Engine.Storage.GetEvent(Int32.Parse(value));
@@ -100,11 +140,29 @@
             }
         }
 
-        values = result;
+        foreach (var kv in Relations) {
+            var modelReation = Model.Relations.Where(r => r.Relation.ID == kv.Key).Single();
+
+            if (!kv.Value.Any()) {
+                continue;
+            }
+
+            if (!resultRelations.ContainsKey(kv.Key)) {
+                resultRelations.Add(kv.Key, new List<string>());
+            }
+
+            var list = (List<string>)resultRelations[kv.Key];
+            foreach (var value in kv.Value) {
+                list.Add(value);
+            }
+        }
+
+        attributes = resultAttributes;
+        relations = resultRelations;
     }
 
     private bool IsFull(ModelAttrData attr) {
-        if (!values.ContainsKey(attr.Attribute.ID)) {
+        if (!attributes.ContainsKey(attr.Attribute.ID)) {
             return false;
         }
 
@@ -112,15 +170,29 @@
             return false;
         }
 
-        var items = values[attr.Attribute.ID];
+        var items = attributes[attr.Attribute.ID];
 
         return items.Count() >= attr.Cardinality;
+    }
+
+    private bool IsFull(ModelRelationData relation) {
+        if (!relations.ContainsKey(relation.Relation.ID)) {
+            return false;
+        }
+
+        if (relation.Cardinality == 0) {
+            return false;
+        }
+
+        var items = relations[relation.Relation.ID];
+
+        return items.Count() >= relation.Cardinality;
     }
 
     private async Task HandleAssignAttribute(ModelAttrData attr) {
         var resultValues = await Dialog.SetAttributeValue(
             attr,
-            Values.ContainsKey(attr.Attribute.ID) ? Values[attr.Attribute.ID] : Array.Empty<string>(),
+            Attributes.ContainsKey(attr.Attribute.ID) ? Attributes[attr.Attribute.ID] : Array.Empty<string>(),
             !IndividualID.HasValue
         );
             
@@ -139,10 +211,39 @@
             }
         }
         else {
-            Values[attr.Attribute.ID] = resultValues;
+            Attributes[attr.Attribute.ID] = resultValues;
             await UpdateValues();
         }
 
-        await OnAssignAttribute.InvokeAsync(null);
+        await OnUpdate.InvokeAsync(null);
+    }
+
+    private async Task HandleAssignRelation(ModelRelationData relation) {
+        var resultValues = await Dialog.SetRelationValue(
+            relation,
+            Relations.ContainsKey(relation.Relation.ID) ? Relations[relation.Relation.ID] : Array.Empty<string>(),
+            !IndividualID.HasValue
+        );
+            
+        if (null == resultValues) {
+            return;
+        }
+
+        if (IndividualID.HasValue) {
+            foreach (var value in resultValues) {
+                await Credentials.ProcessEvent(Engine, new FederatedEvent(
+                    IndividualID.Value,
+                    relation.Relation.ID,
+                    IndividualID.Value,
+                    value
+                ));
+            }
+        }
+        else {
+            Relations[relation.Relation.ID] = resultValues;
+            await UpdateValues();
+        }
+
+        await OnUpdate.InvokeAsync(null);
     }
 }

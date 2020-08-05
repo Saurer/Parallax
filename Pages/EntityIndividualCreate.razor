@@ -32,7 +32,11 @@
 
             <h4 class="mt-5">Attributes</h4>
             @if (null != selectedModel) {
-                <ModelForm Model="@selectedModel" Values="@individual.Attributes" />
+                <ModelForm
+                    Model="@selectedModel"
+                    Attributes="@individual.Attributes"
+                    Relations="@individual.Relations"
+                />
             }
 
             <hr/>

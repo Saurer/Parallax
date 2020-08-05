@@ -70,6 +70,32 @@
                 </div>
             </div>
         }
+        @foreach (var relation in Value.Model.Relations) {
+            <div class="row">
+                <div class="col-sm">
+                    <strong>@relation.Name</strong>
+                </div>
+                <div class="col-sm text-right">
+                    @if (IsEditable(relation)) {
+                        var values = RenderValues(relation);
+                        <button class="btn btn-link p-0 border-bottom" @onclick="@(() => HandleAssignRelation(relation))">
+                            @if (null == values) {
+                                <i class="icon feather-alert-triangle text-warning"></i>
+                                <span class="text-muted">Unassigned</span>
+                            }
+                            else {
+                                @values
+                            }
+                        </button>
+                    }
+                    else {
+                        <span>
+                            @RenderValues(relation)
+                        </span>
+                    }
+                </div>
+            </div>
+        }
     </div>
 </div>
 
@@ -78,7 +104,7 @@
     public IndividualData Value { get; set; }
 
     [Parameter]
-    public EventCallback<int> OnAssignAttribute { get; set; }
+    public EventCallback OnUpdate { get; set; }
 
     private bool IsEditable(IndividualAttrData attr) {
         if (attr.Cardinality == 0) {
@@ -92,9 +118,30 @@
         return attr.PlainValues.Count() < attr.Cardinality;
     }
 
+    private bool IsEditable(IndividualRelationData relation) {
+        if (relation.Cardinality == 0) {
+            return true;
+        }
+
+        if (null == relation.PlainValues?.Count()) {
+            return true;
+        }
+
+        return relation.PlainValues.Count() < relation.Cardinality;
+    }
+
     private string RenderValues(IndividualAttrData attr) {
         if (Value.Attributes.ContainsKey(attr.ID)) {
             return String.Join(',', Value.Attributes[attr.ID].ProcessedValues);
+        }
+        else {
+            return null;
+        }
+    }
+
+    private string RenderValues(IndividualRelationData relation) {
+        if (Value.Relations.ContainsKey(relation.ID)) {
+            return String.Join(',', Value.Relations[relation.ID].ProcessedValues);
         }
         else {
             return null;
@@ -118,6 +165,26 @@
             ));
         }
 
-        await OnAssignAttribute.InvokeAsync(attr.ID);
+        await OnUpdate.InvokeAsync(null);
+    }
+
+    private async Task HandleAssignRelation(IndividualRelationData relation) {
+        var modelRelationData = await ModelRelationData.Instantiate(relation.ModelRelation);
+        var resultValues = await Dialog.SetRelationValue(modelRelationData, relation.PlainValues ?? Array.Empty<string>());
+
+        if (null == resultValues) {
+            return;
+        }
+
+        foreach (var value in resultValues) {
+            await Credentials.ProcessEvent(Engine, new FederatedEvent(
+                Value.ID,
+                relation.ID,
+                Value.ID,
+                value
+            ));
+        }
+
+        await OnUpdate.InvokeAsync(null);
     }
 }

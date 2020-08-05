@@ -33,7 +33,13 @@
             }
 
             <h4>Attributes</h4>
-            <ModelForm IndividualID="@ID" Model="@model" Values="@values" OnAssignAttribute="@Refresh" />
+            <ModelForm
+                IndividualID="@ID"
+                Model="@model"
+                Attributes="@attributes"
+                Relations="@relations"
+                OnUpdate="@Refresh"
+            />
         </ChildContent>
     </Scaffold>
 }
@@ -44,7 +50,8 @@
 
     private IndividualData individual;
     private ModelData model;
-    private Dictionary<int, IEnumerable<string>> values;
+    private Dictionary<int, IEnumerable<string>> attributes;
+    private Dictionary<int, IEnumerable<string>> relations;
     private string badge = null;
 
     protected override async Task OnInitializedAsync() {
@@ -59,7 +66,8 @@
         var actor = await Engine.Storage.GetIndividual(ID);
         individual = await IndividualData.Instantiate(actor);
         model = await ModelData.Instantiate(individual.Model.Value);
-        values = individual.Attributes.ToDictionary(k => k.Key, v => v.Value.PlainValues);
+        attributes = individual.Attributes.ToDictionary(k => k.Key, v => v.Value.PlainValues);
+        relations = individual.Relations.ToDictionary(k => k.Key, v => v.Value.PlainValues);
         var parentEvent = await Engine.Storage.GetEvent(individual.Event.BaseEventID);
         badge = parentEvent.Value;
     }

@@ -11,7 +11,11 @@
 
     <h4 class="mt-5">Attributes</h4>
     @if (null != dbModel) {
-        <ModelForm Model="@dbModel" Values="@model.Attributes" />
+        <ModelForm
+            Model="@dbModel"
+            Attributes="@model.Attributes"
+            Relations="@model.Relations"
+        />
     }
 
     <hr/>

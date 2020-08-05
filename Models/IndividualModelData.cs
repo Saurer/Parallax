@@ -11,19 +11,28 @@ namespace Parallax.Models {
         public int Parent { get; private set; }
         public IModel Value { get; private set; }
         public IEnumerable<IndividualAttrData> Attributes { get; private set; }
+        public IEnumerable<IndividualRelationData> Relations { get; private set; }
 
         private IndividualModelData() {
 
         }
 
-        public static async Task<IndividualModelData> Instantiate(IModel model, IReadOnlyDictionary<int, IEnumerable<string>> values) {
+        public static async Task<IndividualModelData> Instantiate(IModel model, IReadOnlyDictionary<int, IEnumerable<string>> attributeValues, IReadOnlyDictionary<int, IEnumerable<string>> relationValues) {
             var parent = await model.GetParent();
             var plainModelAttributes = await model.GetAllAttributes();
             var attributes = await Task.WhenAll(plainModelAttributes.Select(modelAttr => {
                 var attrID = Int32.Parse(modelAttr.Value);
                 return IndividualAttrData.Instantiate(
                     modelAttr,
-                    values.ContainsKey(attrID) ? values[attrID] : null
+                    attributeValues.ContainsKey(attrID) ? attributeValues[attrID] : null
+                );
+            }));
+            var plainModelRelations = await model.GetAllRelations();
+            var relations = await Task.WhenAll(plainModelRelations.Select(modelRelation => {
+                var relationID = Int32.Parse(modelRelation.Value);
+                return IndividualRelationData.Instantiate(
+                    modelRelation,
+                    relationValues.ContainsKey(relationID) ? relationValues[relationID] : null
                 );
             }));
 
@@ -32,7 +41,8 @@ namespace Parallax.Models {
                 Name = model.Value,
                 Parent = parent?.ID ?? 0,
                 Value = model,
-                Attributes = attributes
+                Attributes = attributes,
+                Relations = relations
             };
         }
     }

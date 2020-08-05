@@ -8,7 +8,7 @@
     <ChildContent>
         <div class="card-columns">
             @foreach (var item in values) {
-                <IndividualCard Value="@item" OnAssignAttribute="@Refresh" />
+                <IndividualCard Value="@item" OnUpdate="@Refresh" />
             }
         </div>
     </ChildContent>

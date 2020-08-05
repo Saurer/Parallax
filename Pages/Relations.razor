@@ -13,7 +13,7 @@
     <ChildContent>
         <div class="card-columns">
             @foreach (var item in relations) {
-                <IndividualCard Value="@item" OnAssignAttribute="@Refresh" />
+                <IndividualCard Value="@item" OnUpdate="@Refresh" />
             }
         </div>
     </ChildContent>

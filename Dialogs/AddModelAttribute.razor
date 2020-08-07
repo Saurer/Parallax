@@ -9,7 +9,7 @@
                     <label for="dataType">Attribute</label>
                     <select class="form-control" @onchange="HandleChangeNewAttr">
                         @foreach (var attr in availableAttributes) {
-                            <option value="@attr.ID">(@attr.ID) @attr.Name - @attr.DataType.Name</option>
+                            <option value="@attr.ID">(@attr.ID) @attr.Label - @attr.DataType.Name</option>
                         }
                     </select>
                 </div>
@@ -62,7 +62,7 @@ else {
 
     protected async override Task OnInitializedAsync() {
         var attrs = await Storage.GetAttributes();
-        attrs = attrs.Where(a => !Attributes.Contains(a.ID));
+        attrs = attrs.Where(a => !Attributes.Contains(a.PropertyID));
         availableAttributes = await Task.WhenAll(attrs.Select(l => AttrData.Instantiate(l)));
         model.Attribute = availableAttributes.FirstOrDefault();
     }

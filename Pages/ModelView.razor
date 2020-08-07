@@ -6,7 +6,7 @@
 
 @if (null != model) {
     <Scaffold>
-        <Title>(@model.ID) @model.Name</Title>
+        <Title>(@model.ID) @model.Label</Title>
         <ChildContent>
             <h4>Parent</h4>
             <div>
@@ -14,7 +14,7 @@
                     <span>Root</span>
                 }
                 else {
-                    <NavLink href="@Routing.ModelsView(model.Parent)">@model.ParentName</NavLink>
+                    <NavLink href="@Routing.ModelsView(model.Parent)">@model.ParentLabel</NavLink>
                 }
             </div>
 
@@ -41,7 +41,7 @@
                         @foreach (var attr in model.Attributes) {
                             <tr>
                                 <td>@attr.Attribute.ID</td>
-                                <td>@attr.Attribute.Name</td>
+                                <td>@attr.Attribute.Label</td>
                                 <td>@attr.Attribute.DataType.Name</td>
                                 <td>@attr.Required</td>
                                 <td>@attr.Cardinality</td>
@@ -65,8 +65,8 @@
                     <tbody>
                         @foreach (var relation in model.Relations) {
                             <tr>
-                                <td>@relation.Relation.ID</td>
-                                <td>@relation.Relation.Value</td>
+                                <td>@relation.Relation.PropertyID</td>
+                                <td>@relation.Relation.Label</td>
                                 <td>@relation.Required</td>
                                 <td>@relation.Cardinality</td>
                             </tr>
@@ -117,7 +117,7 @@
         if (null != result) {
             var eventID = await Tx.AssignModelAttribute(ID, result.ID);
 
-            if ((Const.DefaultRequired == 1) != result.Required) {
+            if (Const.DefaultRequired != result.Required) {
                 await Tx.AssignPropertyValueRequirement(eventID, result.ID, result.Required);
             }
 
@@ -130,13 +130,13 @@
     }
 
     private async Task HandleAddRelation() {
-        var relationIDs = model.Relations.Select(l => l.Relation.ID);
+        var relationIDs = model.Relations.Select(l => l.Relation.PropertyID);
         var result = await Dialog.AddModelRelation(relationIDs);
 
         if (null != result) {
             var eventID = await Tx.AssignModelRelation(ID, result.ID);
 
-            if ((Const.DefaultRequired == 1) != result.Required) {
+            if (Const.DefaultRequired != result.Required) {
                 await Tx.AssignPropertyValueRequirement(eventID, result.ID, result.Required);
             }
 

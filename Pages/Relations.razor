@@ -28,6 +28,6 @@
 
     private async Task Refresh() {
         var relations = await Storage.GetRelations();
-        this.relations = await Task.WhenAll(relations.Select(i => IndividualData.Instantiate(i)));
+        this.relations = await Task.WhenAll(relations.Select(i => IndividualData.Instantiate(i.PropertyIndividual)));
     }
 }

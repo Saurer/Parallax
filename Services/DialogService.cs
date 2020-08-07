@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using AuroraCore.Storage;
 using Blazored.Modal;
 using Blazored.Modal.Services;
 using Parallax.Dialogs;
@@ -49,7 +50,7 @@ namespace Parallax.Services {
             }
         }
 
-        public async Task<IEnumerable<string>> SetAttributeValue(ModelAttrData attr, IEnumerable<string> values, bool editable = false) {
+        public async Task<IEnumerable<IBoxedValue>> SetAttributeValue(ModelAttrData attr, IEnumerable<IBoxedValue> values, bool editable = false) {
             var parameters = new ModalParameters();
             parameters.Add("ModelAttr", attr);
             parameters.Add("Values", values);
@@ -58,15 +59,15 @@ namespace Parallax.Services {
             var modal = instance.Show<SetAttributeValue>("Set attribute", parameters);
             var result = await modal.Result;
 
-            if (result.Data is IEnumerable<string> strValues) {
-                return strValues;
+            if (result.Data is IEnumerable<IBoxedValue> resultValues) {
+                return resultValues;
             }
             else {
                 return null;
             }
         }
 
-        public async Task<IEnumerable<string>> SetRelationValue(ModelRelationData relation, IEnumerable<string> values, bool editable = false) {
+        public async Task<IEnumerable<IBoxedValue>> SetRelationValue(ModelRelationData relation, IEnumerable<IBoxedValue> values, bool editable = false) {
             var parameters = new ModalParameters();
             parameters.Add("ModelRelation", relation);
             parameters.Add("Values", values);
@@ -75,8 +76,8 @@ namespace Parallax.Services {
             var modal = instance.Show<SetRelationValue>("Set relation", parameters);
             var result = await modal.Result;
 
-            if (result.Data is IEnumerable<string> strValues) {
-                return strValues;
+            if (result.Data is IEnumerable<IBoxedValue> resultValues) {
+                return resultValues;
             }
             else {
                 return null;

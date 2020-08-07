@@ -6,7 +6,7 @@
                     <strong>Attribute</strong>
                 </label>
                 <div class="col-sm-9">
-                    <input type="text" readonly class="form-control-plaintext" id="attr" value="@(ModelAttr?.Attribute.Name)"/>
+                    <input type="text" readonly class="form-control-plaintext" id="attr" value="@(ModelAttr?.Attribute.Label)"/>
                 </div>
             </div>
             <div class="form-group row">
@@ -81,7 +81,7 @@
     public ModelAttrData ModelAttr { get; set; }
 
     [Parameter]
-    public IEnumerable<string> Values { get; set; }
+    public IEnumerable<IBoxedValue> Values { get; set; }
 
     [Parameter]
     public bool Editable { get; set; } = false;
@@ -104,7 +104,7 @@
             };
         }
         else {
-            editorValues = Values.Select(v => new BoxedValue{ ReadOnly = !Editable, Value = v }).ToList();
+            editorValues = Values.Select(v => new BoxedValue{ ReadOnly = !Editable, Value = v.PlainValue }).ToList();
         }
     }
 
@@ -131,7 +131,12 @@
             return;
         }
 
-        var resultValues = editorValues.Where(v => !v.ReadOnly).Select(v => v.Value);
+        var resultValues = editorValues
+            .Where(v => !v.ReadOnly)
+            .Select(v => {
+                var shownValue = ModelAttr.Attribute.Values.Where(a => a.EventID.ToString() == v.Value).SingleOrDefault();
+                return new BoxedValueData(v.Value, shownValue?.Value ?? v.Value);
+            });
 
         if (!resultValues.Any()) {
             await BlazoredModal.Cancel();
@@ -141,7 +146,7 @@
     }
 
     private async Task Clear() {
-        await BlazoredModal.Close(ModalResult.Ok(Array.Empty<string>()));
+        await BlazoredModal.Close(ModalResult.Ok(Array.Empty<IBoxedValue>()));
     }
 
     private async Task Cancel() {

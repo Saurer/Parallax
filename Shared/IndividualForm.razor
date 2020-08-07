@@ -4,7 +4,7 @@
 @if (null != individual) {
     <Scaffold>
         <Title>
-            @individual?.Name
+            @individual?.Label
         </Title>
         <TitleRight>
             @if (badge != null) {
@@ -17,7 +17,7 @@
             <h4>Model</h4>
             <div>
                 <NavLink href="@(Routing.ModelsView(individual.Model.ID))">
-                    (@individual.Model.ID) @individual.Model.Name
+                    (@individual.Model.ID) @individual.Model.Label
                 </NavLink>
             </div>
             <hr/>
@@ -26,7 +26,7 @@
                 <h4>Creator</h4>
                 <div>
                     <NavLink href="@(Routing.IndividualsView(individual.Actor.Value))">
-                        (@individual.Actor.Value) @individual.ActorName
+                        (@individual.Actor.Value) @individual.ActorLabel
                     </NavLink>
                 </div>
                 <hr/>
@@ -50,8 +50,8 @@
 
     private IndividualData individual;
     private ModelData model;
-    private Dictionary<int, IEnumerable<string>> attributes;
-    private Dictionary<int, IEnumerable<string>> relations;
+    private Dictionary<int, IEnumerable<IBoxedValue>> attributes;
+    private Dictionary<int, IEnumerable<IBoxedValue>> relations;
     private string badge = null;
 
     protected override async Task OnInitializedAsync() {
@@ -66,9 +66,9 @@
         var actor = await Storage.GetIndividual(ID);
         individual = await IndividualData.Instantiate(actor);
         model = await ModelData.Instantiate(individual.Model.Value);
-        attributes = individual.Attributes.ToDictionary(k => k.Key, v => v.Value.PlainValues);
-        relations = individual.Relations.ToDictionary(k => k.Key, v => v.Value.PlainValues);
-        var parentEvent = await Storage.GetEvent(individual.Event.BaseEventID);
-        badge = parentEvent.Value;
+        attributes = individual.Attributes.ToDictionary(k => k.Key, v => v.Value.Values);
+        relations = individual.Relations.ToDictionary(k => k.Key, v => v.Value.Values);
+        var parentEvent = await Storage.GetEvent(individual.Event.EventBase);
+        badge = parentEvent.EventValue.Value;
     }
 }

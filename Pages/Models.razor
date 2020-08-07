@@ -19,7 +19,7 @@
                 <tr>
                     <td>@model.ID</td>
                     <td>
-                        <NavLink href="@Routing.ModelsView(model.ID)">@model.Name</NavLink>
+                        <NavLink href="@Routing.ModelsView(model.ID)">@model.Label</NavLink>
                     </td>
                     <td>
                         (@model.EventBase) @model.EventBaseName
@@ -29,7 +29,7 @@
                             <span>Root</span>
                         }
                         else {
-                            <NavLink href="@Routing.ModelsView(model.Parent)">@model.ParentName</NavLink>
+                            <NavLink href="@Routing.ModelsView(model.Parent)">@model.ParentLabel</NavLink>
                         }
                     </td>
                 </tr>

@@ -8,7 +8,7 @@
         <h5 class="card-title">
             <NavLink href="@Routing.IndividualsView(@Value.ID)">
                 <strong>
-                    <span>(@Value.ID) @Value.Name</span>
+                    <span>(@Value.ID) @Value.Label</span>
                 </strong>
             </NavLink>
 
@@ -25,7 +25,7 @@
                 <span>Model</span>
             </div>
             <div class="col-sm text-right">
-                <NavLink href="@Routing.ModelsView(Value.Model.ID)">@Value.Model.Name</NavLink>
+                <NavLink href="@Routing.ModelsView(Value.Model.ID)">@Value.Model.Label</NavLink>
             </div>
         </div>
         <div class="row">
@@ -35,10 +35,10 @@
             </div>
             <div class="col-sm text-right">
                 @if (Value.Actor.HasValue) {
-                    <NavLink href="@Routing.IndividualsView(Value.Actor.Value)">@Value.ActorName</NavLink>
+                    <NavLink href="@Routing.IndividualsView(Value.Actor.Value)">@Value.ActorLabel</NavLink>
                 }
                 else {
-                    @(Value.ActorName ?? "System")
+                    @(Value.ActorLabel ?? "System")
                 }
             </div>
         </div
@@ -46,7 +46,7 @@
         @foreach (var attr in Value.Model.Attributes) {
             <div class="row">
                 <div class="col-sm">
-                    <strong>@attr.Name</strong>
+                    <strong>@attr.Label</strong>
                 </div>
                 <div class="col-sm text-right">
                     @if (IsEditable(attr)) {
@@ -73,7 +73,7 @@
         @foreach (var relation in Value.Model.Relations) {
             <div class="row">
                 <div class="col-sm">
-                    <strong>@relation.Name</strong>
+                    <strong>@relation.Label</strong>
                 </div>
                 <div class="col-sm text-right">
                     @if (IsEditable(relation)) {
@@ -111,11 +111,11 @@
             return true;
         }
 
-        if (null == attr.PlainValues?.Count()) {
+        if (null == attr.Values?.Count()) {
             return true;
         }
 
-        return attr.PlainValues.Count() < attr.Cardinality;
+        return attr.Values.Count() < attr.Cardinality;
     }
 
     private bool IsEditable(IndividualRelationData relation) {
@@ -123,16 +123,16 @@
             return true;
         }
 
-        if (null == relation.PlainValues?.Count()) {
+        if (null == relation.Values?.Count()) {
             return true;
         }
 
-        return relation.PlainValues.Count() < relation.Cardinality;
+        return relation.Values.Count() < relation.Cardinality;
     }
 
     private string RenderValues(IndividualAttrData attr) {
         if (Value.Attributes.ContainsKey(attr.ID)) {
-            return String.Join(',', Value.Attributes[attr.ID].ProcessedValues);
+            return String.Join(',', Value.Attributes[attr.ID].Values.Select(v => v.ShownValue));
         }
         else {
             return null;
@@ -141,7 +141,7 @@
 
     private string RenderValues(IndividualRelationData relation) {
         if (Value.Relations.ContainsKey(relation.ID)) {
-            return String.Join(',', Value.Relations[relation.ID].ProcessedValues);
+            return String.Join(',', Value.Relations[relation.ID].Values.Select(v => v.ShownValue));
         }
         else {
             return null;
@@ -149,30 +149,30 @@
     }
 
     private async Task HandleAssignAttribute(IndividualAttrData attr) {
-        var modelAttrData = await ModelAttrData.Instantiate(attr.ModelAttr);
-        var resultValues = await Dialog.SetAttributeValue(modelAttrData, attr.PlainValues ?? Array.Empty<string>());
+        var modelAttrData = await ModelAttrData.Instantiate(attr.AttachedProperty);
+        var resultValues = await Dialog.SetAttributeValue(modelAttrData, attr.Values ?? Array.Empty<IBoxedValue>());
 
         if (null == resultValues) {
             return;
         }
 
         foreach (var value in resultValues) {
-            await Tx.AssignIndividualProperty(Value.ID, attr.ID, value);
+            await Tx.AssignIndividualProperty(Value.ID, attr.ID, value.PlainValue);
         }
 
         await OnUpdate.InvokeAsync(null);
     }
 
     private async Task HandleAssignRelation(IndividualRelationData relation) {
-        var modelRelationData = await ModelRelationData.Instantiate(relation.ModelRelation);
-        var resultValues = await Dialog.SetRelationValue(modelRelationData, relation.PlainValues ?? Array.Empty<string>());
+        var modelRelationData = await ModelRelationData.Instantiate(relation.AttachedProperty);
+        var resultValues = await Dialog.SetRelationValue(modelRelationData, relation.Values ?? Array.Empty<IBoxedValue>());
 
         if (null == resultValues) {
             return;
         }
 
         foreach (var value in resultValues) {
-            await Tx.AssignIndividualProperty(Value.ID, relation.ID, value);
+            await Tx.AssignIndividualProperty(Value.ID, relation.ID, value.PlainValue);
         }
 
         await OnUpdate.InvokeAsync(null);

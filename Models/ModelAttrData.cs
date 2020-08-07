@@ -12,14 +12,14 @@ namespace Parallax.Models {
 
         }
 
-        public static async Task<ModelAttrData> Instantiate(IModelProperty<IAttr> attr) {
+        public static async Task<ModelAttrData> Instantiate(IAttachedProperty<IAttr> attr) {
             var plainAttr = await attr.GetProperty();
             var attrData = await AttrData.Instantiate(plainAttr);
             var required = await attr.IsRequired();
             var cardinality = await attr.GetCardinality();
 
             return new ModelAttrData {
-                ID = attr.ID,
+                ID = attr.PropertyID,
                 Required = required,
                 Cardinality = cardinality,
                 Attribute = attrData

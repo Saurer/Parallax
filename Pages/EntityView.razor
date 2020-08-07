@@ -6,7 +6,7 @@
 
 @if (null != entity) {
     <Scaffold>
-        <Title>(@entity.ID) @entity.Name</Title>
+        <Title>(@entity.ID) @entity.Label</Title>
         <ChildContent>
             <div>
                 <div class="float-right">
@@ -33,10 +33,10 @@
                                 <td>@model.ID</td>
                                 <td>
                                     <NavLink href="@Routing.ModelsView(model.ID)">
-                                        @model.Name
+                                        @model.Label
                                     </NavLink>
                                 </td>
-                                <td>@model.ParentName</td>
+                                <td>@model.ParentLabel</td>
                                 <td>
                                     <div class="btn-group">
                                         <button class="btn btn-light" title="Derive model" @onclick="() => HandleCreateModel(model.ID)">
@@ -96,7 +96,7 @@
     }
 
     private async Task HandleCreateModel(int modelID = StaticEvent.EntityModel) {
-        var result = await Dialog.CreateModel(ID, modelID, $"Model_{entity.Name}");
+        var result = await Dialog.CreateModel(ID, modelID, $"Model_{entity.Label}");
         if (null != result) {
             await Redraw();
         }

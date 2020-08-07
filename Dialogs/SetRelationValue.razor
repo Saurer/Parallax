@@ -8,7 +8,7 @@
                     <strong>Relation</strong>
                 </label>
                 <div class="col-sm-9">
-                    <input type="text" readonly class="form-control-plaintext" id="attr" value="@(ModelRelation?.Relation.Value)"/>
+                    <input type="text" readonly class="form-control-plaintext" id="attr" value="@(ModelRelation?.Relation.Label)"/>
                 </div>
             </div>
             <div class="form-group row">
@@ -21,7 +21,7 @@
                             <div class="@(AllowsMultiple ? "col-sm-9" : "col-sm-12")">
                                 <select class="form-control" disabled="@value.ReadOnly" @bind="value.Value">
                                     @foreach (var item in candidateValues) {
-                                        <option value="@item.ID.ToString()">(@item.ID) @item.Value</option>
+                                        <option value="@item.IndividualID.ToString()">(@item.IndividualID) @item.Label</option>
                                     }
                                 </select>
                             </div>
@@ -65,7 +65,7 @@
     public ModelRelationData ModelRelation { get; set; }
 
     [Parameter]
-    public IEnumerable<string> Values { get; set; }
+    public IEnumerable<IBoxedValue> Values { get; set; }
 
     [Parameter]
     public bool Editable { get; set; } = false;
@@ -80,18 +80,18 @@
         ModelRelation?.Cardinality != 0 && editorValues.Count >= ModelRelation?.Cardinality;
 
     protected override async Task OnInitializedAsync() {
-        candidateValues = await Storage.GetRelationCandidates();
+        candidateValues = await Storage.GetRelationValueCandidates();
 
         if (!Values.Any()) {
             editorValues = new List<BoxedValue>(){
                 new BoxedValue {
                     ReadOnly = false,
-                    Value = candidateValues.First().ID.ToString()
+                    Value = candidateValues.First().IndividualID.ToString()
                 }
             };
         }
         else {
-            editorValues = Values.Select(v => new BoxedValue{ ReadOnly = !Editable, Value = v }).ToList();
+            editorValues = Values.Select(v => new BoxedValue{ ReadOnly = !Editable, Value = v.PlainValue }).ToList();
         }
     }
 
@@ -102,7 +102,7 @@
 
         editorValues.Add(new BoxedValue{
             ReadOnly = false,
-            Value = candidateValues.First().ID.ToString()
+            Value = candidateValues.First().IndividualID.ToString()
         });
     }
 
@@ -111,7 +111,12 @@
     }
 
     private async Task Confirm() {
-        var resultValues = editorValues.Where(v => !v.ReadOnly).Select(v => v.Value);
+        var resultValues = editorValues
+            .Where(v => !v.ReadOnly)
+            .Select(v => {
+                var shownValue = candidateValues.Where(c => c.IndividualID.ToString() == v.Value).Single();
+                return new BoxedValueData(v.Value, shownValue.Label);
+            });
 
         if (!resultValues.Any()) {
             await BlazoredModal.Cancel();

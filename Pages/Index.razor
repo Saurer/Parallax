@@ -87,7 +87,7 @@
 
     private async Task HandleBackupData() {
         var backupEvents = await Engine.Storage.GetEvents(0, Engine.Position);
-        var result = await BackupService.Encode(backupEvents);
+        var result = await BackupService.Encode(backupEvents.Select(e => e.EventValue));
         await JSRuntime.InvokeVoidAsync("io.saveFile", result, "backup.xml", "application/xml");
     }
 

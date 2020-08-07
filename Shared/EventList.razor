@@ -15,11 +15,11 @@
         @foreach (var item in detailedEvents) {
             <tr>
                 <td class="text-center">@item.ID</td>
-                <td>(@item.BaseEvent.ID) @item.BaseEvent.Value</td>
-                <td>(@item.ValueTypeEvent.ID) @item.ValueTypeEvent.Value</td>
+                <td>(@item.BaseEvent.EventValue.ID) @item.BaseEvent.EventValue.Value</td>
+                <td>(@item.ValueTypeEvent.EventValue.ID) @item.ValueTypeEvent.EventValue.Value</td>
                 <td>@item.Value</td>
-                <td>(@item.ConditionEvent.ID) @item.ConditionEvent.Value</td>
-                <td>(@item.ActorEvent.ID) @item.ActorEvent.Value</td>
+                <td>(@item.ConditionEvent.EventValue.ID) @item.ConditionEvent.EventValue.Value</td>
+                <td>(@item.ActorEvent.EventValue.ID) @item.ActorEvent.EventValue.Value</td>
             </tr>
         }
     </tbody>
@@ -51,12 +51,12 @@
 
     private async Task<DetailedEvent> GetDetailedEvent(IEvent e) {
         return new DetailedEvent {
-            ID = e.ID,
-            BaseEvent = await Storage.GetEvent(e.BaseEventID),
-            ValueTypeEvent = await Storage.GetEvent(e.ValueID),
-            Value = e.Value,
-            ConditionEvent = await Storage.GetEvent(e.ConditionEventID),
-            ActorEvent = await Storage.GetEvent(e.ActorEventID),
+            ID = e.EventValue.ID,
+            BaseEvent = await Storage.GetEvent(e.EventValue.BaseEventID),
+            ValueTypeEvent = await Storage.GetEvent(e.EventValue.ValueID),
+            Value = e.EventValue.Value,
+            ConditionEvent = await Storage.GetEvent(e.EventValue.ConditionEventID),
+            ActorEvent = await Storage.GetEvent(e.EventValue.ActorEventID),
             Date = e.Date
         };
     }

@@ -52,7 +52,7 @@ namespace Parallax.Services {
                 baseEventID,
                 valueID,
                 conditionEventID,
-                Credentials.CurrentActor.ID,
+                Credentials.CurrentActor.IndividualID,
                 value
             );
             await Engine.ProcessEvent(e);

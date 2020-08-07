@@ -44,7 +44,7 @@
         foreach (var dt in values) {
             var dtIndividual = await Storage.GetDataTypeIndividual(dt.Name);
             result.Add((
-                dtIndividual.ID,
+                dtIndividual.IndividualID,
                 dt.Name
             ));
         }

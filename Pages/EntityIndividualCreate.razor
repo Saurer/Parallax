@@ -18,14 +18,14 @@
 
             <div class="form-group">
                 <label>Entity</label>
-                <input class="form-control" type="text" disabled value="@entity?.Value" />
+                <input class="form-control" type="text" disabled value="@entity?.Label" />
             </div>
 
             <div class="form-group">
                 <label>Model</label>
                 <select class="form-control" @onchange="HandleChangeModel" value="@(individual?.ModelID.ToString())">
                     @foreach (var model in models) {
-                        <option value="@model.ID.ToString()">@model.Value</option>
+                        <option value="@model.ModelID.ToString()">@model.Label</option>
                     }
                 </select>
             </div>
@@ -67,7 +67,7 @@
             await SetModel(intValue);
         }
         else {
-            await SetModel(models.First().ID);
+            await SetModel(models.First().ModelID);
         }
     }
 
@@ -89,13 +89,13 @@
 
         foreach (var attr in individual.Attributes) {
             foreach (var value in attr.Value) {
-                await Tx.AssignIndividualProperty(eventID, attr.Key, value);
+                await Tx.AssignIndividualProperty(eventID, attr.Key, value.PlainValue);
             }
         }
 
         foreach (var relation in individual.Relations) {
             foreach (var value in relation.Value) {
-                await Tx.AssignIndividualProperty(eventID, relation.Key, value);
+                await Tx.AssignIndividualProperty(eventID, relation.Key, value.PlainValue);
             }
         }
 

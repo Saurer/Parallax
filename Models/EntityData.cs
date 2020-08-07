@@ -6,7 +6,7 @@ using AuroraCore.Storage;
 namespace Parallax.Models {
     public class EntityData {
         public int ID { get; private set; }
-        public string Name { get; private set; }
+        public string Label { get; private set; }
         public IEnumerable<ModelData> Models { get; private set; }
         public IEnumerable<IndividualData> Individuals { get; private set; }
 
@@ -21,8 +21,8 @@ namespace Parallax.Models {
             var individuals = await Task.WhenAll(plainIndividuals.Select(individual => IndividualData.Instantiate(individual)));
 
             return new EntityData {
-                ID = entity.ID,
-                Name = entity.Value,
+                ID = entity.EntityID,
+                Label = entity.Label,
                 Models = models,
                 Individuals = individuals
             };

@@ -12,7 +12,7 @@ namespace Parallax.Services {
         public BackupEvent[] Events;
     }
 
-    public class BackupEvent : IEvent {
+    public class BackupEvent : IEventData {
         public int ID { get; set; }
         public int BaseEventID { get; set; }
         public int ValueID { get; set; }
@@ -23,7 +23,7 @@ namespace Parallax.Services {
 
         public BackupEvent() { }
 
-        public BackupEvent(IEvent e) {
+        public BackupEvent(IEventData e) {
             ID = e.ID;
             BaseEventID = e.BaseEventID;
             ValueID = e.ValueID;
@@ -42,7 +42,7 @@ namespace Parallax.Services {
             return Decode(bytes);
         }
 
-        public async Task<string> Encode(IEnumerable<IEvent> events) {
+        public async Task<string> Encode(IEnumerable<IEventData> events) {
             using (var writer = new MemoryStream())
             using (var reader = new StreamReader(writer)) {
                 serializer.Serialize(writer, new BackupData {

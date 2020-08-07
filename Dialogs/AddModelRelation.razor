@@ -8,8 +8,8 @@
                 <div class="form-group">
                     <label for="dataType">Relation</label>
                     <select class="form-control" @onchange="HandleChangeNewRelation">
-                        @foreach (var attr in availableRelations) {
-                            <option value="@attr.ID">(@attr.ID) @attr.Value</option>
+                        @foreach (var relation in availableRelations) {
+                            <option value="@relation.PropertyID">(@relation.PropertyID) @relation.Label</option>
                         }
                     </select>
                 </div>
@@ -62,13 +62,13 @@ else {
 
     protected async override Task OnInitializedAsync() {
         var relations = await Storage.GetRelations();
-        availableRelations = relations.Where(a => !Relations.Contains(a.ID));
+        availableRelations = relations.Where(a => !Relations.Contains(a.PropertyID));
         model.Relation = availableRelations.FirstOrDefault();
     }
 
     private void HandleChangeNewRelation(ChangeEventArgs e) {
         if (Int32.TryParse((string)e.Value, out var id)) {
-            model.Relation = availableRelations.Where(a => a.ID == id).Single();
+            model.Relation = availableRelations.Where(a => a.PropertyID == id).Single();
         }
     }
 
@@ -79,7 +79,7 @@ else {
     private async Task HandleSubmit() {
         await BlazoredModal.Close(ModalResult.Ok(
             new PropertyAssignData {
-                ID = model.Relation.ID,
+                ID = model.Relation.PropertyID,
                 Required = model.Required,
                 Cardinality = model.Cardinality
             }

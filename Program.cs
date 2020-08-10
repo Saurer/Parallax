@@ -29,6 +29,8 @@ namespace Parallax {
 
             builder.Services.AddScoped(typeof(DialogService));
             builder.Services.AddScoped(typeof(TransactionsService));
+            builder.Services.AddScoped(typeof(PropertyProviderService));
+            builder.Services.AddScoped(typeof(PropertyContainerService));
             builder.Services.AddBlazoredModal();
 
             await builder.Build().RunAsync();

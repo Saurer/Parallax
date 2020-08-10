@@ -1,20 +1,20 @@
 ﻿@inject IStorageAPI Storage
 @inject TransactionsService Tx
+@inject PropertyContainerService PropertyContainer
 
 <EditForm Model="@model" OnValidSubmit="@HandleSubmit">
     <DataAnnotationsValidator/>
 
     <div class="form-group">
-        <label for="name">Name</label>
-        <InputText class="form-control" @bind-Value="model.Name" />
+        <label for="name">Label</label>
+        <InputText class="form-control" @bind-Value="model.Label" />
     </div>
 
     <h4 class="mt-5">Properties</h4>
     @if (null != dbModel) {
-        <ModelForm
-            Model="@dbModel"
-            Attributes="@model.Attributes"
-            Relations="@model.Relations"
+        <ContainerProperties
+            PropertyProvider="@dbModel.PropertyProvider"
+            OnChange="@model.SetProperties"
         />
     }
 
@@ -33,7 +33,7 @@
     public int ModelID { get; set; }
 
     [Parameter]
-    public EventCallback OnSubmit { get; set; }
+    public EventCallback<int> OnSubmit { get; set; }
 
     private IndividualCreateData model;
     private ModelData dbModel;
@@ -46,20 +46,7 @@
     }
 
     private async Task HandleSubmit() {
-        int eventID = await Tx.CreateIndividual(BaseEvent, ModelID, model.Name);
-
-        foreach (var attr in model.Attributes) {
-            foreach (var value in attr.Value) {
-                await Tx.AssignIndividualProperty(eventID, attr.Key, value.PlainValue);
-            }
-        }
-
-        foreach (var relation in model.Relations) {
-            foreach (var value in relation.Value) {
-                await Tx.AssignIndividualProperty(eventID, relation.Key, value.PlainValue);
-            }
-        }
-
-        await OnSubmit.InvokeAsync(null);
+        var individualID = await PropertyContainer.CreateIndividual(model);
+        await OnSubmit.InvokeAsync(individualID);
     }
 }

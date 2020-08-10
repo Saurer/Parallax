@@ -1,5 +1,6 @@
 ﻿@inject IStorageAPI Storage
 @inject RoutingService Routing
+@inject PropertyContainerService PropertyContainer
 
 @if (null != individual) {
     <Scaffold>
@@ -16,8 +17,8 @@
         <ChildContent>
             <h4>Model</h4>
             <div>
-                <NavLink href="@(Routing.ModelsView(individual.Model.ID))">
-                    (@individual.Model.ID) @individual.Model.Label
+                <NavLink href="@(Routing.ModelsView(individual.Model.ModelID))">
+                    (@individual.Model.ModelID) @individual.Model.Label
                 </NavLink>
             </div>
             <hr/>
@@ -33,12 +34,10 @@
             }
 
             <h4>Properties</h4>
-            <ModelForm
-                IndividualID="@ID"
-                Model="@model"
-                Attributes="@attributes"
-                Relations="@relations"
-                OnUpdate="@Refresh"
+            <ContainerProperties
+                PropertyProvider="@individual.PropertyProvider"
+                PropertyContainer="@propertiesData"
+                OnChange="@Refresh"
             />
         </ChildContent>
     </Scaffold>
@@ -49,9 +48,7 @@
     public int ID { get; set; }
 
     private IndividualData individual;
-    private ModelData model;
-    private Dictionary<int, IEnumerable<IBoxedValue>> attributes;
-    private Dictionary<int, IEnumerable<IBoxedValue>> relations;
+    private PropertyContainerData propertiesData;
     private string badge = null;
 
     protected override async Task OnInitializedAsync() {
@@ -65,10 +62,8 @@
     private async Task Refresh() {
         var actor = await Storage.GetIndividual(ID);
         individual = await IndividualData.Instantiate(actor);
-        model = await ModelData.Instantiate(individual.Model.Value);
-        attributes = individual.Attributes.ToDictionary(k => k.Key, v => v.Value.Values);
-        relations = individual.Relations.ToDictionary(k => k.Key, v => v.Value.Values);
         var parentEvent = await Storage.GetEvent(individual.Event.EventBase);
         badge = parentEvent.EventValue.Value;
+        propertiesData = await PropertyContainer.GetPropertyContainer(individual.ID);
     }
 }

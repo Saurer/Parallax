@@ -10,8 +10,8 @@
             <DataAnnotationsValidator/>
 
             <div class="form-group">
-                <label for="name">Name</label>
-                <InputText class="form-control" @bind-Value="model.Name" />
+                <label for="name">Label</label>
+                <InputText class="form-control" @bind-Value="model.Label" />
             </div>
 
             <hr/>
@@ -27,7 +27,7 @@
     private EntityCreateData model = new EntityCreateData();
 
     private async Task HandleSubmit() {
-        int entityID = await Tx.CreateEntity(model.Name);
+        int entityID = await Tx.CreateEntity(model.Label);
         NavigationManager.NavigateTo(Routing.EntitiesView(entityID));
     }
 }

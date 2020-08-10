@@ -12,14 +12,14 @@ namespace Parallax.Services {
             Engine = engine;
         }
 
-        public async Task<int> AssignIndividualProperty(int individualID, int propertyID, string value) =>
-            await ProcessEvent(individualID, propertyID, individualID, value);
+        public async Task<int> AssignContainerProperty(int containerID, int propertyID, string value) =>
+            await ProcessEvent(containerID, propertyID, containerID, value);
 
-        public async Task<int> AssignModelAttribute(int modelID, int attributeID) =>
-            await ProcessEvent(modelID, StaticEvent.Attribute, modelID, attributeID.ToString());
+        public async Task<int> AssignProviderAttribute(int providerID, int attributeID) =>
+            await ProcessEvent(providerID, StaticEvent.Attribute, providerID, attributeID.ToString());
 
-        public async Task<int> AssignModelRelation(int modelID, int relationID) =>
-            await ProcessEvent(modelID, StaticEvent.Relation, modelID, relationID.ToString());
+        public async Task<int> AssignProviderRelation(int providerID, int relationID) =>
+            await ProcessEvent(providerID, StaticEvent.Relation, providerID, relationID.ToString());
 
         public async Task<int> AssignPropertyValueRequirement(int assignationID, int propertyID, bool required) =>
             await ProcessEvent(assignationID, StaticEvent.Required, propertyID, required ? "1" : "0");

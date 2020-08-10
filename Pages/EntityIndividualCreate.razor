@@ -12,8 +12,8 @@
             <DataAnnotationsValidator/>
 
             <div class="form-group">
-                <label for="name">Name</label>
-                <InputText class="form-control" @bind-Value="individual.Name" />
+                <label for="name">Label</label>
+                <InputText class="form-control" @bind-Value="individual.Label" />
             </div>
 
             <div class="form-group">
@@ -32,10 +32,9 @@
 
             <h4 class="mt-5">Properties</h4>
             @if (null != selectedModel) {
-                <ModelForm
-                    Model="@selectedModel"
-                    Attributes="@individual.Attributes"
-                    Relations="@individual.Relations"
+                <ContainerProperties
+                    PropertyProvider="@selectedModel.PropertyProvider"
+                    @* OnChange="@Refresh" *@
                 />
             }
 
@@ -78,26 +77,28 @@
     }
 
     private async Task SetModel(int modelID) {
-        individual.Attributes.Clear();
+        #warning
+        @* individual.Attributes.Clear(); *@
         individual.ModelID = modelID;
         var model = await Storage.GetModel(modelID);
         selectedModel = await ModelData.Instantiate(model);
     }
 
     private async Task HandleSubmit() {
-        int eventID = await Tx.CreateIndividual(individual.BaseEvent, individual.ModelID, individual.Name);
+        int eventID = await Tx.CreateIndividual(individual.BaseEvent, individual.ModelID, individual.Label);
 
-        foreach (var attr in individual.Attributes) {
+        #warning
+        @* foreach (var attr in individual.Attributes) {
             foreach (var value in attr.Value) {
-                await Tx.AssignIndividualProperty(eventID, attr.Key, value.PlainValue);
+                await Tx.AssignContainerProperty(eventID, attr.Key, value.PlainValue);
             }
         }
 
         foreach (var relation in individual.Relations) {
             foreach (var value in relation.Value) {
-                await Tx.AssignIndividualProperty(eventID, relation.Key, value.PlainValue);
+                await Tx.AssignContainerProperty(eventID, relation.Key, value.PlainValue);
             }
-        }
+        } *@
 
         NavigationManager.NavigateTo(Routing.EntitiesView(ID));
     }

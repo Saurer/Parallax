@@ -1,0 +1,151 @@
+@inject TransactionsService Tx
+@inject DialogService Dialog
+@inject PropertyProviderService PropertyProviderService
+
+@foreach (var attr in PropertyProvider.Attributes) {
+    <div class="card mb-2 pb-0">
+        <div class="card-body pb-2">
+            <div class="row">
+                <div class="col-sm-4">
+                    <h5>
+                        <div class="badge badge-success float-left mr-2">@attr.Attribute.ID</div>
+                        <div>@attr.Attribute.Label</div>
+                    </h5>
+                </div>
+                <div class="col-sm-4">
+                    <div class="row">
+                        <div class="col-6 text-muted">Type</div>
+                        <div class="col-6">
+                            <strong>@attr.Attribute.DataType.Name</strong>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-6 text-muted">Cardinality</div>
+                        <div class="col-6">
+                            <strong>@attr.Cardinality</strong>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-6 text-muted">Required</div>
+                        <div class="col-6">
+                            @if (attr.Required) {
+                                <strong class="text-danger">@attr.Required</strong>
+                            }
+                            else {
+                                <div class="text-muted">@attr.Required</div>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-4 text-right">
+                    <div>
+                        <button class="btn btn-link mb-2" @onclick="() => HandleAddAttribute(attr.PropertyProvider)">
+                            <i class="icon feather-check-circle mr-1"></i>
+                            <span>Add attribute</span>
+                        </button>
+                    </div>
+                    <div>
+                        <button class="btn btn-link mb-2" @onclick="() => HandleAddRelation(attr.PropertyProvider)">
+                            <i class="icon feather-copy mr-1"></i>
+                            <span>Add relation</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="border-left:dashed 1px #ccc;padding-left: 10px;">
+        <ProviderProperties
+            PropertyProvider="@attr.PropertyProvider"
+            OnChange="@OnChange"
+        />
+    </div>
+}
+
+@foreach (var relation in PropertyProvider.Relations) {
+    <div class="card mb-2 pb-0">
+        <div class="card-body pb-2">
+            <div class="row">
+                <div class="col-sm-4">
+                    <h5>
+                        <div class="badge badge-primary float-left mr-2">@relation.Relation.PropertyID</div>
+                        <div>@relation.Relation.Label</div>
+                    </h5>
+                </div>
+                <div class="col-sm-4">
+                    <div class="row">
+                        <div class="col-6 text-muted">Type</div>
+                        <div class="col-6">
+                            <strong>Relation</strong>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-6 text-muted">Cardinality</div>
+                        <div class="col-6">
+                            <strong>@relation.Cardinality</strong>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-6 text-muted">Required</div>
+                        <div class="col-6">
+                            @if (relation.Required) {
+                                <strong class="text-danger">@relation.Required</strong>
+                            }
+                            else {
+                                <div class="text-muted">@relation.Required</div>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-4 text-right">
+                    <div>
+                        <button class="btn btn-link mb-2" @onclick="() => HandleAddAttribute(relation.PropertyProvider)">
+                            <i class="icon feather-check-circle mr-1"></i>
+                            <span>Add attribute</span>
+                        </button>
+                    </div>
+                    <div>
+                        <button class="btn btn-link mb-2" @onclick="() => HandleAddRelation(relation.PropertyProvider)">
+                            <i class="icon feather-copy mr-1"></i>
+                            <span>Add relation</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="border-left:dashed 1px #ccc;padding-left: 10px;">
+        <ProviderProperties
+            PropertyProvider="@relation.PropertyProvider"
+            OnChange="@OnChange"
+        />
+    </div>
+}
+
+@code {
+    [Parameter]
+    public PropertyProviderData PropertyProvider { get; set; }
+
+    [Parameter]
+    public EventCallback OnChange { get; set; }
+
+    private async Task HandleAddAttribute(PropertyProviderData provider) {
+        var result = await PropertyProviderService.AddAttribute(provider);
+        if (result) {
+            await OnChange.InvokeAsync(null);
+        }
+    }
+
+    private async Task HandleAddRelation(PropertyProviderData provider) {
+        var result = await PropertyProviderService.AddRelation(provider);
+        if (result) {
+            await OnChange.InvokeAsync(null);
+        }
+    }
+}

@@ -3,6 +3,7 @@
 @inject TransactionsService Tx
 @inject DialogService Dialog
 @inject RoutingService Routing
+@inject PropertyProviderService PropertyProvider
 
 @if (null != model) {
     <Scaffold>
@@ -25,65 +26,23 @@
             </div>
             <hr/>
 
-            @if (model.Attributes.Any()) {
+            @if (model.PropertyProvider.Attributes.Any()) {
                 <h4>Attributes</h4>
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Type</th>
-                            <th>Required</th>
-                            <th>Cardinality</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var attr in model.Attributes) {
-                            <tr>
-                                <td>@attr.Attribute.ID</td>
-                                <td>@attr.Attribute.Label</td>
-                                <td>@attr.Attribute.DataType.Name</td>
-                                <td>@attr.Required</td>
-                                <td>@attr.Cardinality</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            }
-
-            @if (model.Relations.Any()) {
-                <h4>Relations</h4>
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Required</th>
-                            <th>Cardinality</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var relation in model.Relations) {
-                            <tr>
-                                <td>@relation.Relation.PropertyID</td>
-                                <td>@relation.Relation.Label</td>
-                                <td>@relation.Required</td>
-                                <td>@relation.Cardinality</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+                <ProviderProperties
+                    PropertyProvider="@model.PropertyProvider"
+                    OnChange="@Redraw"
+                />
             }
 
             <hr/>
             <div>
-                <button class="btn btn-primary" @onclick="HandleAddAttribute">
-                    <i class="icon feather-plus mr-1"></i>
+                <button class="btn btn-primary" @onclick="() => HandleAddAttribute(model.PropertyProvider)">
+                    <i class="icon feather-check-circle mr-1"></i>
                     <span>Add attribute</span>
                 </button>
 
-                <button class="btn btn-primary" @onclick="HandleAddRelation">
-                    <i class="icon feather-plus mr-1"></i>
+                <button class="btn btn-primary" @onclick="() => HandleAddRelation(model.PropertyProvider)">
+                    <i class="icon feather-copy mr-1"></i>
                     <span>Add relation</span>
                 </button>
             </div>
@@ -110,40 +69,16 @@
         this.model = await ModelData.Instantiate(model);
     }
 
-    private async Task HandleAddAttribute() {
-        var attributeIDs = model.Attributes.Select(l => l.Attribute.ID);
-        var result = await Dialog.AddModelAttribute(attributeIDs);
-
-        if (null != result) {
-            var eventID = await Tx.AssignModelAttribute(ID, result.ID);
-
-            if (Const.DefaultRequired != result.Required) {
-                await Tx.AssignPropertyValueRequirement(eventID, result.ID, result.Required);
-            }
-
-            if (Const.DefaultCardinality != result.Cardinality) {
-                await Tx.AssignPropertyValueCardinality(eventID, result.ID, result.Cardinality);
-            }
-
+    private async Task HandleAddAttribute(PropertyProviderData provider) {
+        var result = await PropertyProvider.AddAttribute(provider);
+        if (result) {
             await Redraw();
         }
     }
 
-    private async Task HandleAddRelation() {
-        var relationIDs = model.Relations.Select(l => l.Relation.PropertyID);
-        var result = await Dialog.AddModelRelation(relationIDs);
-
-        if (null != result) {
-            var eventID = await Tx.AssignModelRelation(ID, result.ID);
-
-            if (Const.DefaultRequired != result.Required) {
-                await Tx.AssignPropertyValueRequirement(eventID, result.ID, result.Required);
-            }
-
-            if (Const.DefaultCardinality != result.Cardinality) {
-                await Tx.AssignPropertyValueCardinality(eventID, result.ID, result.Cardinality);
-            }
-
+    private async Task HandleAddRelation(PropertyProviderData provider) {
+        var result = await PropertyProvider.AddRelation(provider);
+        if (result) {
             await Redraw();
         }
     }

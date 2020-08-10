@@ -1,0 +1,150 @@
+@inject IStorageAPI Storage
+@inject TransactionsService Tx
+@inject DialogService Dialog
+@inject RoutingService Routing
+@inject PropertyProviderService PropertyProviderService
+
+@foreach (var attr in PropertyProvider.Attributes) {
+    <div class="card mb-2">
+        <div class="card-body pt-3 pb-2">
+            <div class="row">
+                <div class="col-sm-4">
+                    <h5>
+                        <div class="badge badge-success float-left mr-2">@attr.Attribute.DataType.Name</div>
+                        <span>@attr.Attribute.Label</span>
+                    </h5>
+                </div>
+                <div class="col-sm-2">
+                    <span class="text-muted">Cardinality:</span>
+                    <strong>@attr.Cardinality</strong>
+                </div>
+                <div class="col-sm-2">
+                    @if (attr.Required) {
+                        <span class="text-danger">(required)</span>
+                    }
+                </div>
+                <div class="col-sm-4 text-right">
+                    <button type="button" class="btn btn-link p-0" disabled="@(IsFull(attr))" @onclick="@(() => HandleAssignAttribute(attr))">
+                        <i class="icon feather-check-circle mr-1"></i>
+                        <span>Assign value</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (Properties.HasValueFor(attr.Attribute.ID)) {
+        @foreach(var container in Properties.Attributes[attr.Attribute.ID]) {
+            <div style="border-left:dashed 1px #ccc;padding-left: 25px;margin-left:25px">
+                <div class="card mb-2">
+                    <div class="card-body pt-2 pb-2">
+                        <div class="float-right">
+                            @if (container.ContainerID.HasValue) {
+                                var actorID = container.Value.EventValue.ActorEventID;
+                                @if (actorID == 0) {
+                                    <i class="icon feather-user mr-1"></i>
+                                    <span>System</span>
+                                }
+                                else {
+                                    <NavLink href="@Routing.IndividualsView(actorID)" class="btn btn-link ml-2 p-0">
+                                        <i class="icon feather-user mr-1"></i>
+                                        <span>@container.ActorName</span>
+                                    </NavLink>
+                                }
+                            }
+                            else {
+                                <button type="button" class="btn btn-link ml-2 p-0" @onclick="() => HandleEditAttribute(attr, container)">Edit</button>
+                                <button type="button" class="btn btn-link ml-2 p-0" @onclick="() => Properties.RemoveAttributeValue(attr.Attribute.ID, container)">Remove</button>
+                            }
+                        </div>
+                        <div>@container.Value.ShownValue</div>
+                    </div>
+                </div>
+
+                <ContainerProperties
+                    PropertyProvider="@attr.PropertyProvider"
+                    PropertyContainer="@container"
+                    OnChange="@HandleChange"
+                />
+            </div>
+        }
+    }
+}
+
+@code {
+    [Parameter]
+    public PropertyProviderData PropertyProvider { get; set; }
+
+    [Parameter]
+    public PropertyContainerData PropertyContainer { get; set; }
+
+    [Parameter]
+    public EventCallback<PropertyContainerData> OnChange { get; set; }
+
+    private PropertyContainerData Properties;
+
+    protected override void OnInitialized() {
+        if (PropertyContainer == null) {
+            Properties = new PropertyContainerData();
+        }
+        else {
+            Properties = PropertyContainer;
+        }
+    }
+
+    protected override void OnParametersSet() {
+        if (PropertyContainer != null) {
+            Properties = PropertyContainer;
+        } 
+    }
+
+    private bool IsFull(AttachedAttrData attr) {
+        if (attr.Cardinality == 0) {
+            return false;
+        }
+
+        if (null == Properties || !Properties.Attributes.ContainsKey(attr.Attribute.ID)) {
+            return false;
+        }
+
+        return Properties.Attributes[attr.Attribute.ID].Count() >= attr.Cardinality;
+    }
+
+    private async Task HandleAssignAttribute(AttachedAttrData attr) {
+        var resultValue = await Dialog.SetAttributeValue(
+            attr,
+            null
+        );
+
+        if (null == resultValue) {
+            return;
+        }
+
+        if (Properties.ContainerID.HasValue) {
+            await Tx.AssignContainerProperty(Properties.ContainerID.Value, attr.Attribute.ID, resultValue.PlainValue);
+        }
+        else {
+            Properties.AddAttributeValue(attr.Attribute.ID, resultValue);
+        }
+
+        await HandleChange();
+    }
+
+    private async Task HandleEditAttribute(AttachedAttrData attr, PropertyContainerData container) {
+        var resultValue = await Dialog.SetAttributeValue(
+            attr,
+            container.Value
+        );
+
+        if (null == resultValue) {
+            return;
+        }
+
+        container.SetValue(resultValue);
+        await HandleChange();
+    }
+
+    private async Task HandleChange() {
+        await OnChange.InvokeAsync(Properties);
+    }
+}

@@ -140,7 +140,7 @@
 
         // Attach attributes
         foreach (var attr in model.Attributes) {
-            var eventID = await Tx.AssignModelAttribute(modelID, attr.Attribute.ID);
+            var eventID = await Tx.AssignProviderAttribute(modelID, attr.Attribute.ID);
 
             if (Const.DefaultRequired != attr.Required) {
                 await Tx.AssignPropertyValueRequirement(eventID, attr.Attribute.ID, attr.Required);

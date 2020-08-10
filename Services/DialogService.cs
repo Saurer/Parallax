@@ -50,24 +50,23 @@ namespace Parallax.Services {
             }
         }
 
-        public async Task<IEnumerable<IBoxedValue>> SetAttributeValue(ModelAttrData attr, IEnumerable<IBoxedValue> values, bool editable = false) {
+        public async Task<IBoxedValue> SetAttributeValue(AttachedAttrData attr, IBoxedValue value) {
             var parameters = new ModalParameters();
             parameters.Add("ModelAttr", attr);
-            parameters.Add("Values", values);
-            parameters.Add("Editable", editable);
+            parameters.Add("Value", value);
 
             var modal = instance.Show<SetAttributeValue>("Set attribute", parameters);
             var result = await modal.Result;
 
-            if (result.Data is IEnumerable<IBoxedValue> resultValues) {
-                return resultValues;
+            if (result.Data is IBoxedValue resultValue) {
+                return resultValue;
             }
             else {
                 return null;
             }
         }
 
-        public async Task<IEnumerable<IBoxedValue>> SetRelationValue(ModelRelationData relation, IEnumerable<IBoxedValue> values, bool editable = false) {
+        public async Task<IEnumerable<IBoxedValue>> SetRelationValue(AttachedRelationData relation, IEnumerable<IBoxedValue> values, bool editable = false) {
             var parameters = new ModalParameters();
             parameters.Add("ModelRelation", relation);
             parameters.Add("Values", values);
@@ -100,7 +99,7 @@ namespace Parallax.Services {
             }
         }
 
-        public async Task<PropertyAssignData> AddModelAttribute(IEnumerable<int> availableAttributes) {
+        public async Task<PropertyAssignData> AddPropertyProviderAttribute(IEnumerable<int> availableAttributes) {
             var parameters = new ModalParameters();
             parameters.Add("Attributes", availableAttributes);
             var modal = instance.Show<AddModelAttribute>("Add attribute", parameters);
@@ -114,7 +113,7 @@ namespace Parallax.Services {
             }
         }
 
-        public async Task<PropertyAssignData> AddModelRelation(IEnumerable<int> availableRelations) {
+        public async Task<PropertyAssignData> AddPropertyProviderRelation(IEnumerable<int> availableRelations) {
             var parameters = new ModalParameters();
             parameters.Add("Relations", availableRelations);
             var modal = instance.Show<AddModelRelation>("Add relation", parameters);

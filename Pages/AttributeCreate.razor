@@ -12,8 +12,8 @@
             <DataAnnotationsValidator/>
 
             <div class="form-group">
-                <label for="name">Name</label>
-                <InputText class="form-control" @bind-Value="model.Name" />
+                <label for="name">Label</label>
+                <InputText class="form-control" @bind-Value="model.Label" />
             </div>
 
             <div class="form-group">
@@ -59,7 +59,7 @@
     }
 
     private async Task HandleSubmit() {
-        int attrID = await Tx.CreateAttribute(model.Name);
+        int attrID = await Tx.CreateAttribute(model.Label);
         await Tx.AssignAttributeDataType(attrID, model.DataType);
         NavigationManager.NavigateTo(Routing.Attributes());
     }

@@ -1,0 +1,49 @@
+@inject RoutingService Routing
+
+<div style="border-left:dashed 1px #ccc;padding-left: 25px;margin-left:25px">
+    <div class="card mb-2">
+        <div class="card-body pt-2 pb-2">
+            <div class="float-right">
+                @if (IsEditable) {
+                    <button type="button" class="btn btn-link ml-2 p-0" @onclick="OnEdit">Edit</button>
+                    <button type="button" class="btn btn-link ml-2 p-0" @onclick="OnRemove">Remove</button>
+                }
+                else if (ActorID == 0){
+                    <i class="icon feather-user mr-1"></i>
+                    <span>System</span>
+                }
+                else if (ActorID.HasValue) {
+                    <NavLink href="@Routing.IndividualsView(ActorID.Value)" class="btn btn-link ml-2 p-0">
+                        <i class="icon feather-user mr-1"></i>
+                        <span>@ActorName</span>
+                    </NavLink>
+                }
+            </div>
+            <div>@Value</div>
+        </div>
+    </div>
+    @ChildContent
+</div>
+
+@code {
+    [Parameter]
+    public string Value { get; set; }
+
+    [Parameter]
+    public int? ActorID { get; set; }
+
+    [Parameter]
+    public bool IsEditable { get; set; }
+
+    [Parameter]
+    public string ActorName { get; set; }
+
+    [Parameter]
+    public EventCallback OnEdit { get; set; }
+
+    [Parameter]
+    public EventCallback OnRemove { get; set; }
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+}

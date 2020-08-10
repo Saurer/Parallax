@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,7 +20,8 @@ namespace Parallax.Services {
         public async Task<int> CreateIndividual(IndividualCreateData model) {
             int eventID = await tx.CreateIndividual(model.BaseEvent, model.ModelID, model.Label);
             if (null != model.Properties) {
-                await CreateScopedProperties(eventID, model.Properties.Attributes);
+                await CreateScopedProperties(eventID, model.Properties.Attributes, container => container.Attributes);
+                await CreateScopedProperties(eventID, model.Properties.Relations, container => container.Relations);
             }
             return eventID;
         }
@@ -53,11 +55,15 @@ namespace Parallax.Services {
             return new PropertyContainerData(resultAttributes, resultRelations, containerID, actorEvent.EventValue.Value, value);
         }
 
-        private async Task CreateScopedProperties(int containerID, IReadOnlyDictionary<int, IEnumerable<PropertyContainerData>> properties) {
+        private async Task CreateScopedProperties(
+            int containerID,
+            IReadOnlyDictionary<int, IEnumerable<PropertyContainerData>> properties,
+            Func<PropertyContainerData, IReadOnlyDictionary<int, IEnumerable<PropertyContainerData>>> scopeSelector
+        ) {
             foreach (var property in properties) {
                 foreach (var propertyValue in property.Value) {
                     var assignationID = await tx.AssignContainerProperty(containerID, property.Key, propertyValue.Value.PlainValue);
-                    await CreateScopedProperties(assignationID, propertyValue.Attributes);
+                    await CreateScopedProperties(assignationID, scopeSelector(propertyValue), scopeSelector);
                 }
             }
         }

@@ -22,27 +22,23 @@
                     <strong>Value</strong>
                 </label>
                 <div class="col-sm-9">
-                    <div class="row mt-2">
-                        <div class="col-sm-12">
-                            @if (ModelAttr?.Attribute.DataType.IsBoxed is true) {
-                                <select
-                                    class="form-control @(Valid ? "is-valid" : "is-invalid")"
-                                    @bind="editorValue"
-                                >
-                                    @foreach (var item in ModelAttr?.Attribute.Values) {
-                                        <option value="@item.EventID.ToString()">@item.Value</option>
-                                    }
-                                </select>
+                    @if (ModelAttr?.Attribute.DataType.IsBoxed is true) {
+                        <select
+                            class="form-control @(Valid ? "is-valid" : "is-invalid")"
+                            @bind="editorValue"
+                        >
+                            @foreach (var item in ModelAttr?.Attribute.Values) {
+                                <option value="@item.EventID.ToString()">@item.Value</option>
                             }
-                            else {
-                                <input
-                                    type="text"
-                                    @bind-value="editorValue"
-                                    class="form-control @(Valid ? "is-valid" : "is-invalid")"
-                                />
-                            }
-                        </div>
-                    </div>
+                        </select>
+                    }
+                    else {
+                        <input
+                            type="text"
+                            @bind-value="editorValue"
+                            class="form-control @(Valid ? "is-valid" : "is-invalid")"
+                        />
+                    }
                 </div>
             </div>
         </form>

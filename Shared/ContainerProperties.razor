@@ -5,68 +5,64 @@
 @inject PropertyProviderService PropertyProviderService
 
 @foreach (var attr in PropertyProvider.Attributes) {
-    <div class="card mb-2">
-        <div class="card-body pt-3 pb-2">
-            <div class="row">
-                <div class="col-sm-4">
-                    <h5>
-                        <div class="badge badge-success float-left mr-2">@attr.Attribute.DataType.Name</div>
-                        <span>@attr.Attribute.Label</span>
-                    </h5>
-                </div>
-                <div class="col-sm-2">
-                    <span class="text-muted">Cardinality:</span>
-                    <strong>@attr.Cardinality</strong>
-                </div>
-                <div class="col-sm-2">
-                    @if (attr.Required) {
-                        <span class="text-danger">(required)</span>
-                    }
-                </div>
-                <div class="col-sm-4 text-right">
-                    <button type="button" class="btn btn-link p-0" disabled="@(IsFull(attr))" @onclick="@(() => HandleAssignAttribute(attr))">
-                        <i class="icon feather-check-circle mr-1"></i>
-                        <span>Assign value</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <ContainerProperty
+        Label="@attr.Attribute.Label"
+        Type="@attr.Attribute.DataType.Name"
+        Cardinality="@attr.Cardinality"
+        Required="@attr.Required"
+        IsAssignable="@IsFull(attr)"
+        OnAssign="@(() => HandleAssignAttribute(attr))"
+    />
 
     @if (Properties.HasValueFor(attr.Attribute.ID)) {
         @foreach(var container in Properties.Attributes[attr.Attribute.ID]) {
-            <div style="border-left:dashed 1px #ccc;padding-left: 25px;margin-left:25px">
-                <div class="card mb-2">
-                    <div class="card-body pt-2 pb-2">
-                        <div class="float-right">
-                            @if (container.ContainerID.HasValue) {
-                                var actorID = container.Value.EventValue.ActorEventID;
-                                @if (actorID == 0) {
-                                    <i class="icon feather-user mr-1"></i>
-                                    <span>System</span>
-                                }
-                                else {
-                                    <NavLink href="@Routing.IndividualsView(actorID)" class="btn btn-link ml-2 p-0">
-                                        <i class="icon feather-user mr-1"></i>
-                                        <span>@container.ActorName</span>
-                                    </NavLink>
-                                }
-                            }
-                            else {
-                                <button type="button" class="btn btn-link ml-2 p-0" @onclick="() => HandleEditAttribute(attr, container)">Edit</button>
-                                <button type="button" class="btn btn-link ml-2 p-0" @onclick="() => Properties.RemoveAttributeValue(attr.Attribute.ID, container)">Remove</button>
-                            }
-                        </div>
-                        <div>@container.Value.ShownValue</div>
-                    </div>
-                </div>
-
+            var actorID = container.Value.EventValue?.ActorEventID;
+            <ContainerPropertyValue
+                Value="@container.Value.ShownValue"
+                ActorID="@actorID"
+                ActorName="@container.ActorName"
+                IsEditable="@(!container.ContainerID.HasValue)"
+                OnEdit="@(() => HandleEditAttribute(attr, container))"
+                OnRemove="@(() => Properties.RemoveAttributeValue(attr.Attribute.ID, container))"
+            >
                 <ContainerProperties
                     PropertyProvider="@attr.PropertyProvider"
                     PropertyContainer="@container"
                     OnChange="@HandleChange"
                 />
-            </div>
+            </ContainerPropertyValue>
+        }
+    }
+}
+
+@foreach (var relation in PropertyProvider.Relations) {
+    <ContainerProperty
+        Label="@relation.Relation.Label"
+        Type="Relation"
+        TypeCssClass="badge-primary"
+        Cardinality="@relation.Cardinality"
+        Required="@relation.Required"
+        IsAssignable="@IsFull(relation)"
+        OnAssign="@(() => HandleAssignRelation(relation))"
+    />
+
+    @if (Properties.HasValueFor(relation.Relation.PropertyID)) {
+        @foreach(var container in Properties.Relations[relation.Relation.PropertyID]) {
+            var actorID = container.Value.EventValue?.ActorEventID;
+            <ContainerPropertyValue
+                Value="@container.Value.ShownValue"
+                ActorID="@actorID"
+                ActorName="@container.ActorName"
+                IsEditable="@(!container.ContainerID.HasValue)"
+                OnEdit="@(() => HandleEditRelation(relation, container))"
+                OnRemove="@(() => Properties.RemoveRelationValue(relation.Relation.PropertyID, container))"
+            >
+                <ContainerProperties
+                    PropertyProvider="@relation.PropertyProvider"
+                    PropertyContainer="@container"
+                    OnChange="@HandleChange"
+                />
+            </ContainerPropertyValue>
         }
     }
 }
@@ -95,7 +91,7 @@
     protected override void OnParametersSet() {
         if (PropertyContainer != null) {
             Properties = PropertyContainer;
-        } 
+        }
     }
 
     private bool IsFull(AttachedAttrData attr) {
@@ -108,6 +104,18 @@
         }
 
         return Properties.Attributes[attr.Attribute.ID].Count() >= attr.Cardinality;
+    }
+
+    private bool IsFull(AttachedRelationData relation) {
+        if (relation.Cardinality == 0) {
+            return false;
+        }
+
+        if (null == Properties || !Properties.Relations.ContainsKey(relation.Relation.PropertyID)) {
+            return false;
+        }
+
+        return Properties.Relations[relation.Relation.PropertyID].Count() >= relation.Cardinality;
     }
 
     private async Task HandleAssignAttribute(AttachedAttrData attr) {
@@ -133,6 +141,40 @@
     private async Task HandleEditAttribute(AttachedAttrData attr, PropertyContainerData container) {
         var resultValue = await Dialog.SetAttributeValue(
             attr,
+            container.Value
+        );
+
+        if (null == resultValue) {
+            return;
+        }
+
+        container.SetValue(resultValue);
+        await HandleChange();
+    }
+
+    private async Task HandleAssignRelation(AttachedRelationData relation) {
+        var resultValue = await Dialog.SetRelationValue(
+            relation,
+            null
+        );
+
+        if (null == resultValue) {
+            return;
+        }
+
+        if (Properties.ContainerID.HasValue) {
+            await Tx.AssignContainerProperty(Properties.ContainerID.Value, relation.Relation.PropertyID, resultValue.PlainValue);
+        }
+        else {
+            Properties.AddRelationValue(relation.Relation.PropertyID, resultValue);
+        }
+
+        await HandleChange();
+    }
+
+    private async Task HandleEditRelation(AttachedRelationData relation, PropertyContainerData container) {
+        var resultValue = await Dialog.SetRelationValue(
+            relation,
             container.Value
         );
 

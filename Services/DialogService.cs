@@ -66,17 +66,16 @@ namespace Parallax.Services {
             }
         }
 
-        public async Task<IEnumerable<IBoxedValue>> SetRelationValue(AttachedRelationData relation, IEnumerable<IBoxedValue> values, bool editable = false) {
+        public async Task<IBoxedValue> SetRelationValue(AttachedRelationData relation, IBoxedValue value) {
             var parameters = new ModalParameters();
             parameters.Add("ModelRelation", relation);
-            parameters.Add("Values", values);
-            parameters.Add("Editable", editable);
+            parameters.Add("Value", value);
 
             var modal = instance.Show<SetRelationValue>("Set relation", parameters);
             var result = await modal.Result;
 
-            if (result.Data is IEnumerable<IBoxedValue> resultValues) {
-                return resultValues;
+            if (result.Data is IBoxedValue resultValue) {
+                return resultValue;
             }
             else {
                 return null;

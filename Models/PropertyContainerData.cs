@@ -61,6 +61,22 @@ namespace Parallax.Models {
             list.Add(new PropertyContainerData(value));
         }
 
+        public void RemoveRelationValue(int relationID, PropertyContainerData container) {
+            if (relations.ContainsKey(relationID)) {
+                var list = (List<PropertyContainerData>)relations[relationID];
+                list.Remove(container);
+            }
+        }
+
+        public void AddRelationValue(int relationID, IBoxedValue value) {
+            if (!Relations.ContainsKey(relationID)) {
+                relations.Add(relationID, new List<PropertyContainerData>());
+            }
+
+            var list = (List<PropertyContainerData>)relations[relationID];
+            list.Add(new PropertyContainerData(value));
+        }
+        
         public void SetValue(IBoxedValue value) {
             Value = value;
         }

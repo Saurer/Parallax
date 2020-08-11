@@ -1,4 +1,3 @@
-using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AuroraCore.Storage;
@@ -15,17 +14,24 @@ namespace Parallax.Models {
         }
 
         public static async Task<EntityData> Instantiate(IEntity entity) {
-            var plainModels = await entity.GetModels();
-            var plainIndividuals = await entity.GetIndividuals();
-            var models = await Task.WhenAll(plainModels.Select(model => ModelData.Instantiate(model)));
-            var individuals = await Task.WhenAll(plainIndividuals.Select(individual => IndividualData.Instantiate(individual)));
+            #warning
+            await Task.Yield();
+            return null;
+            // var plainModels = await entity.GetModels();
+            // var plainIndividuals = await entity.GetIndividuals();
+            // var models = await Task.WhenAll(plainModels.Select(model => ModelData.Instantiate(model)));
+            // var individuals = await Task.WhenAll(
+            //     plainIndividuals.Select(individual =>
+            //         IndividualData.Instantiate(individual)
+            //     )
+            // );
 
-            return new EntityData {
-                ID = entity.EntityID,
-                Label = entity.Label,
-                Models = models,
-                Individuals = individuals
-            };
+            // return new EntityData {
+            //     ID = entity.EntityID,
+            //     Label = entity.Label,
+            //     Models = models,
+            //     Individuals = individuals
+            // };
         }
     }
 }

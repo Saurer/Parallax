@@ -1,31 +1,18 @@
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
+using AuroraCore.Storage;
 
 namespace Parallax.Models {
     public class ModelCreateData {
-        private List<AddModelAttributeData> attributes = new List<AddModelAttributeData>();
 
         [Required, MinLength(1)]
-        public string Name { get; set; }
+        public string Label { get; set; }
 
-        public IEnumerable<AddModelAttributeData> Attributes {
-            get {
-                return attributes;
-            }
-        }
+        [Required]
+        public IEvent EventBase { get; set; }
 
-        public void AddAttribute(AddModelAttributeData value) {
-            attributes.Add(value);
-        }
+        [Required]
+        public int ParentModelID { get; set; }
 
-        public void RemoveAttribute(int id) {
-            var attr = attributes.Where(l => l.Attribute.ID == id).SingleOrDefault();
-            attributes.Remove(attr);
-        }
-
-        public bool HasAttribute(int id) {
-            return attributes.Any(a => a.Attribute.ID == id);
-        }
+        public PropertyProviderData Properties { get; set; }
     }
 }

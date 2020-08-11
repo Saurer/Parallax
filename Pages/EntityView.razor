@@ -10,10 +10,10 @@
         <ChildContent>
             <div>
                 <div class="float-right">
-                    <button class="btn btn-link" @onclick="() => HandleCreateModel()">
+                    <NavLink class="btn btn-link" href="@Routing.ModelsCreate(entity.ID, StaticEvent.EntityModel, $"Model_{entity.Label}")">
                         <i class="icon feather-plus mr-1"></i>
                         <span>Create model</span>
-                    </button>
+                    </NavLink>
                 </div>
                 <h4>Models</h4>
             </div>
@@ -39,9 +39,9 @@
                                 <td>@model.ParentLabel</td>
                                 <td>
                                     <div class="btn-group">
-                                        <button class="btn btn-light" title="Derive model" @onclick="() => HandleCreateModel(model.ID)">
+                                        <NavLink href="@Routing.ModelsCreate(entity.ID, model.ID, $"Model_{entity.Label}")" class="btn btn-light" title="Derive model">
                                             <i class="icon feather-code"></i>
-                                        </button>
+                                        </NavLink>
                                         <NavLink href="@Routing.EntitiesCreateIndividual(ID, model.ID)" class="btn btn-light" title="Create individual using this model">
                                             <i class="icon feather-plus"></i>
                                         </NavLink>
@@ -93,13 +93,6 @@
     private async Task Redraw() {
         var entity = await Storage.GetEntity(ID);
         this.entity = await EntityData.Instantiate(entity);
-    }
-
-    private async Task HandleCreateModel(int modelID = StaticEvent.EntityModel) {
-        var result = await Dialog.CreateModel(ID, modelID, $"Model_{entity.Label}");
-        if (null != result) {
-            await Redraw();
-        }
     }
 
     private void HandleCreateIndividual() {

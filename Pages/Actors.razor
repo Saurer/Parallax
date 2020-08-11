@@ -1,6 +1,7 @@
 ﻿@page "/actors"
 @inject IStorageAPI Storage
 @inject RoutingService Routing
+@inject PropertyContainerService PropertyProvider
 
 <Scaffold>
     <Title>Actors</Title>
@@ -28,6 +29,8 @@
 
     private async Task Refresh() {
         var actors = await Storage.GetActors();
-        this.actors = await Task.WhenAll(actors.Select(i => IndividualData.Instantiate(i)));
+        this.actors = await Task.WhenAll(
+            actors.Select(i => PropertyProvider.GetIndividual(i))
+        );
     }
 }

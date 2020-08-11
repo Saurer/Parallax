@@ -1,5 +1,6 @@
 ﻿@inject IStorageAPI Storage
 @inject TransactionsService Tx
+@inject PropertyProviderService PropertyProvider
 @inject PropertyContainerService PropertyContainer
 
 <EditForm Model="@model" OnValidSubmit="@HandleSubmit">
@@ -40,8 +41,7 @@
 
     protected async override Task OnInitializedAsync() {
         model = new IndividualCreateData(BaseEvent);
-        var dbModel = await Storage.GetModel(ModelID);
-        this.dbModel = await ModelData.Instantiate(dbModel);
+        this.dbModel = await PropertyProvider.GetModel(ModelID);
         model.ModelID = ModelID;
     }
 

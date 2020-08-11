@@ -1,0 +1,85 @@
+﻿@page "/models/create"
+@inject IStorageAPI Storage
+@inject TransactionsService Tx
+@inject DialogService Dialog
+@inject RoutingService Routing
+@inject PropertyProviderService PropertyProvider
+@inject NavigationManager NavigationManager
+@using Microsoft.AspNetCore.WebUtilities
+
+<Scaffold>
+    <Title>Create model</Title>
+    <ChildContent>
+        @if (null != model) {
+            <EditForm Model="@model" OnValidSubmit="@HandleSubmit">
+                <DataAnnotationsValidator/>
+
+                <div class="form-group">
+                    <h4>Label</h4>
+                    <InputText class="form-control" @bind-Value="model.Label" />
+                </div>
+
+                <div class="form-group">
+                    <h4>Event base</h4>
+                    <input class="form-control" disabled value="@model.EventBase.EventValue.Value"/>
+                </div>
+
+                <hr/>
+                
+                <h4>Properties</h4>
+                <ProviderProperties
+                    CreateMode
+                    PropertyProvider="@model.Properties"
+                />
+                <hr/>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="icon feather-plus mr-1"></i>
+                    <span>Confirm</span>
+                </button>
+            </EditForm>
+        }
+    </ChildContent>
+</Scaffold>
+
+@code {
+    [Parameter]
+    public int ID { get; set; }
+
+    private ModelCreateData model = null;
+
+    protected override async Task OnInitializedAsync() {
+        var query = new Uri(NavigationManager.Uri).Query;
+        var tokens = QueryHelpers.ParseQuery(query);
+        int baseEventID;
+        int parentModelID;
+        string name = "";
+
+        if (!tokens.TryGetValue("base", out var strValue) || !Int32.TryParse(strValue, out baseEventID)) {
+            return;
+        }
+
+        if (!tokens.TryGetValue("parent", out strValue) || !Int32.TryParse(strValue, out parentModelID)) {
+            return;
+        }
+
+        if (tokens.TryGetValue("name", out strValue)) {
+            name = strValue;
+        }
+
+        var baseEvent = await Storage.GetEvent(baseEventID);
+        var dbModel = await PropertyProvider.GetModel(parentModelID);
+
+        model = new ModelCreateData {
+            Label = name,
+            EventBase = baseEvent,
+            ParentModelID = parentModelID,
+            Properties = dbModel.PropertyProvider
+        };
+    }
+
+    private async Task HandleSubmit() {
+        var modelID = await PropertyProvider.CreateModel(model);
+        NavigationManager.NavigateTo(Routing.ModelsView(modelID));
+    }
+}

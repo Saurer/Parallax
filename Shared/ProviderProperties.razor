@@ -1,130 +1,64 @@
 @inject TransactionsService Tx
 @inject DialogService Dialog
 @inject PropertyProviderService PropertyProviderService
+@inject IStorageAPI Storage
 
-@foreach (var attr in PropertyProvider.Attributes) {
-    <div class="card mb-2 pb-0">
-        <div class="card-body pb-2">
-            <div class="row">
-                <div class="col-sm-4">
-                    <h5>
-                        <div class="badge badge-success float-left mr-2">@attr.Attribute.ID</div>
-                        <div>@attr.Attribute.Label</div>
-                    </h5>
-                </div>
-                <div class="col-sm-4">
-                    <div class="row">
-                        <div class="col-6 text-muted">Type</div>
-                        <div class="col-6">
-                            <strong>@attr.Attribute.DataType.Name</strong>
-                        </div>
-                    </div>
+@foreach (var keyValue in properties.Attributes) {
+    var attr = keyValue.Value;
 
-                    <div class="row">
-                        <div class="col-6 text-muted">Cardinality</div>
-                        <div class="col-6">
-                            <strong>@attr.Cardinality</strong>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-6 text-muted">Required</div>
-                        <div class="col-6">
-                            @if (attr.Required) {
-                                <strong class="text-danger">@attr.Required</strong>
-                            }
-                            else {
-                                <div class="text-muted">@attr.Required</div>
-                            }
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-4 text-right">
-                    <div>
-                        <button class="btn btn-link mb-2" @onclick="() => HandleAddAttribute(attr.PropertyProvider)">
-                            <i class="icon feather-check-circle mr-1"></i>
-                            <span>Add attribute</span>
-                        </button>
-                    </div>
-                    <div>
-                        <button class="btn btn-link mb-2" @onclick="() => HandleAddRelation(attr.PropertyProvider)">
-                            <i class="icon feather-copy mr-1"></i>
-                            <span>Add relation</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div style="border-left:dashed 1px #ccc;padding-left: 10px;">
+    <ProviderProperty
+        Type="@attr.Attribute.DataType.Name"
+        Label="@attr.Attribute.Label"
+        Cardinality="@attr.Cardinality"
+        Required="@attr.Required"
+        IsRemovable="@(!attr.AttachmentID.HasValue)"
+        OnAddAttribute="@(() => HandleAddAttribute(attr.PropertyProvider))"
+        OnAddRelation="@(() => HandleAddRelation(attr.PropertyProvider))"
+        OnRemove="@(() => properties.RemoveAttribute(attr))"
+    >
         <ProviderProperties
+            CreateMode="@CreateMode"
             PropertyProvider="@attr.PropertyProvider"
             OnChange="@OnChange"
+            RenderControls="false"
         />
-    </div>
+    </ProviderProperty>
 }
 
-@foreach (var relation in PropertyProvider.Relations) {
-    <div class="card mb-2 pb-0">
-        <div class="card-body pb-2">
-            <div class="row">
-                <div class="col-sm-4">
-                    <h5>
-                        <div class="badge badge-primary float-left mr-2">@relation.Relation.PropertyID</div>
-                        <div>@relation.Relation.Label</div>
-                    </h5>
-                </div>
-                <div class="col-sm-4">
-                    <div class="row">
-                        <div class="col-6 text-muted">Type</div>
-                        <div class="col-6">
-                            <strong>Relation</strong>
-                        </div>
-                    </div>
+@foreach (var keyValue in properties.Relations) {
+    var relation = keyValue.Value;
 
-                    <div class="row">
-                        <div class="col-6 text-muted">Cardinality</div>
-                        <div class="col-6">
-                            <strong>@relation.Cardinality</strong>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-6 text-muted">Required</div>
-                        <div class="col-6">
-                            @if (relation.Required) {
-                                <strong class="text-danger">@relation.Required</strong>
-                            }
-                            else {
-                                <div class="text-muted">@relation.Required</div>
-                            }
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-4 text-right">
-                    <div>
-                        <button class="btn btn-link mb-2" @onclick="() => HandleAddAttribute(relation.PropertyProvider)">
-                            <i class="icon feather-check-circle mr-1"></i>
-                            <span>Add attribute</span>
-                        </button>
-                    </div>
-                    <div>
-                        <button class="btn btn-link mb-2" @onclick="() => HandleAddRelation(relation.PropertyProvider)">
-                            <i class="icon feather-copy mr-1"></i>
-                            <span>Add relation</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div style="border-left:dashed 1px #ccc;padding-left: 10px;">
+    <ProviderProperty
+        Type="Relation"
+        TypeCssClass="badge-primary"
+        Label="@relation.Relation.Label"
+        Cardinality="@relation.Cardinality"
+        Required="@relation.Required"
+        IsRemovable="@(!relation.AttachmentID.HasValue)"
+        OnAddAttribute="@(() => HandleAddAttribute(relation.PropertyProvider))"
+        OnAddRelation="@(() => HandleAddRelation(relation.PropertyProvider))"
+        OnRemove="@(() => properties.RemoveRelation(relation))"
+    >
         <ProviderProperties
+            CreateMode="@CreateMode"
             PropertyProvider="@relation.PropertyProvider"
-            OnChange="@OnChange"
+            OnChange="@HandleChange"
+            RenderControls="false"
         />
+    </ProviderProperty>
+}
+
+@if (RenderControls) {
+    <hr/>
+    <div>
+        <button type="button" class="btn btn-secondary" @onclick="() => HandleAddAttribute(properties)">
+            <i class="icon feather-check-circle mr-1"></i>
+            <span>Add attribute</span>
+        </button>
+        <button type="button" class="btn btn-secondary" @onclick="() => HandleAddRelation(properties)">
+            <i class="icon feather-copy mr-1"></i>
+            <span>Add relation</span>
+        </button>
     </div>
 }
 
@@ -133,19 +67,77 @@
     public PropertyProviderData PropertyProvider { get; set; }
 
     [Parameter]
-    public EventCallback OnChange { get; set; }
+    public EventCallback<PropertyProviderData> OnChange { get; set; }
 
-    private async Task HandleAddAttribute(PropertyProviderData provider) {
-        var result = await PropertyProviderService.AddAttribute(provider);
-        if (result) {
-            await OnChange.InvokeAsync(null);
+    [Parameter]
+    public bool RenderControls { get; set; } = true;
+
+    [Parameter]
+    public bool CreateMode { get; set; }
+
+    private PropertyProviderData properties;
+
+    protected override void OnInitialized() {
+        if (PropertyProvider == null) {
+            properties = new PropertyProviderData();
+        }
+        else {
+            properties = PropertyProvider;
         }
     }
 
-    private async Task HandleAddRelation(PropertyProviderData provider) {
-        var result = await PropertyProviderService.AddRelation(provider);
-        if (result) {
-            await OnChange.InvokeAsync(null);
+    protected override void OnParametersSet() {
+        if (PropertyProvider != null) {
+            properties = PropertyProvider;
         }
+    }
+
+    private async Task HandleAddAttribute(PropertyProviderData provider) {
+        var result = await Dialog.AddPropertyProviderAttribute(provider.Attributes.Keys);
+
+        if (null == result) {
+            return;
+        }
+
+        if (CreateMode) {
+            var attr = await Storage.GetAttribute(result.ID);
+            var attrData = await AttrData.Instantiate(attr);
+            provider.AddAttribute(new AttachedAttrData(
+                attrData,
+                result.Required,
+                result.Cardinality
+            ));
+        }
+        else {
+            await PropertyProviderService.AddAttribute(provider.ProviderID.Value, result);
+        }
+
+        await HandleChange();
+    }
+
+    private async Task HandleAddRelation(PropertyProviderData provider) {
+        var result = await Dialog.AddPropertyProviderRelation(provider.Relations.Keys);
+
+        if (null == result) {
+            return;
+        }
+
+        if (CreateMode) {
+            var relation = await Storage.GetRelation(result.ID);
+            provider.AddRelation(new AttachedRelationData(
+                relation,
+                result.Required,
+                result.Cardinality
+            ));
+        }
+        else {
+            await PropertyProviderService.AddRelation(provider.ProviderID.Value, result);
+        }
+
+        await HandleChange();
+    }
+
+    private async Task HandleChange() {
+        await OnChange.InvokeAsync(properties);
     }
 }

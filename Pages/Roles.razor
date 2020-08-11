@@ -2,6 +2,7 @@
 @inject IStorageAPI Storage
 @inject DialogService Dialog
 @inject RoutingService Routing
+@inject PropertyContainerService PropertyContainer
 
 <Scaffold>
     <Title>Roles</Title>
@@ -29,6 +30,6 @@
 
     private async Task Refresh() {
         var roles = await Storage.GetRoles();
-        this.roles = await Task.WhenAll(roles.Select(i => IndividualData.Instantiate(i)));
+        this.roles = await Task.WhenAll(roles.Select(i => PropertyContainer.GetIndividual(i)));
     }
 }

@@ -1,0 +1,92 @@
+<div class="card mb-2 pb-0">
+    <div class="card-body pb-2">
+        <div class="row">
+            <div class="col-sm-4">
+                <h5>
+                    <div class="badge badge-success float-left mr-2 @TypeCssClass">@Type</div>
+                    <div>@Label</div>
+                    <div>
+                        @if (IsRemovable) {
+                            <button type="button" class="btn btn-link mb-2 text-danger pl-0 pr-0" @onclick="OnRemove">
+                                <i class="icon feather-trash mr-1"></i>
+                                <span>Remove</span>
+                            </button>
+                        }
+                    </div>
+                </h5>
+            </div>
+            <div class="col-sm-4">
+                <div class="row">
+                    <div class="col-6 text-muted">Cardinality:</div>
+                    <div class="col-6">
+                        <strong>@Cardinality</strong>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-6 text-muted">Required:</div>
+                    <div class="col-6">
+                        @if (Required) {
+                            <strong class="text-danger">@Required</strong>
+                        }
+                        else {
+                            <div class="text-muted">@Required</div>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4 text-right">
+                <div>
+                    <button type="button" class="btn btn-link mb-2" @onclick="OnAddAttribute">
+                        <i class="icon feather-check-circle mr-1"></i>
+                        <span>Add attribute</span>
+                    </button>
+                </div>
+                <div>
+                    <button type="button" class="btn btn-link mb-2" @onclick="OnAddRelation">
+                        <i class="icon feather-copy mr-1"></i>
+                        <span>Add relation</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (null != ChildContent) {
+    <div style="border-left:dashed 1px #ccc;padding-left: 10px;">
+        @ChildContent
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string Label { get; set; }
+
+    [Parameter]
+    public string Type { get; set; }
+
+    [Parameter]
+    public string TypeCssClass { get; set; } = "badge-success";
+
+    [Parameter]
+    public int Cardinality { get; set; }
+
+    [Parameter]
+    public bool Required { get; set; }
+
+    [Parameter]
+    public bool IsRemovable { get; set; }
+
+    [Parameter]
+    public EventCallback OnAddAttribute { get; set; }
+
+    [Parameter]
+    public EventCallback OnAddRelation { get; set; }
+
+    [Parameter]
+    public EventCallback OnRemove { get; set; }
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+}

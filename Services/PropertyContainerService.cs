@@ -10,11 +10,13 @@ namespace Parallax.Services {
         private readonly DialogService dialog;
         private readonly TransactionsService tx;
         private readonly IStorageAPI storage;
+        private readonly PropertyProviderService propertyProvider;
 
-        public PropertyContainerService(DialogService dialog, TransactionsService tx, IStorageAPI storage) {
+        public PropertyContainerService(DialogService dialog, TransactionsService tx, IStorageAPI storage, PropertyProviderService propertyProvider) {
             this.dialog = dialog;
             this.tx = tx;
             this.storage = storage;
+            this.propertyProvider = propertyProvider;
         }
 
         public async Task<int> CreateIndividual(IndividualCreateData model) {
@@ -24,6 +26,29 @@ namespace Parallax.Services {
                 await CreateScopedProperties(eventID, model.Properties.Relations, container => container.Relations);
             }
             return eventID;
+        }
+
+        public async Task<IndividualData> GetIndividual(int id) {
+            var individual = await storage.GetIndividual(id);
+            return await GetIndividual(individual);
+        }
+
+        public async Task<IndividualData> GetIndividual(IIndividual individual) {
+            var model = await individual.GetModel();
+            var valid = await individual.Properties.Validate();
+            var actorEvent = await individual.GetCreator();
+            var provider = await propertyProvider.GetProvider(model.ModelID);
+
+            return new IndividualData {
+                Event = individual,
+                ID = individual.IndividualID,
+                Label = individual.Label,
+                Actor = actorEvent?.IndividualID,
+                ActorLabel = actorEvent?.Label,
+                Valid = valid,
+                PropertyProvider = provider,
+                Model = model
+            };
         }
 
         public async Task<PropertyContainerData> GetPropertyContainer(int containerID, IBoxedValue value = null) {

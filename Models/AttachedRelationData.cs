@@ -1,31 +1,41 @@
 using AuroraCore.Storage;
-using System.Threading.Tasks;
 
 namespace Parallax.Models {
     public class AttachedRelationData {
-        public int AttachmentID { get; private set; }
+        public int? AttachmentID { get; private set; }
         public IRelation Relation { get; private set; }
         public bool Required { get; private set; }
         public int Cardinality { get; private set; }
         public PropertyProviderData PropertyProvider { get; private set; }
 
-        private AttachedRelationData() {
-
+        public AttachedRelationData(
+            IRelation relation,
+            bool required,
+            int cardinality
+        ) : this(relation, required, cardinality, null) {
+            PropertyProvider = new PropertyProviderData();
         }
 
-        public static async Task<AttachedRelationData> Instantiate(IAttachedProperty<IRelation> relation) {
-            var relationIndividual = await relation.GetProperty();
-            var required = await relation.IsRequired();
-            var cardinality = await relation.GetCardinality();
-            var provider = await PropertyProviderData.Instantiate(relation.AttachmentID, relation.Properties);
+        public AttachedRelationData(
+            IRelation relation,
+            bool required,
+            int cardinality,
+            PropertyProviderData provider,
+            int attachmentID
+        ) : this(relation, required, cardinality, provider) {
+            AttachmentID = attachmentID;
+        }
 
-            return new AttachedRelationData {
-                AttachmentID = relation.AttachmentID,
-                Required = required,
-                Cardinality = cardinality,
-                Relation = relationIndividual,
-                PropertyProvider = provider
-            };
+        private AttachedRelationData(
+            IRelation relation,
+            bool required,
+            int cardinality,
+            PropertyProviderData provider
+        ) {
+            Relation = relation;
+            Required = required;
+            Cardinality = cardinality;
+            PropertyProvider = provider;
         }
     }
 }

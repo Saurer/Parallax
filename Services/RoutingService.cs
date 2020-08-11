@@ -36,6 +36,12 @@ namespace Parallax.Services {
         public string ModelsView(int id) =>
             Models() + $"/{id}";
 
+        public string ModelsCreate(int eventBase, int parentModelID) =>
+            Models() + $"/create?base={eventBase}&parent={parentModelID}";
+
+        public string ModelsCreate(int eventBase, int parentModelID, string defaultName) =>
+            Models() + $"/create?base={eventBase}&parent={parentModelID}&name={defaultName}";
+
         public string Roles() =>
             "/roles";
 

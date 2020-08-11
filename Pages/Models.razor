@@ -1,6 +1,7 @@
 ﻿@page "/models"
 @inject IStorageAPI Storage
 @inject RoutingService Routing
+@inject PropertyProviderService PropertyProvider
 
 <Scaffold>
     <Title>Models</Title>
@@ -44,6 +45,10 @@
 
     protected override async Task OnInitializedAsync() {
         var models = await Storage.GetModels();
-        this.models = await Task.WhenAll(models.Select(m => ModelData.Instantiate(m)));
+        this.models = await Task.WhenAll(
+            models.Select(m => 
+                PropertyProvider.GetModel(m)                
+            )
+        );
     }
 }

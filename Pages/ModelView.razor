@@ -1,5 +1,4 @@
 ﻿@page "/models/{id:int}"
-@inject IStorageAPI Storage
 @inject TransactionsService Tx
 @inject DialogService Dialog
 @inject RoutingService Routing
@@ -26,26 +25,11 @@
             </div>
             <hr/>
 
-            @if (model.PropertyProvider.Attributes.Any()) {
-                <h4>Attributes</h4>
-                <ProviderProperties
-                    PropertyProvider="@model.PropertyProvider"
-                    OnChange="@Redraw"
-                />
-            }
-
-            <hr/>
-            <div>
-                <button class="btn btn-primary" @onclick="() => HandleAddAttribute(model.PropertyProvider)">
-                    <i class="icon feather-check-circle mr-1"></i>
-                    <span>Add attribute</span>
-                </button>
-
-                <button class="btn btn-primary" @onclick="() => HandleAddRelation(model.PropertyProvider)">
-                    <i class="icon feather-copy mr-1"></i>
-                    <span>Add relation</span>
-                </button>
-            </div>
+            <h4>Properties</h4>
+            <ProviderProperties
+                PropertyProvider="@model.PropertyProvider"
+                OnChange="@Redraw"
+            />
         </ChildContent>
     </Scaffold>
 }
@@ -65,21 +49,6 @@
     }
 
     private async Task Redraw() {
-        var model = await Storage.GetModel(ID);
-        this.model = await ModelData.Instantiate(model);
-    }
-
-    private async Task HandleAddAttribute(PropertyProviderData provider) {
-        var result = await PropertyProvider.AddAttribute(provider);
-        if (result) {
-            await Redraw();
-        }
-    }
-
-    private async Task HandleAddRelation(PropertyProviderData provider) {
-        var result = await PropertyProvider.AddRelation(provider);
-        if (result) {
-            await Redraw();
-        }
+        this.model = await PropertyProvider.GetModel(ID);
     }
 }

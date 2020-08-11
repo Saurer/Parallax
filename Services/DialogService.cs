@@ -82,22 +82,6 @@ namespace Parallax.Services {
             }
         }
 
-        public async Task<int?> CreateModel(int baseEvent, int parentModel, string defaultName = null) {
-            var parameters = new ModalParameters();
-            parameters.Add("BaseEventID", baseEvent);
-            parameters.Add("ParentModelID", parentModel);
-            parameters.Add("DefaultName", defaultName);
-            var modal = instance.Show<CreateModel>("Create model", parameters);
-            var result = await modal.Result;
-
-            if (result.Data is int intValue) {
-                return intValue;
-            }
-            else {
-                return null;
-            }
-        }
-
         public async Task<PropertyAssignData> AddPropertyProviderAttribute(IEnumerable<int> availableAttributes) {
             var parameters = new ModalParameters();
             parameters.Add("Attributes", availableAttributes);

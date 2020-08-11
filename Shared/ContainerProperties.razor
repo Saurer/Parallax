@@ -4,7 +4,8 @@
 @inject RoutingService Routing
 @inject PropertyProviderService PropertyProviderService
 
-@foreach (var attr in PropertyProvider.Attributes) {
+@foreach (var keyValue in PropertyProvider.Attributes) {
+    var attr = keyValue.Value;
     <ContainerProperty
         Label="@attr.Attribute.Label"
         Type="@attr.Attribute.DataType.Name"
@@ -35,7 +36,8 @@
     }
 }
 
-@foreach (var relation in PropertyProvider.Relations) {
+@foreach (var keyValue in PropertyProvider.Relations) {
+    var relation = keyValue.Value;
     <ContainerProperty
         Label="@relation.Relation.Label"
         Type="Relation"

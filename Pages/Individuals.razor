@@ -1,6 +1,7 @@
 ﻿@page "/individuals"
 @inject IStorageAPI Storage
 @inject RoutingService Routing
+@inject PropertyContainerService PropertyContainer
 
 <Scaffold>
     <Title>Individuals</Title>
@@ -22,6 +23,8 @@
 
     private async Task Refresh() {
         var values = await Storage.GetIndividuals();
-        this.values = await Task.WhenAll(values.Select(i => IndividualData.Instantiate(i)));
+        this.values = await Task.WhenAll(
+            values.Select(i => PropertyContainer.GetIndividual(i))
+        );
     }
 }

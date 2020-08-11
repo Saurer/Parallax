@@ -1,6 +1,7 @@
 ﻿@page "/relations"
 @inject IStorageAPI Storage
 @inject RoutingService Routing
+@inject PropertyContainerService PropertyContainer
 
 <Scaffold>
     <Title>Relations</Title>
@@ -28,6 +29,8 @@
 
     private async Task Refresh() {
         var relations = await Storage.GetRelations();
-        this.relations = await Task.WhenAll(relations.Select(i => IndividualData.Instantiate(i.PropertyIndividual)));
+        this.relations = await Task.WhenAll(
+            relations.Select(i => PropertyContainer.GetIndividual(i.PropertyIndividual))
+        );
     }
 }

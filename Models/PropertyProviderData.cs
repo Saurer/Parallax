@@ -1,25 +1,43 @@
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AuroraCore.Storage;
 
 namespace Parallax.Models {
     public class PropertyProviderData {
-        public int ProviderID { get; private set; }
-        public IEnumerable<AttachedAttrData> Attributes { get; private set; }
-        public IEnumerable<AttachedRelationData> Relations { get; private set; }
+        private Dictionary<int, AttachedAttrData> attributes;
+        private Dictionary<int, AttachedRelationData> relations;
 
-        public static async Task<PropertyProviderData> Instantiate(int id, IPropertyProvider provider) {
-            var plainProviderAttributes = await provider.GetAttributes();
-            var attributes = await Task.WhenAll(plainProviderAttributes.Select(attr => AttachedAttrData.Instantiate(attr)));
-            var plainProviderRelations = await provider.GetRelations();
-            var relations = await Task.WhenAll(plainProviderRelations.Select(relation => AttachedRelationData.Instantiate(relation)));
+        public int? ProviderID { get; private set; }
+        public IReadOnlyDictionary<int, AttachedAttrData> Attributes => attributes;
+        public IReadOnlyDictionary<int, AttachedRelationData> Relations => relations;
 
-            return new PropertyProviderData {
-                ProviderID = id,
-                Attributes = attributes,
-                Relations = relations
-            };
+        public PropertyProviderData() {
+            attributes = new Dictionary<int, AttachedAttrData>();
+            relations = new Dictionary<int, AttachedRelationData>();
+        }
+
+        public PropertyProviderData(
+            IReadOnlyDictionary<int, AttachedAttrData> attributes,
+            IReadOnlyDictionary<int, AttachedRelationData> relations,
+            int providerID
+        ) {
+            this.attributes = new Dictionary<int, AttachedAttrData>(attributes);
+            this.relations = new Dictionary<int, AttachedRelationData>(relations);
+            this.ProviderID = providerID;
+        }
+
+        public void AddAttribute(AttachedAttrData attr) {
+            attributes.Add(attr.Attribute.ID, attr);
+        }
+
+        public void AddRelation(AttachedRelationData relation) {
+            relations.Add(relation.Relation.PropertyID, relation);
+        }
+
+        public void RemoveAttribute(AttachedAttrData attr) {
+            attributes.Remove(attr.Attribute.ID);
+        }
+
+        public void RemoveRelation(AttachedRelationData relation) {
+            relations.Remove(relation.Relation.PropertyID);
         }
     }
 }

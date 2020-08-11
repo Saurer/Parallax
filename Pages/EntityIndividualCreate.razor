@@ -4,6 +4,7 @@
 @inject TransactionsService Tx
 @inject RoutingService Routing
 @inject NavigationManager NavigationManager
+@inject PropertyProviderService PropertyProvider
 
 <Scaffold>
     <Title>Create entity individual</Title>
@@ -80,8 +81,7 @@
         #warning
         @* individual.Attributes.Clear(); *@
         individual.ModelID = modelID;
-        var model = await Storage.GetModel(modelID);
-        selectedModel = await ModelData.Instantiate(model);
+        selectedModel = await PropertyProvider.GetModel(modelID);
     }
 
     private async Task HandleSubmit() {

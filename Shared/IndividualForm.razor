@@ -61,7 +61,7 @@
 
     private async Task Refresh() {
         var actor = await Storage.GetIndividual(ID);
-        individual = await IndividualData.Instantiate(actor);
+        individual = await PropertyContainer.GetIndividual(actor);
         var parentEvent = await Storage.GetEvent(individual.Event.EventBase);
         badge = parentEvent.EventValue.Value;
         propertiesData = await PropertyContainer.GetPropertyContainer(individual.ID);

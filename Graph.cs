@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using AuroraCore;
 using AuroraCore.Storage;
 
@@ -44,10 +45,11 @@ namespace Parallax {
             SubEvent(StaticEvent.ValueProperty, StaticEvent.Event, "ValueProperty", StaticEvent.Event),
 
             SubEvent(StaticEvent.DataType, StaticEvent.AttributeConstraint, "DataType", StaticEvent.AttributeConstraint),
-            SubEvent(StaticEvent.AttributeValue, StaticEvent.Event, "AttributeValue", StaticEvent.AttributeConstraint),
+            SubEvent(StaticEvent.AttributeValue, StaticEvent.Event, "AttributeConstraint", StaticEvent.AttributeConstraint),
 
             SubEvent(StaticEvent.Cardinality, StaticEvent.ValueProperty, "Cardinality", StaticEvent.ValueProperty),
             SubEvent(StaticEvent.Required, StaticEvent.ValueProperty, "Required", StaticEvent.ValueProperty),
+            SubEvent(StaticEvent.Permission, StaticEvent.ValueProperty, "Permission", StaticEvent.ValueProperty),
 
             Model(StaticEvent.EventModel, StaticEvent.Event, "Model_Event", StaticEvent.Event),
             Model(StaticEvent.EntityModel, StaticEvent.Entity, "Model_Entity", StaticEvent.EventModel),
@@ -68,7 +70,7 @@ namespace Parallax {
 
             Individual(21, StaticEvent.Actor, "Actor_Main", StaticEvent.ActorModel),
             IndividualAttribute(22, 21, 17, "Main Actor"),
-        };
+        }.OrderBy(e => e.ID);
 
         private static EventData SubEvent(int id, int baseEventID, string value, int conditionEventID) =>
             new EventData(id, baseEventID, StaticEvent.SubEvent, conditionEventID, StaticEvent.Event, value);

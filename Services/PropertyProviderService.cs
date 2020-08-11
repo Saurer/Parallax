@@ -26,17 +26,19 @@ namespace Parallax.Services {
             var plainAttr = await attr.GetProperty();
             var required = await attr.IsRequired();
             var cardinality = await attr.GetCardinality();
+            var permission = await attr.GetPermission();
             var provider = await GetProvider(attr.AttachmentID);
             var attrData = await AttrData.Instantiate(plainAttr);
-            return new AttachedAttrData(attrData, required, cardinality, provider, attr.AttachmentID);
+            return new AttachedAttrData(attrData, required, cardinality, permission, provider, attr.AttachmentID);
         }
 
         public async Task<AttachedRelationData> GetAttachedRelation(IAttachedProperty<IRelation> relation) {
             var plainRelation = await relation.GetProperty();
             var required = await relation.IsRequired();
             var cardinality = await relation.GetCardinality();
+            var permission = await relation.GetPermission();
             var provider = await GetProvider(relation.AttachmentID);
-            return new AttachedRelationData(plainRelation, required, cardinality, provider, relation.AttachmentID);
+            return new AttachedRelationData(plainRelation, required, cardinality, permission, provider, relation.AttachmentID);
         }
 
         public async Task<PropertyProviderData> GetProvider(int id) {
@@ -93,6 +95,10 @@ namespace Parallax.Services {
                 await tx.AssignPropertyValueCardinality(eventID, data.ID, data.Cardinality);
             }
 
+            if (data.Permission.HasValue) {
+                await tx.AssignPropertyValuePermission(eventID, data.ID, data.Permission.Value);
+            }
+
             return eventID;
         }
 
@@ -105,6 +111,10 @@ namespace Parallax.Services {
 
             if (Const.DefaultCardinality != data.Cardinality) {
                 await tx.AssignPropertyValueCardinality(eventID, data.ID, data.Cardinality);
+            }
+
+            if (data.Permission.HasValue) {
+                await tx.AssignPropertyValuePermission(eventID, data.ID, data.Permission.Value);
             }
 
             return eventID;

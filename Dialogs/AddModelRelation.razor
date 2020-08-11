@@ -25,6 +25,16 @@
                     />
                 </div>
 
+                <div class="form-group">
+                    <label>Permission</label>
+                    <select class="form-control" @onchange="HandleChangePermission">
+                        <option>Any</option>
+                        @foreach (var actor in actors) {
+                            <option value="@actor.IndividualID">@actor.Label</option>
+                        }
+                    </select>
+                </div>                
+
                 <hr/>
 
                 <div class="form-check">
@@ -59,16 +69,27 @@ else {
 
     private AddModelRelationData model = new AddModelRelationData();
     private IEnumerable<IRelation> availableRelations = Array.Empty<IRelation>();
+    private IEnumerable<IIndividual> actors = Array.Empty<IIndividual>();
 
     protected async override Task OnInitializedAsync() {
         var relations = await Storage.GetRelations();
         availableRelations = relations.Where(a => !Relations.Contains(a.PropertyID));
         model.Relation = availableRelations.FirstOrDefault();
+        actors = await Storage.GetActors();
     }
 
     private void HandleChangeNewRelation(ChangeEventArgs e) {
         if (Int32.TryParse((string)e.Value, out var id)) {
             model.Relation = availableRelations.Where(a => a.PropertyID == id).Single();
+        }
+    }
+
+    private void HandleChangePermission(ChangeEventArgs e) {
+        if (Int32.TryParse((string)e.Value, out var id)) {
+            model.Permission = id;
+        }
+        else {
+            model.Permission = null;
         }
     }
 
@@ -81,7 +102,8 @@ else {
             new PropertyAssignData {
                 ID = model.Relation.PropertyID,
                 Required = model.Required,
-                Cardinality = model.Cardinality
+                Cardinality = model.Cardinality,
+                Permission = model.Permission
             }
         ));
     }

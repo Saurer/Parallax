@@ -105,7 +105,8 @@
             provider.AddAttribute(new AttachedAttrData(
                 attrData,
                 result.Required,
-                result.Cardinality
+                result.Cardinality,
+                result.Permission
             ));
         }
         else {
@@ -127,7 +128,8 @@
             provider.AddRelation(new AttachedRelationData(
                 relation,
                 result.Required,
-                result.Cardinality
+                result.Cardinality,
+                result.Permission
             ));
         }
         else {

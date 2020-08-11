@@ -3,6 +3,7 @@
 @inject DialogService Dialog
 @inject RoutingService Routing
 @inject PropertyProviderService PropertyProviderService
+@inject CredentialsService Credentials
 
 @foreach (var keyValue in PropertyProvider.Attributes) {
     var attr = keyValue.Value;
@@ -12,6 +13,7 @@
         Cardinality="@attr.Cardinality"
         Required="@attr.Required"
         IsAssignable="@IsFull(attr)"
+        IsProtected="@IsProtected(attr)"
         OnAssign="@(() => HandleAssignAttribute(attr))"
     />
 
@@ -45,6 +47,7 @@
         Cardinality="@relation.Cardinality"
         Required="@relation.Required"
         IsAssignable="@IsFull(relation)"
+        IsProtected="@IsProtected(relation)"
         OnAssign="@(() => HandleAssignRelation(relation))"
     />
 
@@ -118,6 +121,24 @@
         }
 
         return Properties.Relations[relation.Relation.PropertyID].Count() >= relation.Cardinality;
+    }
+
+    private bool IsProtected(AttachedAttrData attr) {
+        if (attr.Permission.HasValue) {
+            return Credentials.CurrentActor.IndividualID != attr.Permission;
+        }
+        else {
+            return false;
+        }
+    }
+
+    private bool IsProtected(AttachedRelationData relation) {
+        if (relation.Permission.HasValue) {
+            return Credentials.CurrentActor.IndividualID != relation.Permission;
+        }
+        else {
+            return false;
+        }
     }
 
     private async Task HandleAssignAttribute(AttachedAttrData attr) {

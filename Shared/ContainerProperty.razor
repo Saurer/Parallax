@@ -17,10 +17,12 @@
                 }
             </div>
             <div class="col-sm-4 text-right">
-                <button type="button" class="btn btn-link p-0" disabled="@IsAssignable" @onclick="OnAssign">
-                    <i class="icon feather-check-circle mr-1"></i>
-                    <span>Assign value</span>
-                </button>
+                @if (!IsProtected) {
+                    <button type="button" class="btn btn-link p-0" disabled="@IsAssignable" @onclick="OnAssign">
+                        <i class="icon feather-check-circle mr-1"></i>
+                        <span>Assign value</span>
+                    </button>
+                }
             </div>
         </div>
     </div>
@@ -44,6 +46,9 @@
 
     [Parameter]
     public bool IsAssignable { get; set; }
+
+    [Parameter]
+    public bool IsProtected { get; set; }
 
     [Parameter]
     public EventCallback OnAssign { get; set; }

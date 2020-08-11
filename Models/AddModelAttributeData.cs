@@ -10,6 +10,8 @@ namespace Parallax.Models {
         [Range(0, Int32.MaxValue)]
         public int Cardinality { get; set; } = 1;
 
+        public int? Permission { get; set; }
+
         public bool Valid =>
             Cardinality >= 0;
     }

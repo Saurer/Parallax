@@ -13,6 +13,8 @@ namespace Parallax.Models {
         [Required]
         public int ParentModelID { get; set; }
 
+        public string ParentModelLabel { get; set; }
+
         public PropertyProviderData Properties { get; set; }
     }
 }

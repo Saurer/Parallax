@@ -16,5 +16,13 @@ namespace Parallax.Models {
         public void SetProperties(PropertyContainerData properties) {
             Properties = properties;
         }
+
+        public void ResetProperties() {
+            if (null == Properties) {
+                return;
+            }
+
+            Properties.Clear();
+        }
     }
 }

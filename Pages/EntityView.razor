@@ -3,6 +3,7 @@
 @inject NavigationManager NavigationManager
 @inject DialogService Dialog
 @inject RoutingService Routing
+@inject EntityService Entity
 
 @if (null != entity) {
     <Scaffold>
@@ -91,8 +92,7 @@
     }
 
     private async Task Redraw() {
-        var entity = await Storage.GetEntity(ID);
-        this.entity = await EntityData.Instantiate(entity);
+        entity = await Entity.GetEntity(ID);
     }
 
     private void HandleCreateIndividual() {

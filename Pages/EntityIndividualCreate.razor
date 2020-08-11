@@ -5,6 +5,7 @@
 @inject RoutingService Routing
 @inject NavigationManager NavigationManager
 @inject PropertyProviderService PropertyProvider
+@inject PropertyContainerService PropertyContainer
 
 <Scaffold>
     <Title>Create entity individual</Title>
@@ -35,7 +36,7 @@
             @if (null != selectedModel) {
                 <ContainerProperties
                     PropertyProvider="@selectedModel.PropertyProvider"
-                    @* OnChange="@Refresh" *@
+                    OnChange="@individual.SetProperties"
                 />
             }
 
@@ -78,28 +79,13 @@
     }
 
     private async Task SetModel(int modelID) {
-        #warning
-        @* individual.Attributes.Clear(); *@
         individual.ModelID = modelID;
+        individual.ResetProperties();
         selectedModel = await PropertyProvider.GetModel(modelID);
     }
 
     private async Task HandleSubmit() {
-        int eventID = await Tx.CreateIndividual(individual.BaseEvent, individual.ModelID, individual.Label);
-
-        #warning
-        @* foreach (var attr in individual.Attributes) {
-            foreach (var value in attr.Value) {
-                await Tx.AssignContainerProperty(eventID, attr.Key, value.PlainValue);
-            }
-        }
-
-        foreach (var relation in individual.Relations) {
-            foreach (var value in relation.Value) {
-                await Tx.AssignContainerProperty(eventID, relation.Key, value.PlainValue);
-            }
-        } *@
-
+        var eventID = await PropertyContainer.CreateIndividual(individual);
         NavigationManager.NavigateTo(Routing.EntitiesView(ID));
     }
 }

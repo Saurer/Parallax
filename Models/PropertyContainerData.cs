@@ -80,5 +80,10 @@ namespace Parallax.Models {
         public void SetValue(IBoxedValue value) {
             Value = value;
         }
+
+        public void Clear() {
+            attributes.Clear();
+            relations.Clear();
+        }
     }
 }

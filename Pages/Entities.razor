@@ -1,6 +1,7 @@
 ﻿@page "/entities"
 @inject IStorageAPI Storage
 @inject RoutingService Routing
+@inject EntityService Entity
 
 <Scaffold>
     <Title>Entities</Title>
@@ -40,11 +41,6 @@
     private IEnumerable<EntityData> entities = Array.Empty<EntityData>();
 
     protected override async Task OnInitializedAsync() {
-        await Refresh();
-    }
-
-    private async Task Refresh() {
-        var entities = await Storage.GetEntities();
-        this.entities = await Task.WhenAll(entities.Select(entity => EntityData.Instantiate(entity)));
+        entities = await Entity.GetEntities();
     }
 }

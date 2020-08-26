@@ -2,12 +2,12 @@
     <div class="card-body pt-2 pb-1">
         <div class="row">
             <div class="col-sm-4">
-                <h5>
+                <h6 class="mt-1">
                     @if (!String.IsNullOrWhiteSpace(Type)) {
                         <div class="badge @TypeCssClass float-left mr-2">@Type</div>
                     }
                     <span>@Label</span>
-                </h5>
+                </h6>
             </div>
             <div class="col-sm-2">
                 @if (Cardinality.HasValue) {

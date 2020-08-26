@@ -15,7 +15,7 @@
         @foreach (var item in detailedEvents) {
             <tr>
                 <td class="text-center">@item.ID</td>
-                <td>[@item.BaseEvent.EventValue.ID] @item.BaseEvent.EventValue.Value</td>
+                <td style="max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">[@item.BaseEvent.EventValue.ID] @item.BaseEvent.EventValue.Value</td>
                 <td>[@item.ValueTypeEvent.EventValue.ID] @item.ValueTypeEvent.EventValue.Value</td>
                 <td>@item.Value</td>
                 <td>[@item.ConditionEvent.EventValue.ID] @item.ConditionEvent.EventValue.Value</td>

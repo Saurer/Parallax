@@ -1,26 +1,24 @@
 @inject RoutingService Routing
 
-<div style="border-left:dashed 1px #ccc;padding-left: 25px;margin-left:25px">
-    <div class="card mb-2">
-        <div class="card-body pt-2 pb-2">
-            <div class="float-right">
-                @if (IsEditable) {
-                    <button type="button" class="btn btn-link ml-2 p-0" @onclick="OnEdit">Edit</button>
-                    <button type="button" class="btn btn-link ml-2 p-0" @onclick="OnRemove">Remove</button>
-                }
-                else if (ActorID == 0){
+<div style="border-left:dashed 1px #ccc;padding-left: 35px;margin-left:35px">
+    <div class="mb-2 pt-1 pb-1">
+        <div class="float-right">
+            @if (IsEditable) {
+                <button type="button" class="btn btn-link ml-2 p-0" @onclick="OnEdit">Edit</button>
+                <button type="button" class="btn btn-link ml-2 p-0" @onclick="OnRemove">Remove</button>
+            }
+            else if (ActorID == 0){
+                <i class="icon feather-user mr-1"></i>
+                <span>System</span>
+            }
+            else if (ActorID.HasValue) {
+                <NavLink href="@Routing.IndividualsView(ActorID.Value)" class="btn btn-link ml-2 p-0">
                     <i class="icon feather-user mr-1"></i>
-                    <span>System</span>
-                }
-                else if (ActorID.HasValue) {
-                    <NavLink href="@Routing.IndividualsView(ActorID.Value)" class="btn btn-link ml-2 p-0">
-                        <i class="icon feather-user mr-1"></i>
-                        <span>@ActorName</span>
-                    </NavLink>
-                }
-            </div>
-            <div>@Value</div>
+                    <span>@ActorName</span>
+                </NavLink>
+            }
         </div>
+        <div>@Value</div>
     </div>
     @ChildContent
 </div>

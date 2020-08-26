@@ -1,3 +1,6 @@
+@inject IStorageAPI Storage
+@inject RoutingService Routing
+
 <div class="card mb-2 pb-0">
     <div class="card-body pb-2">
         <div class="row">
@@ -22,6 +25,19 @@
                         <strong>@Cardinality</strong>
                     </div>
                 </div>
+
+                @if (permissionActor != null) {
+                    <div class="row">
+                        <div class="col-6 text-muted">Permission:</div>
+                        <div class="col-6">
+                            <strong>
+                                <NavLink href="@(Routing.IndividualsView(permissionActor.IndividualID))">
+                                    @permissionActor.Label
+                                </NavLink>
+                            </strong>
+                        </div>
+                    </div>
+                }
 
                 <div class="row">
                     <div class="col-6 text-muted">Required:</div>
@@ -73,6 +89,9 @@
     public int Cardinality { get; set; }
 
     [Parameter]
+    public int? Permission { get; set; }
+
+    [Parameter]
     public bool Required { get; set; }
 
     [Parameter]
@@ -89,4 +108,12 @@
 
     [Parameter]
     public RenderFragment ChildContent { get; set; }
+
+    private IIndividual permissionActor;
+
+    protected override async Task OnInitializedAsync() {
+        if (Permission.HasValue && Permission != 0) {
+            permissionActor = await Storage.GetActor(Permission.Value);
+        }
+    }
 }

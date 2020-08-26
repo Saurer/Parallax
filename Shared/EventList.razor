@@ -4,7 +4,7 @@
     <thead>
         <tr>
             <th class="text-center">#</th>
-            <th>BaseEventID</th>
+            <th>BaseEvent</th>
             <th>ValueType</th>
             <th>Value</th>
             <th>Condition</th>
@@ -15,11 +15,11 @@
         @foreach (var item in detailedEvents) {
             <tr>
                 <td class="text-center">@item.ID</td>
-                <td>(@item.BaseEvent.EventValue.ID) @item.BaseEvent.EventValue.Value</td>
-                <td>(@item.ValueTypeEvent.EventValue.ID) @item.ValueTypeEvent.EventValue.Value</td>
+                <td>[@item.BaseEvent.EventValue.ID] @item.BaseEvent.EventValue.Value</td>
+                <td>[@item.ValueTypeEvent.EventValue.ID] @item.ValueTypeEvent.EventValue.Value</td>
                 <td>@item.Value</td>
-                <td>(@item.ConditionEvent.EventValue.ID) @item.ConditionEvent.EventValue.Value</td>
-                <td>(@item.ActorEvent.EventValue.ID) @item.ActorEvent.EventValue.Value</td>
+                <td>[@item.ConditionEvent.EventValue.ID] @item.ConditionEvent.EventValue.Value</td>
+                <td>[@item.ActorEvent.EventValue.ID] @item.ActorEvent.EventValue.Value</td>
             </tr>
         }
     </tbody>

@@ -5,12 +5,12 @@
 @inject PropertyProviderService PropertyProviderService
 @inject CredentialsService Credentials
 
-@foreach (var keyValue in PropertyProvider.Attributes) {
+@foreach (var keyValue in PropertyProvider.Attributes.OrderByDescending(kv => Properties.HasValueFor(kv.Key)).ThenBy(kv => kv.Key)) {
     var attr = keyValue.Value;
     <ContainerProperty
         Label="@attr.Attribute.Label"
-        Type="@attr.Attribute.DataType.Name"
-        Cardinality="@attr.Cardinality"
+        Type="@(CreateMode ? attr.Attribute.DataType.Name : null)"
+        Cardinality="@(CreateMode ? (int?)attr.Cardinality : null)"
         Required="@attr.Required"
         IsAssignable="@IsFull(attr)"
         IsProtected="@IsProtected(attr)"
@@ -38,7 +38,7 @@
     }
 }
 
-@foreach (var keyValue in PropertyProvider.Relations) {
+@foreach (var keyValue in PropertyProvider.Relations.OrderByDescending(kv => Properties.HasValueFor(kv.Key)).ThenBy(kv => kv.Key)) {
     var relation = keyValue.Value;
     <ContainerProperty
         Label="@relation.Relation.Label"
@@ -83,6 +83,7 @@
     public EventCallback<PropertyContainerData> OnChange { get; set; }
 
     private PropertyContainerData Properties;
+    private bool CreateMode => PropertyContainer == null;
 
     protected override void OnInitialized() {
         if (PropertyContainer == null) {

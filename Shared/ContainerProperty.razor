@@ -1,15 +1,19 @@
 <div class="card mb-2">
-    <div class="card-body pt-3 pb-2">
+    <div class="card-body pt-2 pb-1">
         <div class="row">
             <div class="col-sm-4">
                 <h5>
-                    <div class="badge @TypeCssClass float-left mr-2">@Type</div>
+                    @if (!String.IsNullOrWhiteSpace(Type)) {
+                        <div class="badge @TypeCssClass float-left mr-2">@Type</div>
+                    }
                     <span>@Label</span>
                 </h5>
             </div>
             <div class="col-sm-2">
-                <span class="text-muted">Cardinality:</span>
-                <strong>@Cardinality</strong>
+                @if (Cardinality.HasValue) {
+                    <span class="text-muted">Cardinality:</span>
+                    <strong>@Cardinality</strong>
+                }
             </div>
             <div class="col-sm-2">
                 @if (Required) {
@@ -39,7 +43,7 @@
     public string TypeCssClass { get; set; } = "badge-success";
 
     [Parameter]
-    public int Cardinality { get; set; }
+    public int? Cardinality { get; set; }
 
     [Parameter]
     public bool Required { get; set; }

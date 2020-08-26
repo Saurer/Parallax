@@ -5,7 +5,7 @@
 @inject PropertyProviderService PropertyProviderService
 @inject CredentialsService Credentials
 
-@foreach (var keyValue in PropertyProvider.Attributes.OrderByDescending(kv => Properties.HasValueFor(kv.Key)).ThenBy(kv => kv.Key)) {
+@foreach (var keyValue in PropertyProvider.Attributes.OrderBy(kv => kv.Value.AttachmentID)) {
     var attr = keyValue.Value;
     <ContainerProperty
         Label="@attr.Attribute.Label"
@@ -38,7 +38,7 @@
     }
 }
 
-@foreach (var keyValue in PropertyProvider.Relations.OrderByDescending(kv => Properties.HasValueFor(kv.Key)).ThenBy(kv => kv.Key)) {
+@foreach (var keyValue in PropertyProvider.Relations.OrderBy(kv => kv.Value.AttachmentID)) {
     var relation = keyValue.Value;
     <ContainerProperty
         Label="@relation.Relation.Label"

@@ -50,14 +50,19 @@
     }
 
     private async Task<DetailedEvent> GetDetailedEvent(IEvent e) {
+        IEvent eventRule = null;
+        var conditionEvent = e.Conditions.TryGetEvent();
+        if (null != conditionEvent) {
+            eventRule = await Storage.GetEvent(conditionEvent.EventID);
+        }
         return new DetailedEvent {
             ID = e.EventValue.ID,
             BaseEvent = await Storage.GetEvent(e.EventValue.BaseEventID),
             ValueTypeEvent = await Storage.GetEvent(e.EventValue.ValueID),
             Value = e.EventValue.Value,
-            ConditionEvent = await Storage.GetEvent(e.EventValue.ConditionEventID),
             ActorEvent = await Storage.GetEvent(e.EventValue.ActorEventID),
-            Date = e.Date
+            Date = e.Date,
+            ConditionEvent = eventRule
         };
     }
 

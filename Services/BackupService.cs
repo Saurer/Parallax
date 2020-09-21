@@ -16,7 +16,7 @@ namespace Parallax.Services {
         public int ID { get; set; }
         public int BaseEventID { get; set; }
         public int ValueID { get; set; }
-        public int ConditionEventID { get; set; }
+        public ConditionRule[] Conditions { get; set; }
         public int ActorEventID { get; set; }
         public string Value { get; set; }
         public DateTime Date { get; set; }
@@ -27,7 +27,7 @@ namespace Parallax.Services {
             ID = e.ID;
             BaseEventID = e.BaseEventID;
             ValueID = e.ValueID;
-            ConditionEventID = e.ConditionEventID;
+            Conditions = e.Conditions;
             ActorEventID = e.ActorEventID;
             Value = e.Value;
             Date = e.Date;

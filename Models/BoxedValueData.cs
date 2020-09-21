@@ -10,6 +10,7 @@ namespace Parallax.Models {
         public int AssignationID { get; private set; }
         public IEventData EventValue { get; private set; }
         public DateTime Date { get; private set; }
+        public ConditionsContainer Conditions { get; private set; } = new ConditionsContainer(new ConditionRule[] { });
 
         public BoxedValueData(IEventData e, string shownValue) {
             AssignationID = e.ID;

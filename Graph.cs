@@ -10,7 +10,7 @@ namespace Parallax {
             public int ID { get; set; }
             public int BaseEventID { get; set; }
             public int ValueID { get; set; }
-            public int ConditionEventID { get; set; }
+            public ConditionRule[] Conditions { get; set; }
             public int ActorEventID { get; set; }
             public string Value { get; set; }
             public DateTime Date { get; set; }
@@ -23,7 +23,9 @@ namespace Parallax {
                 ID = id;
                 BaseEventID = baseEventID;
                 ValueID = valueID;
-                ConditionEventID = conditionEventID;
+                Conditions = new[]{
+                    new ConditionRule.EventConditionRule(conditionEventID)
+                };
                 ActorEventID = actorEventID;
                 Value = value;
                 Date = DateTime.UtcNow;

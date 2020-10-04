@@ -35,7 +35,19 @@ namespace Parallax.Services {
     }
 
     public class BackupService {
-        private XmlSerializer serializer = new XmlSerializer(typeof(BackupData));
+        private XmlSerializer serializer;
+
+        public BackupService() {
+            Type[] extraTypes = {
+                typeof(ConditionRule),
+                typeof(ConditionRule.EventConditionRule),
+                typeof(ConditionRule.ConjunctionRule),
+                typeof(ConditionRule.DisjunctionRule),
+                typeof(ConditionRule.PropertyEqualityRule),
+                typeof(ConditionRule.PropertyInequalityRule)
+            };
+            serializer = new XmlSerializer(typeof(BackupData), extraTypes);
+        }
 
         public BackupData DecodeFromBase64(string data) {
             var bytes = Convert.FromBase64String(data);

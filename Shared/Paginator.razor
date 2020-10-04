@@ -29,7 +29,7 @@
     [Parameter]
     public EventCallback<int> OnChange { get; set; }
 
-    private async void HandleChange(int page) {
+    private async Task HandleChange(int page) {
         await OnChange.InvokeAsync(page);
     }
 }

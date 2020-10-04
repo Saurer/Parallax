@@ -41,11 +41,8 @@
         public DateTime Date { get; set; }
     }
 
-    protected override async Task OnInitializedAsync() {
-        await Refresh();
-    }
-
     protected override async Task OnParametersSetAsync() {
+        await Task.Yield();
         await Refresh();
     }
 

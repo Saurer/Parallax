@@ -18,13 +18,7 @@
                 <td class="event_list__overflow">[@item.BaseEvent.EventValue.ID] @item.BaseEvent.EventValue.Value</td>
                 <td>[@item.ValueTypeEvent.EventValue.ID] @item.ValueTypeEvent.EventValue.Value</td>
                 <td>@item.Value</td>
-                @if (null == item.ConditionEvent) {
-                    <td class="event_list__overflow"><em>Complex</em></td>
-                }
-                else {
-                    <td class="event_list__overflow">[@item.ConditionEvent.EventValue.ID] @item.ConditionEvent.EventValue.Value</td>
-                }
-
+                <td class="event_list__overflow">@item.Conditions</td>
                 <td>[@item.ActorEvent.EventValue.ID] @item.ActorEvent.EventValue.Value</td>
             </tr>
         }
@@ -42,7 +36,7 @@
         public IEvent BaseEvent { get; set; }
         public IEvent ValueTypeEvent { get; set; }
         public string Value { get; set; }
-        public IEvent ConditionEvent { get; set; }
+        public string Conditions { get; set; }
         public IEvent ActorEvent { get; set; }
         public DateTime Date { get; set; }
     }
@@ -56,10 +50,6 @@
     }
 
     private async Task<DetailedEvent> GetDetailedEvent(IEvent e) {
-        IEvent eventRule = null;
-        if (e.Conditions is ConditionRule.EventConditionRule conditionRule) {
-            eventRule = await Storage.GetEvent(conditionRule.EventID);
-        }
         return new DetailedEvent {
             ID = e.EventValue.ID,
             BaseEvent = await Storage.GetEvent(e.EventValue.BaseEventID),
@@ -67,8 +57,47 @@
             Value = e.EventValue.Value,
             ActorEvent = await Storage.GetEvent(e.EventValue.ActorEventID),
             Date = e.Date,
-            ConditionEvent = eventRule
+            Conditions = await GetDetailedCondition(e.Conditions)
         };
+    }
+
+    private async Task<string> GetDetailedCondition(ConditionRule rule) {
+        if (rule is ConditionRule.EventConditionRule eventRule) {
+            var e = await Storage.GetEvent(eventRule.EventID);
+            return $"[{eventRule.EventID}] {e.EventValue.Value}";
+        }
+        else if (rule is ConditionRule.ComplexConditionRule complexRule && 1 == complexRule.Values.Count()) {
+            return await GetDetailedCondition(complexRule.Values.Single());
+        }
+        else if (rule is ConditionRule.ConjunctionRule conjunctionRule) {
+            var arms = String.Join(
+                " AND ",
+                await Task.WhenAll(
+                    conjunctionRule.Values.Select(v => GetDetailedCondition(v))
+                )
+            );
+            return $"({arms})";
+        }
+        else if (rule is ConditionRule.DisjunctionRule disjunctionRule) {
+            var arms = String.Join(
+                " OR ",
+                await Task.WhenAll(
+                    disjunctionRule.Values.Select(v => GetDetailedCondition(v))
+                )
+            );
+            return $"({arms})";
+        }
+        else if (rule is ConditionRule.PropertyEqualityRule equalityRule) {
+            var e = await Storage.GetAttribute(equalityRule.PropertyID);
+            return $"{e.Label} = '{equalityRule.Value}'";
+        }
+        else if (rule is ConditionRule.PropertyInequalityRule inequalityRule) {
+            var e = await Storage.GetAttribute(inequalityRule.PropertyID);
+            return $"{e.Label} <> '{inequalityRule.Value}'";
+        }
+        else {
+            throw new NotImplementedException();
+        }
     }
 
     public async Task Refresh() {

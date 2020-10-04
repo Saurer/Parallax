@@ -1,0 +1,65 @@
+<div style="@(Decorate ? "border-left:dashed 1px #ccc;padding-left: 35px;margin-left:5px" : "")">
+    <div class="form-group">
+        <select class="form-control" @bind="@Model.Rule">
+            <option value="@ConditionType.Conjunction">Conjunction clause (AND)</option>
+            <option value="@ConditionType.Disjunction">Disjunction clause (OR)</option>
+            <option value="@ConditionType.Equality">Equality</option>
+            <option value="@ConditionType.Inequality">Inequality</option>
+        </select>
+    </div>
+    @if (Model.IsCollection) {
+        @foreach (var item in Model.Items) {
+            <ConditionsEditor Decorate Model="@item" Values="@Values" />
+
+            <button class="btn btn-link mt-2" @onclick="() => HandleRemoveArm(item)" style="margin-left:40px">
+                <i class="icon feather-trash text-danger"></i>
+                <span class="text-danger">Remove rule</span>
+            </button>
+
+            <hr />
+        }
+        <div>
+            <button class="btn btn-link" type="button" @onclick="HandleAddArm">
+                <i class="icon feather-plus mr-1"></i>
+                <span>Add condition rule</span>
+            </button>
+        </div>
+    }
+    else {
+        <div class="row">
+            <div class="col-sm">
+                <select class="form-control" @bind="Model.Property">
+                    @foreach (var attr in Values) {
+                        <option value="@attr.PropertyID">@attr.Label</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-sm">
+                <input class="form-control" placeholder="Value..." @bind-value="Model.Value" />
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public bool Decorate { get; set; } = false;
+
+    [Parameter]
+    public IEnumerable<IAttr> Values { get; set; }
+
+    [Parameter]
+    public ConditionData Model { get; set; } = new ConditionData();
+
+    private void HandleAddArm() {
+        Model.Items.Add(new ConditionData{
+            Rule = ConditionType.Equality,
+            Property = Values.First().PropertyID
+        });
+    }
+
+    private void HandleRemoveArm(ConditionData value) {
+        Model.Items.Remove(value);
+    }
+}

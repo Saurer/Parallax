@@ -29,7 +29,7 @@ namespace Parallax.Services {
             var permission = await attr.GetPermission();
             var provider = await GetProvider(attr.AttachmentID);
             var attrData = await AttrData.Instantiate(plainAttr);
-            return new AttachedAttrData(attrData, required, cardinality, permission, provider, attr.AttachmentID);
+            return new AttachedAttrData(attrData, required, cardinality, permission, provider, attr.Conditions, attr.AttachmentID);
         }
 
         public async Task<AttachedRelationData> GetAttachedRelation(IAttachedProperty<IRelation> relation) {
@@ -38,7 +38,7 @@ namespace Parallax.Services {
             var cardinality = await relation.GetCardinality();
             var permission = await relation.GetPermission();
             var provider = await GetProvider(relation.AttachmentID);
-            return new AttachedRelationData(plainRelation, required, cardinality, permission, provider, relation.AttachmentID);
+            return new AttachedRelationData(plainRelation, required, cardinality, permission, provider, relation.Conditions, relation.AttachmentID);
         }
 
         public async Task<PropertyProviderData> GetProvider(int id) {
@@ -85,7 +85,7 @@ namespace Parallax.Services {
         }
 
         public async Task<int> AddAttribute(int providerID, PropertyAssignData data) {
-            var eventID = await tx.AssignProviderAttribute(providerID, data.ID);
+            var eventID = await tx.AssignProviderAttribute(providerID, data.ID, data.Conditions);
 
             if (Const.DefaultRequired != data.Required) {
                 await tx.AssignPropertyValueRequirement(eventID, data.ID, data.Required);
@@ -137,7 +137,7 @@ namespace Parallax.Services {
                 var attachmentID = property.AttachmentID;
 
                 if (!attachmentID.HasValue) {
-                    attachmentID = await tx.AssignProviderAttribute(providerID, keyValue.Key);
+                    attachmentID = await tx.AssignProviderAttribute(providerID, keyValue.Key, keyValue.Value.Conditions);
                     await CreatePropertyConstraints(attachmentID.Value, property.Attribute.ID, property.Required, property.Cardinality);
                 }
 
@@ -149,7 +149,7 @@ namespace Parallax.Services {
                 var attachmentID = property.AttachmentID;
 
                 if (!attachmentID.HasValue) {
-                    attachmentID = await tx.AssignProviderAttribute(providerID, keyValue.Key);
+                    attachmentID = await tx.AssignProviderAttribute(providerID, keyValue.Key, new ConditionRule.EventConditionRule(providerID));
                     await CreatePropertyConstraints(attachmentID.Value, property.Relation.PropertyIndividual.IndividualID, property.Required, property.Cardinality);
                     continue;
                 }

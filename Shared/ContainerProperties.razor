@@ -7,6 +7,11 @@
 
 @foreach (var keyValue in PropertyProvider.Attributes.OrderBy(kv => kv.Value.AttachmentID)) {
     var attr = keyValue.Value;
+
+    if (!IsAvailable(attr.Attribute.ID)) {
+        continue;
+    }
+
     <ContainerProperty
         Label="@attr.Attribute.Label"
         Type="@(CreateMode ? attr.Attribute.DataType.Name : null)"
@@ -212,5 +217,67 @@
 
     private async Task HandleChange() {
         await OnChange.InvokeAsync(Properties);
+    }
+
+
+    private bool IsAvailable(int propertyID) {
+        if (PropertyProvider.Attributes.TryGetValue(propertyID, out var attr)) {
+            return TraverseConditions(attr.Conditions);
+        }
+        else if (PropertyProvider.Relations.TryGetValue(propertyID, out var relation)) {
+            return TraverseConditions(relation.Conditions);
+        }
+        else {
+            return false;
+        }
+    }
+
+    private bool TraverseConditions(ConditionRule rule) {
+        if (rule is ConditionRule.ConjunctionRule conjunctionRule) {
+            foreach (var subRule in conjunctionRule.Values) {
+                if (!TraverseConditions(subRule)) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+        else if (rule is ConditionRule.DisjunctionRule disjunctionRule) {
+            foreach (var subRule in disjunctionRule.Values) {
+                if (TraverseConditions(subRule)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+        else if (rule is ConditionRule.PropertyEqualityRule equalityRule) {
+            if (Properties.Attributes.TryGetValue(equalityRule.PropertyID, out var attr)) {
+                return attr.Any(a => a.Value.PlainValue == equalityRule.Value);
+            }
+
+            if (Properties.Relations.TryGetValue(equalityRule.PropertyID, out var relation)) {
+                return relation.Any(r => r.Value.PlainValue == equalityRule.Value);
+            }
+
+            return false;
+        }
+        else if (rule is ConditionRule.PropertyInequalityRule inequalityRule) {
+            if (Properties.Attributes.TryGetValue(inequalityRule.PropertyID, out var attr)) {
+                return attr.Any(a => a.Value.PlainValue != inequalityRule.Value);
+            }
+
+            if (Properties.Relations.TryGetValue(inequalityRule.PropertyID, out var relation)) {
+                return relation.Any(r => r.Value.PlainValue != inequalityRule.Value);
+            }
+
+            return true;
+        }
+        else if (rule is ConditionRule.EventConditionRule) {
+            return true;
+        }
+        else {
+            throw new NotImplementedException();
+        }
     }
 }

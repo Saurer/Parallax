@@ -7,14 +7,16 @@ namespace Parallax.Models {
         public bool Required { get; private set; }
         public int Cardinality { get; private set; }
         public int? Permission { get; private set; }
+        public ConditionRule Conditions { get; private set; }
         public PropertyProviderData PropertyProvider { get; private set; }
 
         public AttachedRelationData(
             IRelation relation,
             bool required,
             int cardinality,
-            int? permission
-        ) : this(relation, required, cardinality, permission, null) {
+            int? permission,
+            ConditionRule conditions
+        ) : this(relation, required, cardinality, permission, conditions, null) {
             PropertyProvider = new PropertyProviderData();
         }
 
@@ -24,8 +26,9 @@ namespace Parallax.Models {
             int cardinality,
             int? permission,
             PropertyProviderData provider,
+            ConditionRule conditions,
             int attachmentID
-        ) : this(relation, required, cardinality, permission, provider) {
+        ) : this(relation, required, cardinality, permission, conditions, provider) {
             AttachmentID = attachmentID;
         }
 
@@ -34,12 +37,14 @@ namespace Parallax.Models {
             bool required,
             int cardinality,
             int? permission,
+            ConditionRule conditions,
             PropertyProviderData provider
         ) {
             Relation = relation;
             Required = required;
             Cardinality = cardinality;
             Permission = permission;
+            Conditions = conditions;
             PropertyProvider = provider;
         }
     }

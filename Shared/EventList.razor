@@ -18,7 +18,13 @@
                 <td class="event_list__overflow">[@item.BaseEvent.EventValue.ID] @item.BaseEvent.EventValue.Value</td>
                 <td>[@item.ValueTypeEvent.EventValue.ID] @item.ValueTypeEvent.EventValue.Value</td>
                 <td>@item.Value</td>
-                <td class="event_list__overflow">[@item.ConditionEvent.EventValue.ID] @item.ConditionEvent.EventValue.Value</td>
+                @if (null == item.ConditionEvent) {
+                    <td class="event_list__overflow"><em>Complex</em></td>
+                }
+                else {
+                    <td class="event_list__overflow">[@item.ConditionEvent.EventValue.ID] @item.ConditionEvent.EventValue.Value</td>
+                }
+
                 <td>[@item.ActorEvent.EventValue.ID] @item.ActorEvent.EventValue.Value</td>
             </tr>
         }
@@ -51,9 +57,8 @@
 
     private async Task<DetailedEvent> GetDetailedEvent(IEvent e) {
         IEvent eventRule = null;
-        var conditionEvent = e.Conditions.TryGetEvent();
-        if (null != conditionEvent) {
-            eventRule = await Storage.GetEvent(conditionEvent.EventID);
+        if (e.Conditions is ConditionRule.EventConditionRule conditionRule) {
+            eventRule = await Storage.GetEvent(conditionRule.EventID);
         }
         return new DetailedEvent {
             ID = e.EventValue.ID,

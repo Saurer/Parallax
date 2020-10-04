@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using AuroraCore;
+using AuroraCore.Storage;
 using static Parallax.Graph;
 
 namespace Parallax.Services {
@@ -15,8 +16,8 @@ namespace Parallax.Services {
         public async Task<int> AssignContainerProperty(int containerID, int propertyID, string value) =>
             await ProcessEvent(containerID, propertyID, containerID, value);
 
-        public async Task<int> AssignProviderAttribute(int providerID, int attributeID) =>
-            await ProcessEvent(providerID, StaticEvent.Attribute, providerID, attributeID.ToString());
+        public async Task<int> AssignProviderAttribute(int providerID, int attributeID, ConditionRule conditions) =>
+            await ProcessEvent(providerID, StaticEvent.Attribute, conditions, attributeID.ToString());
 
         public async Task<int> AssignProviderRelation(int providerID, int relationID) =>
             await ProcessEvent(providerID, StaticEvent.Relation, providerID, relationID.ToString());
@@ -48,13 +49,16 @@ namespace Parallax.Services {
         public async Task<int> AssignAttributeValue(int attributeID, string value) =>
             await ProcessEvent(attributeID, StaticEvent.AttributeValue, attributeID, value);
 
-        private async Task<int> ProcessEvent(int baseEventID, int valueID, int conditionEventID, string value) {
+        private async Task<int> ProcessEvent(int baseEventID, int valueID, int conditionEventID, string value) =>
+            await ProcessEvent(baseEventID, valueID, new ConditionRule.EventConditionRule(conditionEventID), value);
+
+        private async Task<int> ProcessEvent(int baseEventID, int valueID, ConditionRule conditions, string value) {
             var id = Engine.Position;
             var e = new EventData(
                 id,
                 baseEventID,
                 valueID,
-                conditionEventID,
+                conditions,
                 Credentials.CurrentActor.IndividualID,
                 value
             );

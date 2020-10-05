@@ -29,7 +29,7 @@
                 Value="@container.Value.ShownValue"
                 ActorID="@actorID"
                 ActorName="@container.ActorName"
-                IsEditable="@(!container.ContainerID.HasValue)"
+                IsEditable="@(!container.Fixed && !container.ContainerID.HasValue)"
                 OnEdit="@(() => HandleEditAttribute(attr, container))"
                 OnRemove="@(() => Properties.RemoveAttributeValue(attr.Attribute.ID, container))"
             >
@@ -92,7 +92,7 @@
 
     protected override void OnInitialized() {
         if (PropertyContainer == null) {
-            Properties = new PropertyContainerData();
+            Properties = new PropertyContainerData(PropertyProvider);
         }
         else {
             Properties = PropertyContainer;

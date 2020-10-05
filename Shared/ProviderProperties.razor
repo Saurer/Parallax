@@ -12,6 +12,7 @@
         Cardinality="@attr.Cardinality"
         Required="@attr.Required"
         Permission="@attr.Permission"
+        DefaultValue="@attr.DefaultValue"
         IsRemovable="@(!attr.AttachmentID.HasValue)"
         OnAddAttribute="@(() => HandleAddAttribute(attr.PropertyProvider))"
         OnAddRelation="@(() => HandleAddRelation(attr.PropertyProvider))"
@@ -109,6 +110,7 @@
                 result.Required,
                 result.Cardinality,
                 result.Permission,
+                result.DefaultValue,
                 result.Conditions
             ));
         }

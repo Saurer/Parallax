@@ -7,5 +7,6 @@ namespace Parallax.Models {
         public int Cardinality { get; set; }
         public int? Permission { get; set; }
         public ConditionRule Conditions { get; set; }
+        public IBoxedValue DefaultValue { get; set; }
     }
 }

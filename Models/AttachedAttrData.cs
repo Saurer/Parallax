@@ -7,6 +7,7 @@ namespace Parallax.Models {
         public bool Required { get; private set; }
         public int Cardinality { get; private set; }
         public int? Permission { get; private set; }
+        public IBoxedValue DefaultValue { get; private set; }
         public ConditionRule Conditions { get; private set; }
         public PropertyProviderData PropertyProvider { get; private set; }
 
@@ -15,8 +16,9 @@ namespace Parallax.Models {
             bool required,
             int cardinality,
             int? permission,
+            IBoxedValue defaultValue,
             ConditionRule conditions
-        ) : this(attr, required, cardinality, permission, conditions, null) {
+        ) : this(attr, required, cardinality, permission, defaultValue, conditions, null) {
             PropertyProvider = new PropertyProviderData();
             AttachmentID = null;
         }
@@ -26,10 +28,11 @@ namespace Parallax.Models {
             bool required,
             int cardinality,
             int? permission,
+            IBoxedValue defaultValue,
             PropertyProviderData provider,
             ConditionRule conditions,
             int attachmentID
-        ) : this(attr, required, cardinality, permission, conditions, provider) {
+        ) : this(attr, required, cardinality, permission, defaultValue, conditions, provider) {
             AttachmentID = attachmentID;
         }
 
@@ -38,6 +41,7 @@ namespace Parallax.Models {
             bool required,
             int cardinality,
             int? permission,
+            IBoxedValue defaultValue,
             ConditionRule conditions,
             PropertyProviderData provider
         ) {
@@ -46,6 +50,7 @@ namespace Parallax.Models {
             Cardinality = cardinality;
             Permission = permission;
             Conditions = conditions;
+            DefaultValue = defaultValue;
             PropertyProvider = provider;
         }
     }

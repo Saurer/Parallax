@@ -31,6 +31,9 @@ namespace Parallax.Services {
         public async Task<int> AssignPropertyValuePermission(int assignationID, int propertyID, int actorID) =>
             await ProcessEvent(assignationID, StaticEvent.Permission, propertyID, actorID.ToString());
 
+        public async Task<int> AssignPropertyValueSet(int assignationID, int propertyID, string value) =>
+            await ProcessEvent(assignationID, StaticEvent.Set, propertyID, value);
+
         public async Task<int> CreateModel(int eventBase, int parentModel, string label) =>
             await ProcessEvent(eventBase, StaticEvent.Model, parentModel, label);
 

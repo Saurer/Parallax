@@ -50,6 +50,15 @@
                         }
                     </div>
                 </div>
+
+                @if (DefaultValue != null) {
+                    <div class="row">
+                        <div class="col-6 text-muted">Initial value:</div>
+                        <div class="col-6">
+                            <strong>@DefaultValue.ShownValue</strong>
+                        </div>
+                    </div> 
+                }
             </div>
             <div class="col-sm-4 text-right">
                 <div>
@@ -93,6 +102,9 @@
 
     [Parameter]
     public bool Required { get; set; }
+
+    [Parameter]
+    public IBoxedValue DefaultValue { get; set; }
 
     [Parameter]
     public bool IsRemovable { get; set; }

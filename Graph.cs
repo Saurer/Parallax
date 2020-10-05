@@ -55,6 +55,7 @@ namespace Parallax {
             SubEvent(StaticEvent.Cardinality, StaticEvent.ValueProperty, "Cardinality", StaticEvent.ValueProperty),
             SubEvent(StaticEvent.Required, StaticEvent.ValueProperty, "Required", StaticEvent.ValueProperty),
             SubEvent(StaticEvent.Permission, StaticEvent.ValueProperty, "Permission", StaticEvent.ValueProperty),
+            SubEvent(StaticEvent.Set, StaticEvent.ValueProperty, "Set", StaticEvent.ValueProperty),
 
             Model(StaticEvent.EventModel, StaticEvent.Event, "Model_Event", StaticEvent.Event),
             Model(StaticEvent.EntityModel, StaticEvent.Entity, "Model_Entity", StaticEvent.EventModel),

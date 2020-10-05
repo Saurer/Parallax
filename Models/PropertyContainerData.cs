@@ -4,6 +4,7 @@ using AuroraCore.Storage;
 
 namespace Parallax.Models {
     public class PropertyContainerData {
+        private PropertyProviderData provider;
         private Dictionary<int, IEnumerable<PropertyContainerData>> attributes;
         private Dictionary<int, IEnumerable<PropertyContainerData>> relations;
 
@@ -12,11 +13,20 @@ namespace Parallax.Models {
         public IReadOnlyDictionary<int, IEnumerable<PropertyContainerData>> Attributes => attributes;
         public IReadOnlyDictionary<int, IEnumerable<PropertyContainerData>> Relations => relations;
         public IBoxedValue Value { get; private set; }
+        public bool Fixed { get; private set; }
 
-        public PropertyContainerData(IBoxedValue value = null) {
+        public PropertyContainerData(PropertyProviderData provider, IBoxedValue value = null, bool fixedValue = false) {
+            this.provider = provider;
             Value = value;
+            Fixed = fixedValue;
             attributes = new Dictionary<int, IEnumerable<PropertyContainerData>>();
             relations = new Dictionary<int, IEnumerable<PropertyContainerData>>();
+
+            foreach (var attrProto in provider.Attributes) {
+                if (null != attrProto.Value.DefaultValue) {
+                    AddAttributeValue(attrProto.Key, attrProto.Value.DefaultValue, true);
+                }
+            }
         }
 
         public PropertyContainerData(
@@ -52,13 +62,14 @@ namespace Parallax.Models {
             }
         }
 
-        public void AddAttributeValue(int attributeID, IBoxedValue value) {
+        public void AddAttributeValue(int attributeID, IBoxedValue value, bool fixedValue = false) {
             if (!Attributes.ContainsKey(attributeID)) {
                 attributes.Add(attributeID, new List<PropertyContainerData>());
             }
 
             var list = (List<PropertyContainerData>)attributes[attributeID];
-            list.Add(new PropertyContainerData(value));
+            var subProvider = provider.Attributes[attributeID].PropertyProvider;
+            list.Add(new PropertyContainerData(subProvider, value, fixedValue));
         }
 
         public void RemoveRelationValue(int relationID, PropertyContainerData container) {
@@ -74,7 +85,8 @@ namespace Parallax.Models {
             }
 
             var list = (List<PropertyContainerData>)relations[relationID];
-            list.Add(new PropertyContainerData(value));
+            var subProvider = provider.Relations[relationID].PropertyProvider;
+            list.Add(new PropertyContainerData(subProvider, value));
         }
         
         public void SetValue(IBoxedValue value) {

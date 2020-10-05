@@ -35,6 +35,33 @@
                     </select>
                 </div>
 
+                <div class="form-group">
+                    <label>Initial value</label>
+                    <div class="form-check mb-2">
+                        <input type="checkbox" class="form-check-input" id="defaultEmpty" @bind="defaultEmpty"/>
+                        <label class="form-check-label" for="defaultEmpty">None</label>
+                    </div>
+                    @if (!defaultEmpty) {
+                        if (model?.AttributeModel.Attribute.DataType.IsBoxed is true) {
+                            <select
+                                class="form-control @(Valid ? "is-valid" : "is-invalid")"
+                                @bind="editorValue"
+                            >
+                                @foreach (var item in model?.AttributeModel.Attribute.Values) {
+                                    <option value="@item.EventID.ToString()">@item.Value</option>
+                                }
+                            </select>
+                        }
+                        else {
+                            <input
+                                type="text"
+                                @bind-value="editorValue"
+                                class="form-control @(Valid ? "is-valid" : "is-invalid")"
+                            />
+                        }
+                    }
+                </div>
+
                 <hr/>
 
                 <div class="form-check">
@@ -86,6 +113,11 @@ else {
     private IEnumerable<AttrData> availableAttributes = Array.Empty<AttrData>();
     private IEnumerable<IIndividual> actors = Array.Empty<IIndividual>();
     private bool transient = true;
+    private bool defaultEmpty = true;
+    private string editorValue = "";
+
+    private bool Valid =>
+        defaultEmpty || (model?.AttributeModel.Attribute.DataType.Validate(editorValue) ?? false);
 
     protected async override Task OnInitializedAsync() {
         allAttributes = await Storage.GetAttributes();
@@ -115,13 +147,25 @@ else {
     }
 
     private async Task HandleSubmit() {
+        IBoxedValue defaultValue = null;
+
+        if (!Valid) {
+            return;
+        }
+
+        if (!defaultEmpty) {
+            var shownValue = model.AttributeModel.Attribute.Values.Where(a => a.EventID.ToString() == editorValue).SingleOrDefault();
+            defaultValue = new BoxedValueData(editorValue, shownValue?.Value ?? editorValue);
+        }
+
         await BlazoredModal.Close(ModalResult.Ok(
             new PropertyAssignData {
                 ID = model.Attribute.ID,
                 Required = model.Required,
                 Cardinality = model.Cardinality,
                 Permission = model.Permission,
-                Conditions = model.Conditions.Compile()
+                Conditions = model.Conditions.Compile(),
+                DefaultValue = defaultValue
             }
         ));
     }

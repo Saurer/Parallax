@@ -29,7 +29,13 @@ namespace Parallax.Services {
             var permission = await attr.GetPermission();
             var provider = await GetProvider(attr.AttachmentID);
             var attrData = await AttrData.Instantiate(plainAttr);
-            return new AttachedAttrData(attrData, required, cardinality, permission, provider, attr.Conditions, attr.AttachmentID);
+            var defaultValue = await attr.GetDefaultValue();
+            IBoxedValue boxedDefaultValue = null;
+            if (null != defaultValue) {
+                var shownValue = attrData.Values.Where(a => a.EventID.ToString() == defaultValue).SingleOrDefault();
+                boxedDefaultValue = new BoxedValueData(defaultValue, shownValue?.Value ?? defaultValue);
+            }
+            return new AttachedAttrData(attrData, required, cardinality, permission, boxedDefaultValue, provider, attr.Conditions, attr.AttachmentID);
         }
 
         public async Task<AttachedRelationData> GetAttachedRelation(IAttachedProperty<IRelation> relation) {
@@ -97,6 +103,10 @@ namespace Parallax.Services {
 
             if (data.Permission.HasValue) {
                 await tx.AssignPropertyValuePermission(eventID, data.ID, data.Permission.Value);
+            }
+
+            if (null != data.DefaultValue) {
+                await tx.AssignPropertyValueSet(eventID, data.ID, data.DefaultValue.PlainValue);
             }
 
             return eventID;

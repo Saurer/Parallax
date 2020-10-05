@@ -16,5 +16,11 @@ namespace Parallax.Models {
             Cardinality >= 0;
 
         public ConditionData Conditions { get; set; } = new ConditionData();
+
+        public AttachedAttrData AttributeModel {
+            get {
+                return new AttachedAttrData(Attribute, Required, Cardinality, Permission, null, null);
+            }
+        }
     }
 }

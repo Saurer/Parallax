@@ -164,7 +164,9 @@ else {
                 Required = model.Required,
                 Cardinality = model.Cardinality,
                 Permission = model.Permission,
-                Conditions = model.Conditions.Compile(),
+                Conditions = transient
+                    ? null
+                    : model.Conditions.Compile(),
                 DefaultValue = defaultValue
             }
         ));

@@ -91,7 +91,11 @@ namespace Parallax.Services {
         }
 
         public async Task<int> AddAttribute(int providerID, PropertyAssignData data) {
-            var eventID = await tx.AssignProviderAttribute(providerID, data.ID, data.Conditions);
+            var eventID = await tx.AssignProviderAttribute(
+                providerID,
+                data.ID,
+                data.Conditions ?? new ConditionRule.EventConditionRule(providerID)
+            );
 
             if (Const.DefaultRequired != data.Required) {
                 await tx.AssignPropertyValueRequirement(eventID, data.ID, data.Required);
@@ -147,7 +151,11 @@ namespace Parallax.Services {
                 var attachmentID = property.AttachmentID;
 
                 if (!attachmentID.HasValue) {
-                    attachmentID = await tx.AssignProviderAttribute(providerID, keyValue.Key, keyValue.Value.Conditions);
+                    attachmentID = await tx.AssignProviderAttribute(
+                        providerID,
+                        keyValue.Key,
+                        keyValue.Value.Conditions ?? new ConditionRule.EventConditionRule(providerID)
+                    );
                     await CreatePropertyConstraints(
                         attachmentID.Value,
                         property.Attribute.ID,
@@ -165,7 +173,11 @@ namespace Parallax.Services {
                 var attachmentID = property.AttachmentID;
 
                 if (!attachmentID.HasValue) {
-                    attachmentID = await tx.AssignProviderAttribute(providerID, keyValue.Key, new ConditionRule.EventConditionRule(providerID));
+                    attachmentID = await tx.AssignProviderAttribute(
+                        providerID,
+                        keyValue.Key,
+                        keyValue.Value.Conditions ?? new ConditionRule.EventConditionRule(providerID)
+                    );
                     await CreatePropertyConstraints(
                         attachmentID.Value,
                         property.Relation.PropertyIndividual.IndividualID,

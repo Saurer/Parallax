@@ -148,7 +148,13 @@ namespace Parallax.Services {
 
                 if (!attachmentID.HasValue) {
                     attachmentID = await tx.AssignProviderAttribute(providerID, keyValue.Key, keyValue.Value.Conditions);
-                    await CreatePropertyConstraints(attachmentID.Value, property.Attribute.ID, property.Required, property.Cardinality);
+                    await CreatePropertyConstraints(
+                        attachmentID.Value,
+                        property.Attribute.ID,
+                        property.Required,
+                        property.Cardinality,
+                        property.DefaultValue
+                    );
                 }
 
                 await CreateScopedProperties(attachmentID.Value, property.PropertyProvider);
@@ -160,7 +166,13 @@ namespace Parallax.Services {
 
                 if (!attachmentID.HasValue) {
                     attachmentID = await tx.AssignProviderAttribute(providerID, keyValue.Key, new ConditionRule.EventConditionRule(providerID));
-                    await CreatePropertyConstraints(attachmentID.Value, property.Relation.PropertyIndividual.IndividualID, property.Required, property.Cardinality);
+                    await CreatePropertyConstraints(
+                        attachmentID.Value,
+                        property.Relation.PropertyIndividual.IndividualID,
+                        property.Required,
+                        property.Cardinality,
+                        null
+                    );
                     continue;
                 }
 
@@ -168,13 +180,17 @@ namespace Parallax.Services {
             }
         }
 
-        private async Task CreatePropertyConstraints(int assignationID, int propertyID, bool required, int cardinality) {
+        private async Task CreatePropertyConstraints(int assignationID, int propertyID, bool required, int cardinality, IBoxedValue defaultValue) {
             if (Const.DefaultRequired != required) {
                 await tx.AssignPropertyValueRequirement(assignationID, propertyID, required);
             }
 
             if (Const.DefaultCardinality != cardinality) {
                 await tx.AssignPropertyValueCardinality(assignationID, propertyID, cardinality);
+            }
+
+            if (null != defaultValue) {
+                await tx.AssignPropertyValueSet(assignationID, propertyID, defaultValue.PlainValue);
             }
         }
     }

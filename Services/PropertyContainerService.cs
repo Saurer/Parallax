@@ -59,6 +59,9 @@ namespace Parallax.Services {
             var resultRelations = new Dictionary<int, IEnumerable<PropertyContainerData>>();
             var containerEvent = await storage.GetEvent(containerID);
             var actorEvent = await storage.GetEvent(containerEvent.EventValue.ActorEventID);
+            var parentEvent = await storage.GetEvent(containerEvent.EventValue.BaseEventID);
+            var providerEvent = await parentEvent.GetConditionEvent();
+            var provider = await propertyProvider.GetProvider(providerEvent.EventValue.ID);
 
             foreach (var kv in plainAttributes) {
                 var newValues = await Task.WhenAll(
@@ -77,7 +80,14 @@ namespace Parallax.Services {
                 resultRelations.Add(kv.Key, newValues);
             }
 
-            return new PropertyContainerData(resultAttributes, resultRelations, containerID, actorEvent.EventValue.Value, value);
+            return new PropertyContainerData(
+                provider,
+                resultAttributes,
+                resultRelations,
+                containerID,
+                actorEvent.EventValue.Value,
+                value
+            );
         }
 
         private async Task CreateScopedProperties(

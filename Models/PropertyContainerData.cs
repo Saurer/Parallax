@@ -21,26 +21,32 @@ namespace Parallax.Models {
             Fixed = fixedValue;
             attributes = new Dictionary<int, IEnumerable<PropertyContainerData>>();
             relations = new Dictionary<int, IEnumerable<PropertyContainerData>>();
-
-            foreach (var attrProto in provider.Attributes) {
-                if (null != attrProto.Value.DefaultValue) {
-                    AddAttributeValue(attrProto.Key, attrProto.Value.DefaultValue, true);
-                }
-            }
+            Initialize();
         }
 
         public PropertyContainerData(
+            PropertyProviderData provider,
             Dictionary<int, IEnumerable<PropertyContainerData>> attributes,
             Dictionary<int, IEnumerable<PropertyContainerData>> relations,
             int containerID,
             string actorName,
             IBoxedValue value = null
         ) {
+            this.provider = provider;
             Value = value;
             ActorName = actorName;
             this.attributes = attributes;
             this.relations = relations;
             this.ContainerID = containerID;
+            Initialize();
+        }
+
+        public void Initialize() {
+            foreach (var attrProto in provider.Attributes) {
+                if (null != attrProto.Value.DefaultValue) {
+                    AddAttributeValue(attrProto.Key, attrProto.Value.DefaultValue, true);
+                }
+            }
         }
 
         public bool HasValueFor(int propertyID) {
@@ -88,7 +94,7 @@ namespace Parallax.Models {
             var subProvider = provider.Relations[relationID].PropertyProvider;
             list.Add(new PropertyContainerData(subProvider, value));
         }
-        
+
         public void SetValue(IBoxedValue value) {
             Value = value;
         }
@@ -96,6 +102,7 @@ namespace Parallax.Models {
         public void Clear() {
             attributes.Clear();
             relations.Clear();
+            Initialize();
         }
     }
 }

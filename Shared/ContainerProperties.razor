@@ -90,9 +90,10 @@
     private PropertyContainerData Properties;
     private bool CreateMode => PropertyContainer == null;
 
-    protected override void OnInitialized() {
+    protected override async Task OnInitializedAsync() {
         if (PropertyContainer == null) {
             Properties = new PropertyContainerData(PropertyProvider);
+            await HandleChange();
         }
         else {
             Properties = PropertyContainer;

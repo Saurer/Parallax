@@ -253,26 +253,42 @@
             return false;
         }
         else if (rule is ConditionRule.PropertyEqualityRule equalityRule) {
-            if (Properties.Attributes.TryGetValue(equalityRule.PropertyID, out var attr)) {
-                return attr.Any(a => a.Value.PlainValue == equalityRule.Value);
+            var values = new List<PropertyContainerData>();
+
+            if (Properties.Attributes.TryGetValue(equalityRule.PropertyID, out var attributes)) {
+                values.AddRange(attributes);
             }
 
-            if (Properties.Relations.TryGetValue(equalityRule.PropertyID, out var relation)) {
-                return relation.Any(r => r.Value.PlainValue == equalityRule.Value);
+            if (Properties.Relations.TryGetValue(equalityRule.PropertyID, out var relations)) {
+                values.AddRange(relations);
             }
 
-            return false;
+            if (String.IsNullOrEmpty(equalityRule.Value)) {
+                return
+                    !values.Any() ||
+                    values.Any(v => String.IsNullOrEmpty(v.Value.PlainValue));
+            }
+            else {
+                return values.Any(v => v.Value.PlainValue == equalityRule.Value);
+            }
         }
         else if (rule is ConditionRule.PropertyInequalityRule inequalityRule) {
-            if (Properties.Attributes.TryGetValue(inequalityRule.PropertyID, out var attr)) {
-                return attr.Any(a => a.Value.PlainValue != inequalityRule.Value);
+            var values = new List<PropertyContainerData>();
+
+            if (Properties.Attributes.TryGetValue(inequalityRule.PropertyID, out var attributes)) {
+                values.AddRange(attributes);
             }
 
-            if (Properties.Relations.TryGetValue(inequalityRule.PropertyID, out var relation)) {
-                return relation.Any(r => r.Value.PlainValue != inequalityRule.Value);
+            if (Properties.Relations.TryGetValue(inequalityRule.PropertyID, out var relations)) {
+                values.AddRange(relations);
             }
 
-            return true;
+            if (String.IsNullOrEmpty(inequalityRule.Value)) {
+                return values.Any(v => !String.IsNullOrEmpty(v.Value.PlainValue));
+            }
+            else {
+                return values.Any(v => v.Value.PlainValue != inequalityRule.Value);
+            }
         }
         else if (rule is ConditionRule.EventConditionRule) {
             return true;

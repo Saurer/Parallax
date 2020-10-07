@@ -75,6 +75,11 @@ namespace Parallax.Models {
 
             var list = (List<PropertyContainerData>)attributes[attributeID];
             var subProvider = provider.Attributes[attributeID].PropertyProvider;
+
+            if (provider.Attributes[attributeID].Mutable) {
+                list.Clear();
+            }
+
             list.Add(new PropertyContainerData(subProvider, value, fixedValue));
         }
 
@@ -92,6 +97,11 @@ namespace Parallax.Models {
 
             var list = (List<PropertyContainerData>)relations[relationID];
             var subProvider = provider.Relations[relationID].PropertyProvider;
+
+            if (provider.Relations[relationID].Mutable) {
+                list.Clear();
+            }
+
             list.Add(new PropertyContainerData(subProvider, value));
         }
 

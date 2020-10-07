@@ -17,7 +17,7 @@
         Type="@(CreateMode ? attr.Attribute.DataType.Name : null)"
         Cardinality="@(CreateMode ? (int?)attr.Cardinality : null)"
         Required="@attr.Required"
-        IsAssignable="@IsFull(attr)"
+        IsAssignable="@IsAssignable(attr)"
         IsProtected="@IsProtected(attr)"
         OnAssign="@(() => HandleAssignAttribute(attr))"
     />
@@ -51,7 +51,7 @@
         TypeCssClass="badge-primary"
         Cardinality="@relation.Cardinality"
         Required="@relation.Required"
-        IsAssignable="@IsFull(relation)"
+        IsAssignable="@IsAssignable(relation)"
         IsProtected="@IsProtected(relation)"
         OnAssign="@(() => HandleAssignRelation(relation))"
     />
@@ -106,28 +106,28 @@
         }
     }
 
-    private bool IsFull(AttachedAttrData attr) {
+    private bool IsAssignable(AttachedAttrData attr) {
         if (attr.Cardinality == 0) {
-            return false;
+            return true;
         }
 
-        if (null == Properties || !Properties.Attributes.ContainsKey(attr.Attribute.ID)) {
-            return false;
+        if (null == Properties || attr.Mutable || !Properties.Attributes.ContainsKey(attr.Attribute.ID)) {
+            return true;
         }
 
-        return Properties.Attributes[attr.Attribute.ID].Count() >= attr.Cardinality;
+        return Properties.Attributes[attr.Attribute.ID].Count() < attr.Cardinality;
     }
 
-    private bool IsFull(AttachedRelationData relation) {
+    private bool IsAssignable(AttachedRelationData relation) {
         if (relation.Cardinality == 0) {
-            return false;
+            return true;
         }
 
-        if (null == Properties || !Properties.Relations.ContainsKey(relation.Relation.PropertyID)) {
-            return false;
+        if (null == Properties || relation.Mutable || !Properties.Relations.ContainsKey(relation.Relation.PropertyID)) {
+            return true;
         }
 
-        return Properties.Relations[relation.Relation.PropertyID].Count() >= relation.Cardinality;
+        return Properties.Relations[relation.Relation.PropertyID].Count() < relation.Cardinality;
     }
 
     private bool IsProtected(AttachedAttrData attr) {

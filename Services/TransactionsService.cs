@@ -28,6 +28,9 @@ namespace Parallax.Services {
         public async Task<int> AssignPropertyValueCardinality(int assignationID, int propertyID, int cardinality) =>
             await ProcessEvent(assignationID, StaticEvent.Cardinality, propertyID, cardinality.ToString());
 
+        public async Task<int> AssignPropertyValueMutability(int assignationID, int propertyID, bool mutability) =>
+            await ProcessEvent(assignationID, StaticEvent.Mutable, propertyID, mutability ? "1" : "0");
+
         public async Task<int> AssignPropertyValuePermission(int assignationID, int propertyID, int actorID) =>
             await ProcessEvent(assignationID, StaticEvent.Permission, propertyID, actorID.ToString());
 

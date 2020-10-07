@@ -5,6 +5,7 @@ namespace Parallax.Models {
         public int? AttachmentID { get; private set; }
         public AttrData Attribute { get; private set; }
         public bool Required { get; private set; }
+        public bool Mutable { get; private set; }
         public int Cardinality { get; private set; }
         public int? Permission { get; private set; }
         public IBoxedValue DefaultValue { get; private set; }
@@ -15,10 +16,11 @@ namespace Parallax.Models {
             AttrData attr,
             bool required,
             int cardinality,
+            bool mutable,
             int? permission,
             IBoxedValue defaultValue,
             ConditionRule conditions
-        ) : this(attr, required, cardinality, permission, defaultValue, conditions, null) {
+        ) : this(attr, required, cardinality, mutable, permission, defaultValue, conditions, null) {
             PropertyProvider = new PropertyProviderData();
             AttachmentID = null;
         }
@@ -27,12 +29,13 @@ namespace Parallax.Models {
             AttrData attr,
             bool required,
             int cardinality,
+            bool mutable,
             int? permission,
             IBoxedValue defaultValue,
             PropertyProviderData provider,
             ConditionRule conditions,
             int attachmentID
-        ) : this(attr, required, cardinality, permission, defaultValue, conditions, provider) {
+        ) : this(attr, required, cardinality, mutable, permission, defaultValue, conditions, provider) {
             AttachmentID = attachmentID;
         }
 
@@ -40,6 +43,7 @@ namespace Parallax.Models {
             AttrData attr,
             bool required,
             int cardinality,
+            bool mutable,
             int? permission,
             IBoxedValue defaultValue,
             ConditionRule conditions,
@@ -48,6 +52,7 @@ namespace Parallax.Models {
             Attribute = attr;
             Required = required;
             Cardinality = cardinality;
+            Mutable = mutable;
             Permission = permission;
             Conditions = conditions;
             DefaultValue = defaultValue;

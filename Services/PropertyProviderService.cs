@@ -26,6 +26,7 @@ namespace Parallax.Services {
             var plainAttr = await attr.GetProperty();
             var required = await attr.IsRequired();
             var cardinality = await attr.GetCardinality();
+            var mutable = await attr.GetMutability();
             var permission = await attr.GetPermission();
             var provider = await GetProvider(attr.AttachmentID);
             var attrData = await AttrData.Instantiate(plainAttr);
@@ -35,16 +36,17 @@ namespace Parallax.Services {
                 var shownValue = attrData.Values.Where(a => a.EventID.ToString() == defaultValue).SingleOrDefault();
                 boxedDefaultValue = new BoxedValueData(defaultValue, shownValue?.Value ?? defaultValue);
             }
-            return new AttachedAttrData(attrData, required, cardinality, permission, boxedDefaultValue, provider, attr.Conditions, attr.AttachmentID);
+            return new AttachedAttrData(attrData, required, cardinality, mutable, permission, boxedDefaultValue, provider, attr.Conditions, attr.AttachmentID);
         }
 
         public async Task<AttachedRelationData> GetAttachedRelation(IAttachedProperty<IRelation> relation) {
             var plainRelation = await relation.GetProperty();
             var required = await relation.IsRequired();
             var cardinality = await relation.GetCardinality();
+            var mutable = await relation.GetMutability();
             var permission = await relation.GetPermission();
             var provider = await GetProvider(relation.AttachmentID);
-            return new AttachedRelationData(plainRelation, required, cardinality, permission, provider, relation.Conditions, relation.AttachmentID);
+            return new AttachedRelationData(plainRelation, required, cardinality, mutable, permission, provider, relation.Conditions, relation.AttachmentID);
         }
 
         public async Task<PropertyProviderData> GetProvider(int id) {
@@ -101,6 +103,10 @@ namespace Parallax.Services {
                 await tx.AssignPropertyValueRequirement(eventID, data.ID, data.Required);
             }
 
+            if (Const.DefaultMutability != data.Mutable) {
+                await tx.AssignPropertyValueMutability(eventID, data.ID, data.Mutable);
+            }
+
             if (Const.DefaultCardinality != data.Cardinality) {
                 await tx.AssignPropertyValueCardinality(eventID, data.ID, data.Cardinality);
             }
@@ -121,6 +127,10 @@ namespace Parallax.Services {
 
             if (Const.DefaultRequired != data.Required) {
                 await tx.AssignPropertyValueRequirement(eventID, data.ID, data.Required);
+            }
+
+            if (Const.DefaultMutability != data.Mutable) {
+                await tx.AssignPropertyValueMutability(eventID, data.ID, data.Mutable);
             }
 
             if (Const.DefaultCardinality != data.Cardinality) {
@@ -161,6 +171,7 @@ namespace Parallax.Services {
                         property.Attribute.ID,
                         property.Required,
                         property.Cardinality,
+                        property.Mutable,
                         property.DefaultValue
                     );
                 }
@@ -183,6 +194,7 @@ namespace Parallax.Services {
                         property.Relation.PropertyIndividual.IndividualID,
                         property.Required,
                         property.Cardinality,
+                        property.Mutable,
                         null
                     );
                     continue;
@@ -192,13 +204,17 @@ namespace Parallax.Services {
             }
         }
 
-        private async Task CreatePropertyConstraints(int assignationID, int propertyID, bool required, int cardinality, IBoxedValue defaultValue) {
+        private async Task CreatePropertyConstraints(int assignationID, int propertyID, bool required, int cardinality, bool mutable, IBoxedValue defaultValue) {
             if (Const.DefaultRequired != required) {
                 await tx.AssignPropertyValueRequirement(assignationID, propertyID, required);
             }
 
             if (Const.DefaultCardinality != cardinality) {
                 await tx.AssignPropertyValueCardinality(assignationID, propertyID, cardinality);
+            }
+
+            if (Const.DefaultMutability != mutable) {
+                await tx.AssignPropertyValueMutability(assignationID, propertyID, mutable);
             }
 
             if (null != defaultValue) {

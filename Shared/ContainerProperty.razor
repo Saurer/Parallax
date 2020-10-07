@@ -22,7 +22,7 @@
             </div>
             <div class="col-sm-4 text-right">
                 @if (!IsProtected) {
-                    <button type="button" class="btn btn-link p-0" disabled="@IsAssignable" @onclick="OnAssign">
+                    <button type="button" class="btn btn-link p-0" disabled="@(!IsAssignable)" @onclick="OnAssign">
                         <i class="icon feather-check-circle mr-1"></i>
                         <span>Assign value</span>
                     </button>

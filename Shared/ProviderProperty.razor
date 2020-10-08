@@ -1,5 +1,6 @@
 @inject IStorageAPI Storage
 @inject RoutingService Routing
+@inject ConditionsService ConditionsService
 
 <div class="card mb-2 pb-0">
     <div class="card-body pb-2">
@@ -48,6 +49,13 @@
                         else {
                             <div class="text-muted">@Required</div>
                         }
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-6 text-muted">Conditions:</div>
+                    <div class="col-6">
+                        @conditions
                     </div>
                 </div>
 
@@ -101,6 +109,9 @@
     public int? Permission { get; set; }
 
     [Parameter]
+    public ConditionRule Conditions { get; set; }
+
+    [Parameter]
     public bool Required { get; set; }
 
     [Parameter]
@@ -122,10 +133,13 @@
     public RenderFragment ChildContent { get; set; }
 
     private IIndividual permissionActor;
+    private string conditions;
 
     protected override async Task OnInitializedAsync() {
         if (Permission.HasValue && Permission != 0) {
             permissionActor = await Storage.GetActor(Permission.Value);
         }
+
+        conditions = await ConditionsService.ToReadable(Conditions);
     }
 }

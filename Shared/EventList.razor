@@ -1,4 +1,5 @@
 @inject IStorageAPI Storage
+@inject ConditionsService Conditions
 
 <table class="table table-bordered table-hover table-sm">
     <thead>
@@ -54,47 +55,8 @@
             Value = e.EventValue.Value,
             ActorEvent = await Storage.GetEvent(e.EventValue.ActorEventID),
             Date = e.Date,
-            Conditions = await GetDetailedCondition(e.Conditions)
+            Conditions = await Conditions.ToReadable(e.Conditions)
         };
-    }
-
-    private async Task<string> GetDetailedCondition(ConditionRule rule) {
-        if (rule is ConditionRule.EventConditionRule eventRule) {
-            var e = await Storage.GetEvent(eventRule.EventID);
-            return $"[{eventRule.EventID}] {e.EventValue.Value}";
-        }
-        else if (rule is ConditionRule.ComplexConditionRule complexRule && 1 == complexRule.Values.Count()) {
-            return await GetDetailedCondition(complexRule.Values.Single());
-        }
-        else if (rule is ConditionRule.ConjunctionRule conjunctionRule) {
-            var arms = String.Join(
-                " AND ",
-                await Task.WhenAll(
-                    conjunctionRule.Values.Select(v => GetDetailedCondition(v))
-                )
-            );
-            return $"({arms})";
-        }
-        else if (rule is ConditionRule.DisjunctionRule disjunctionRule) {
-            var arms = String.Join(
-                " OR ",
-                await Task.WhenAll(
-                    disjunctionRule.Values.Select(v => GetDetailedCondition(v))
-                )
-            );
-            return $"({arms})";
-        }
-        else if (rule is ConditionRule.PropertyEqualityRule equalityRule) {
-            var e = await Storage.GetAttribute(equalityRule.PropertyID);
-            return $"{e.Label} = '{equalityRule.Value}'";
-        }
-        else if (rule is ConditionRule.PropertyInequalityRule inequalityRule) {
-            var e = await Storage.GetAttribute(inequalityRule.PropertyID);
-            return $"{e.Label} <> '{inequalityRule.Value}'";
-        }
-        else {
-            throw new NotImplementedException();
-        }
     }
 
     public async Task Refresh() {

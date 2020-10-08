@@ -1,6 +1,7 @@
 ﻿@inherits LayoutComponentBase
 @inject IStorageAPI Storage
 @inject CredentialsService Credentials
+@inject NavigationManager NavigationManager
 
 <div class="sidebar">
     <NavMenu />
@@ -44,5 +45,6 @@
     private void HandleUserClick(IIndividual actor) {
         Credentials.SetCurrentActor(actor);
         userDropdown = false;
+        NavigationManager.NavigateTo("/");
     }
 }

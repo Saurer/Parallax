@@ -1,6 +1,6 @@
 <div style="@(Decorate ? "border-left:dashed 1px #ccc;padding-left: 35px;margin-left:5px" : "")">
     <div class="form-group">
-        <select class="form-control" @bind="@Model.Rule">
+        <select class="form-control" @onchange="HandleChangeRule">
             <option value="@ConditionType.Conjunction">Conjunction clause (AND)</option>
             <option value="@ConditionType.Disjunction">Disjunction clause (OR)</option>
             <option value="@ConditionType.Equality">Equality</option>
@@ -73,6 +73,13 @@
 
     protected override async Task OnInitializedAsync() {
         await SetAttr(Model.Property);
+    }
+
+    private async Task HandleChangeRule(ChangeEventArgs e) {
+        if (Enum.TryParse<ConditionType>((string)e.Value, out var rule)) {
+            Model.Rule = rule;
+            await SetAttr(Values.First().PropertyID);
+        }
     }
 
     private async Task HandleChangeAttr(ChangeEventArgs e) {

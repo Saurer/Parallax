@@ -1,6 +1,6 @@
 <div style="@(Decorate ? "border-left:dashed 1px #ccc;padding-left: 35px;margin-left:5px" : "")">
     <div class="form-group">
-        <select class="form-control" @onchange="HandleChangeRule">
+        <select class="form-control" @onchange="HandleChangeRule" value="@Model.Rule">
             <option value="@ConditionType.Conjunction">Conjunction clause (AND)</option>
             <option value="@ConditionType.Disjunction">Disjunction clause (OR)</option>
             <option value="@ConditionType.Equality">Equality</option>
@@ -28,7 +28,7 @@
     else {
         <div class="row">
             <div class="col-sm">
-                <select class="form-control" @onchange="HandleChangeAttr">
+                <select class="form-control" @onchange="HandleChangeAttr" value="@(attr?.ID)">
                     @foreach (var attr in Values) {
                         <option value="@attr.PropertyID">@attr.Label</option>
                     }

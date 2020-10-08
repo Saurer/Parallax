@@ -39,6 +39,7 @@
                 @if (null != attr) {
                     if (attr.DataType.IsBoxed) {
                         <select class="form-control" @bind="Model.Value">
+                            <option value="">&lt;None&gt;</option>
                             @foreach (var item in attr.Values) {
                                 <option value="@item.EventID.ToString()">@item.Value</option>
                             }

@@ -28,7 +28,7 @@
     else {
         <div class="row">
             <div class="col-sm">
-                <select class="form-control" @bind="Model.Property">
+                <select class="form-control" @onchange="HandleChangeAttr">
                     @foreach (var attr in Values) {
                         <option value="@attr.PropertyID">@attr.Label</option>
                     }
@@ -36,7 +36,23 @@
             </div>
 
             <div class="col-sm">
-                <input class="form-control" placeholder="Value..." @bind-value="Model.Value" />
+                @if (null != attr) {
+                    if (attr.DataType.IsBoxed) {
+                        <select class="form-control" @bind="Model.Value">
+                            @foreach (var item in attr.Values) {
+                                <option value="@item.EventID.ToString()">@item.Value</option>
+                            }
+                        </select>
+                    }
+                    else {
+                        <input
+                            class="form-control"
+                            type="text"
+                            @bind-value="Model.Value"
+                            placeholder="Value..."
+                        />
+                    }
+               }
             </div>
         </div>
     }
@@ -51,6 +67,29 @@
 
     [Parameter]
     public ConditionData Model { get; set; } = new ConditionData();
+
+    private AttrData attr = null;
+
+    protected override async Task OnInitializedAsync() {
+        await SetAttr(Model.Property);
+    }
+
+    private async Task HandleChangeAttr(ChangeEventArgs e) {
+        attr = null;
+        Model.Value = null;
+
+        if (Int32.TryParse((string)e.Value, out var id)) {
+            await SetAttr(id);
+        }
+    }
+
+    private async Task SetAttr(int attrID) {
+        var attrProto = Values.Where(a => a.PropertyID == attrID).SingleOrDefault();
+        if (attrProto != null) {
+            Model.Property = attrID;
+            attr = await AttrData.Instantiate(attrProto);
+        }
+    }
 
     private void HandleAddArm() {
         Model.Items.Add(new ConditionData{

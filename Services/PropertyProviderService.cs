@@ -172,6 +172,7 @@ namespace Parallax.Services {
                         property.Required,
                         property.Cardinality,
                         property.Mutable,
+                        property.Permission,
                         property.DefaultValue
                     );
                 }
@@ -195,6 +196,7 @@ namespace Parallax.Services {
                         property.Required,
                         property.Cardinality,
                         property.Mutable,
+                        property.Permission,
                         null
                     );
                     continue;
@@ -204,7 +206,7 @@ namespace Parallax.Services {
             }
         }
 
-        private async Task CreatePropertyConstraints(int assignationID, int propertyID, bool required, int cardinality, bool mutable, IBoxedValue defaultValue) {
+        private async Task CreatePropertyConstraints(int assignationID, int propertyID, bool required, int cardinality, bool mutable, int? permission, IBoxedValue defaultValue) {
             if (Const.DefaultRequired != required) {
                 await tx.AssignPropertyValueRequirement(assignationID, propertyID, required);
             }
@@ -215,6 +217,10 @@ namespace Parallax.Services {
 
             if (Const.DefaultMutability != mutable) {
                 await tx.AssignPropertyValueMutability(assignationID, propertyID, mutable);
+            }
+
+            if (permission.HasValue) {
+                await tx.AssignPropertyValuePermission(assignationID, propertyID, permission.Value);
             }
 
             if (null != defaultValue) {

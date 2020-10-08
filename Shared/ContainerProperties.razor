@@ -8,10 +8,6 @@
 @foreach (var keyValue in PropertyProvider.Attributes.OrderBy(kv => kv.Value.AttachmentID)) {
     var attr = keyValue.Value;
 
-    if (!IsAvailable(attr.Attribute.ID)) {
-        continue;
-    }
-
     <ContainerProperty
         Label="@attr.Attribute.Label"
         Type="@(CreateMode ? attr.Attribute.DataType.Name : null)"
@@ -131,7 +127,10 @@
     }
 
     private bool IsProtected(AttachedAttrData attr) {
-        if (attr.Permission.HasValue) {
+        if (!IsAvailable(attr.Attribute.ID)) {
+            return true;
+        }
+        else if (attr.Permission.HasValue) {
             return Credentials.CurrentActor.IndividualID != attr.Permission;
         }
         else {
@@ -140,7 +139,10 @@
     }
 
     private bool IsProtected(AttachedRelationData relation) {
-        if (relation.Permission.HasValue) {
+        if (!IsAvailable(relation.Relation.PropertyID)) {
+            return true;
+        }
+        else if (relation.Permission.HasValue) {
             return Credentials.CurrentActor.IndividualID != relation.Permission;
         }
         else {

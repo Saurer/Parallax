@@ -54,5 +54,7 @@ namespace Parallax.Models {
 
         public bool Valid =>
             Cardinality >= 0;
+
+        public ConditionData Conditions { get; set; } = new ConditionData();
     }
 }

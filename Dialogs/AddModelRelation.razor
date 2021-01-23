@@ -67,6 +67,20 @@
                         <label class="form-check-label" for="mutable">Mutable</label>
                     </div>
                 </div>
+
+                <hr/>
+
+                <div class="form-group">
+                    <label>Conditions</label>
+                    <div class="form-check mb-2">
+                        <input type="checkbox" class="form-check-input" id="transient" @bind="transient"/>
+                        <label class="form-check-label" for="transient">Transient</label>
+                    </div>
+
+                    @if (!transient) {
+                        <ConditionsEditor Model="@model.Conditions" Values="@allProperties" />
+                    }
+                </div>
             </ChildContent>
             <Footer>
                 <button type="submit" class="btn btn-primary">Confirm</button>
@@ -93,13 +107,19 @@ else {
     [Parameter]
     public IEnumerable<int> Relations { get; set; }
 
+    private IEnumerable<IProperty> allProperties;
     private AddModelRelationData model = new AddModelRelationData();
     private IEnumerable<IRelation> availableRelations = Array.Empty<IRelation>();
     private IEnumerable<IIndividual> actors = Array.Empty<IIndividual>();
 
+    private bool transient = true;
+
     protected async override Task OnInitializedAsync() {
-        var relations = await Storage.GetRelations();
-        availableRelations = relations.Where(a => !Relations.Contains(a.PropertyID));
+        var allAttributes = await Storage.GetAttributes();
+        var allRelations = await Storage.GetRelations();
+        allProperties = allAttributes.Concat<IProperty>(allRelations);
+
+        availableRelations = allRelations.Where(a => !Relations.Contains(a.PropertyID));
         model.Relation = availableRelations.FirstOrDefault();
         actors = await Storage.GetActors();
     }
@@ -130,7 +150,10 @@ else {
                 Required = model.Required,
                 Cardinality = model.Cardinality,
                 Mutable = model.Mutable,
-                Permission = model.Permission
+                Permission = model.Permission,
+                Conditions = transient
+                    ? null
+                    : model.Conditions.Compile(),
             }
         ));
     }

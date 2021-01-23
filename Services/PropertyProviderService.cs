@@ -139,7 +139,11 @@ namespace Parallax.Services {
         }
 
         public async Task<int> AddRelation(int providerID, PropertyAssignData data) {
-            var eventID = await tx.AssignProviderRelation(providerID, data.ID);
+            var eventID = await tx.AssignProviderRelation(
+                providerID,
+                data.ID,
+                data.Conditions ?? new ConditionRule.EventConditionRule(providerID)
+            );
 
             if (Const.DefaultRequired != data.Required) {
                 await tx.AssignPropertyValueRequirement(eventID, data.ID, data.Required);

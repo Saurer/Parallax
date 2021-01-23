@@ -105,7 +105,7 @@
                     </div>
 
                     @if (!transient) {
-                        <ConditionsEditor Model="@model.Conditions" Values="@allAttributes" />
+                        <ConditionsEditor Model="@model.Conditions" Values="@allProperties" />
                     }
                 </div>
             </ChildContent>
@@ -134,7 +134,7 @@ else {
     [Parameter]
     public IEnumerable<int> Attributes { get; set; }
 
-    private IEnumerable<IAttr> allAttributes;
+    private IEnumerable<IProperty> allProperties;
     private AddModelAttributeData model = new AddModelAttributeData();
     private IEnumerable<AttrData> availableAttributes = Array.Empty<AttrData>();
     private IEnumerable<IIndividual> actors = Array.Empty<IIndividual>();
@@ -146,11 +146,16 @@ else {
         defaultEmpty || (model?.AttributeModel.Attribute.DataType.Validate(editorValue) ?? false);
 
     protected async override Task OnInitializedAsync() {
-        allAttributes = await Storage.GetAttributes();
+        var allAttributes = await Storage.GetAttributes();
+        var allRelations = await Storage.GetRelations();
+        allProperties = allAttributes.Concat<IProperty>(allRelations);
+
         var attrs = allAttributes.Where(a => !Attributes.Contains(a.PropertyID));
         availableAttributes = await Task.WhenAll(attrs.Select(l => AttrData.Instantiate(l)));
         model.Attribute = availableAttributes.FirstOrDefault();
         actors = await Storage.GetActors();
+
+        allRelations = await Storage.GetRelations();
     }
 
     private void HandleChangeNewAttr(ChangeEventArgs e) {

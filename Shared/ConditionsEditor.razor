@@ -46,9 +46,9 @@
     else {
         <div class="row">
             <div class="col-sm">
-                <select class="form-control" @onchange="HandleChangeAttr" value="@(attr?.ID)">
+                <select class="form-control" @onchange="HandleChangeAttr" value="@(Model.Property)">
                     @foreach (var attr in Values) {
-                        <option value="@attr.PropertyID">@attr.Label</option>
+                        <option value="@attr.PropertyID">@attr.EventValue.Value</option>
                     }
                 </select>
             </div>
@@ -72,6 +72,14 @@
                         />
                     }
                }
+               else if (null != relation) {
+                    <select class="form-control" @bind="Model.Value">
+                        <option value="">&lt;None&gt;</option>
+                        @foreach (var item in relation.Values) {
+                            <option value="@item.IndividualID.ToString()">@item.Label</option>
+                        }
+                    </select>
+               }
             </div>
         </div>
     }
@@ -82,38 +90,47 @@
     public bool Decorate { get; set; } = false;
 
     [Parameter]
-    public IEnumerable<IAttr> Values { get; set; }
+    public IEnumerable<IProperty> Values { get; set; }
 
     [Parameter]
     public ConditionData Model { get; set; } = new ConditionData();
 
     private AttrData attr = null;
+    private RelationData relation = null;
 
     protected override async Task OnInitializedAsync() {
-        await SetAttr(Model.Property);
+        await SetProperty(Model.Property);
     }
 
     private async Task HandleChangeRule(ChangeEventArgs e) {
         if (Enum.TryParse<ConditionType>((string)e.Value, out var rule)) {
             Model.Rule = rule;
-            await SetAttr(Values.First().PropertyID);
+            await SetProperty(Values.First().PropertyID);
         }
     }
 
     private async Task HandleChangeAttr(ChangeEventArgs e) {
         attr = null;
+        relation = null;
         Model.Value = null;
 
         if (Int32.TryParse((string)e.Value, out var id)) {
-            await SetAttr(id);
+            await SetProperty(id);
         }
     }
 
-    private async Task SetAttr(int attrID) {
-        var attrProto = Values.Where(a => a.PropertyID == attrID).SingleOrDefault();
-        if (attrProto != null) {
-            Model.Property = attrID;
+    private async Task SetProperty(int propertyID) {
+        var propertyProto = Values.Where(p => p.PropertyID == propertyID).SingleOrDefault();
+        if (propertyProto == null) {
+            return;
+        }
+        else if (propertyProto is IAttr attrProto) {
+            Model.Property = propertyID;
             attr = await AttrData.Instantiate(attrProto);
+        }
+        else if (propertyProto is IRelation relationProto) {
+            Model.Property = propertyID;
+            relation = await RelationData.Instantiate(relationProto);
         }
     }
 

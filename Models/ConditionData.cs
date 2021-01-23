@@ -63,8 +63,7 @@ namespace Parallax.Models {
         }
 
         private ConditionRule Traverse(ConditionData data) {
-            return data.Rule switch
-            {
+            return data.Rule switch {
                 ConditionType.Conjunction => new ConditionRule.ConjunctionRule(
                     data.Items.Select(Traverse)
                 ),

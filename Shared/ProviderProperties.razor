@@ -71,6 +71,12 @@
     </ProviderProperty>
 }
 
+@foreach (var keyValue in properties.Events) {
+    var eventData = keyValue.Value;
+
+    <ProviderEvent Type="@eventData.Property.EventValue.Value" Label="@eventData.Value" Conditions="@eventData.Conditions" />
+}
+
 @if (RenderControls) {
     <hr/>
     <div>
@@ -81,6 +87,10 @@
         <button type="button" class="btn btn-secondary" @onclick="() => HandleAddRelation(properties)">
             <i class="icon feather-copy mr-1"></i>
             <span>Add relation</span>
+        </button>
+        <button type="button" class="btn btn-secondary" @onclick="() => HandleAddEvent(properties)">
+            <i class="icon feather-activity mr-1"></i>
+            <span>Add event</span>
         </button>
     </div>
 }
@@ -165,6 +175,23 @@
         }
 
         await HandleChange();
+    }
+
+    private async Task HandleAddEvent(PropertyProviderData provider) {
+      var result = await Dialog.AddPropertyProviderEvent();
+
+      if (null == result) {
+        return;
+      }
+
+      if (CreateMode) {
+        throw new NotImplementedException();
+      }
+      else {
+        await PropertyProviderService.AddEvent(provider.ProviderID.Value, result);
+      }
+
+      await HandleChange();
     }
 
     private async Task HandleChange() {

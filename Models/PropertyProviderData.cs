@@ -20,23 +20,28 @@ namespace Parallax.Models {
     public class PropertyProviderData {
         private Dictionary<int, AttachedAttrData> attributes;
         private Dictionary<int, AttachedRelationData> relations;
+        private Dictionary<int, AttachedEventData> events;
 
         public int? ProviderID { get; private set; }
         public IReadOnlyDictionary<int, AttachedAttrData> Attributes => attributes;
         public IReadOnlyDictionary<int, AttachedRelationData> Relations => relations;
+        public IReadOnlyDictionary<int, AttachedEventData> Events => events;
 
         public PropertyProviderData() {
             attributes = new Dictionary<int, AttachedAttrData>();
             relations = new Dictionary<int, AttachedRelationData>();
+            events = new Dictionary<int, AttachedEventData>();
         }
 
         public PropertyProviderData(
             IReadOnlyDictionary<int, AttachedAttrData> attributes,
             IReadOnlyDictionary<int, AttachedRelationData> relations,
+            IReadOnlyDictionary<int, AttachedEventData> events,
             int providerID
         ) {
             this.attributes = new Dictionary<int, AttachedAttrData>(attributes);
             this.relations = new Dictionary<int, AttachedRelationData>(relations);
+            this.events = new Dictionary<int, AttachedEventData>(events);
             this.ProviderID = providerID;
         }
 
@@ -48,12 +53,20 @@ namespace Parallax.Models {
             relations.Add(relation.Relation.PropertyID, relation);
         }
 
+        public void AddEvent(AttachedEventData eventData) {
+            events.Add(eventData.Property.PropertyID, eventData);
+        }
+
         public void RemoveAttribute(AttachedAttrData attr) {
             attributes.Remove(attr.Attribute.ID);
         }
 
         public void RemoveRelation(AttachedRelationData relation) {
             relations.Remove(relation.Relation.PropertyID);
+        }
+
+        public void RemoveEvent(AttachedEventData eventData) {
+            events.Remove(eventData.Property.PropertyID);
         }
     }
 }

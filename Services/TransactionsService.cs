@@ -38,6 +38,9 @@ namespace Parallax.Services {
         public async Task<int> AssignProviderRelation(int providerID, int relationID, ConditionRule conditions) =>
             await ProcessEvent(providerID, StaticEvent.Relation, conditions, relationID.ToString());
 
+        public async Task<int> AssignProviderEvent(int providerID, int propertyID, string value, ConditionRule conditions) =>
+          await ProcessEvent(providerID, propertyID, conditions, value);
+
         public async Task<int> AssignPropertyValueRequirement(int assignationID, int propertyID, bool required) =>
             await ProcessEvent(assignationID, StaticEvent.Required, propertyID, required ? "1" : "0");
 

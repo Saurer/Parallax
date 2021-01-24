@@ -65,6 +65,11 @@ namespace Parallax.Services {
             return new AttachedRelationData(plainRelation, required, cardinality, mutable, permission, provider, relation.Conditions, relation.AttachmentID);
         }
 
+        public async Task<AttachedEventData> GetAttachedEvent(IAttachedEvent<IProperty> eventData) {
+            var plainProperty = await eventData.GetProperty();
+            return new AttachedEventData(plainProperty, eventData.Conditions, eventData.Value, eventData.AttachmentID);
+        }
+
         public async Task<PropertyProviderData> GetProvider(int id) {
             var provider = await storage.GetPropertyProvider(id);
             return await GetProvider(provider, id);
@@ -73,8 +78,10 @@ namespace Parallax.Services {
         public async Task<PropertyProviderData> GetProvider(IPropertyProvider provider, int providerID) {
             var plainProviderAttributes = await provider.GetAttributes();
             var plainProviderRelations = await provider.GetRelations();
+            var plainProviderEvents = await provider.GetEvents();
             var attributes = await Task.WhenAll(plainProviderAttributes.Select(attr => GetAttachedAttribute(attr)));
             var relations = await Task.WhenAll(plainProviderRelations.Select(relation => GetAttachedRelation(relation)));
+            var events = await Task.WhenAll(plainProviderEvents.Select(e => GetAttachedEvent(e)));
             var attributesDict = attributes.ToDictionary(
                 k => k.Attribute.ID,
                 v => v
@@ -83,7 +90,11 @@ namespace Parallax.Services {
                 k => k.Relation.PropertyID,
                 v => v
             );
-            return new PropertyProviderData(attributesDict, relationsDict, providerID);
+            var eventsDict = events.ToDictionary(
+              k => k.Property.PropertyID,
+              v => v
+            );
+            return new PropertyProviderData(attributesDict, relationsDict, eventsDict, providerID);
         }
 
 
@@ -160,6 +171,17 @@ namespace Parallax.Services {
             if (data.Permission.HasValue) {
                 await tx.AssignPropertyValuePermission(eventID, data.ID, data.Permission.Value);
             }
+
+            return eventID;
+        }
+
+        public async Task<int> AddEvent(int providerID, EventAssignData data) {
+            var eventID = await tx.AssignProviderEvent(
+              providerID,
+              data.ID,
+              data.Value,
+              data.Conditions ?? new ConditionRule.EventConditionRule(providerID)
+            );
 
             return eventID;
         }

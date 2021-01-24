@@ -1,0 +1,185 @@
+@*
+    Parallax
+    Copyright (C) 2020  Frank Horrigan <https://github.com/saurer>
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*@
+
+@inject IStorageAPI Storage
+
+@if (availableProperties.Any()) {
+    <EditForm model="@model" OnValidSubmit="@HandleSubmit">
+        <DialogLayout>
+            <ChildContent>
+                <DataAnnotationsValidator/>
+                <div class="form-group">
+                    <label for="property">Property</label>
+                    <select class="form-control" @onchange="HandleChangeProperty" id="property">
+                        @foreach (var property in availableProperties) {
+                            <option value="@property.PropertyID">(@property.PropertyID) @property.EventValue.Value</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="value">Value</label>
+                    @if (attr?.IsBoxed is true) {
+                        <select
+                            id="value"
+                            class="form-control @(Valid ? "is-valid" : "is-invalid")"
+                            @bind="model.Value"
+                        >
+                            @foreach (var item in attr?.Values) {
+                                <option value="@item.EventID.ToString()">@item.Value</option>
+                            }
+                        </select>
+                    }
+                    else if (null != attr) {
+                        <input
+                            id="value"
+                            type="text"
+                            @bind-value="model.Value"
+                            class="form-control @(Valid ? "is-valid" : "is-invalid")"
+                        />
+                    }
+                    else if (null != relation) {
+                        <select
+                            id="value"
+                            class="form-control @(Valid ? "is-valid" : "is-invalid")"
+                            @bind="model.Value"
+                        >
+                            @foreach (var item in relation.Values) {
+                                <option value="@item.IndividualID.ToString()">(@item.IndividualID) @item.Label</option>
+                            }
+                        </select>
+                    }
+                </div>
+
+                <div class="form-group">
+                    <label>Conditions</label>
+                    <div class="form-check mb-2">
+                        <input type="checkbox" class="form-check-input" id="transient" @bind="transient"/>
+                        <label class="form-check-label" for="transient">Transient</label>
+                    </div>
+
+                    @if (!transient) {
+                        <ConditionsEditor Model="@model.Conditions" Values="@allProperties" />
+                    }
+                </div>
+            </ChildContent>
+            <Footer>
+                <button type="submit" class="btn btn-primary">Confirm</button>
+                <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+            </Footer>
+        </DialogLayout>
+    </EditForm>
+}
+else {
+    <DialogLayout>
+        <ChildContent>
+            No properties available
+        </ChildContent>
+        <Footer>
+            <button type="button" class="btn btn-secondary" @onclick="Cancel">Close</button>
+        </Footer>
+    </DialogLayout>
+}
+
+@code {
+    [CascadingParameter]
+    public BlazoredModalInstance BlazoredModal { get; set; }
+
+    [Parameter]
+    public IEnumerable<int> Values { get; set; }
+
+    private IEnumerable<IProperty> allProperties = Array.Empty<IProperty>();
+    private IEnumerable<IProperty> availableProperties = Array.Empty<IProperty>();
+    private AddModelEventData model = new AddModelEventData();
+    private bool transient = true;
+    private AttrData attr = null;
+    private RelationData relation = null;
+
+    private bool Valid {
+        get {
+            if (null == model.Value) {
+                return false;
+            }
+            else if (null != attr) {
+                return attr.DataType.Validate(model.Value);
+            }
+            else if (null != relation) {
+              return !String.IsNullOrEmpty(model.Value);
+            }
+            else {
+                return false;
+            }
+        }
+    }
+
+    protected async override Task OnInitializedAsync() {
+        var allAttributes = await Storage.GetAttributes();
+        var allRelations = await Storage.GetRelations();
+        allProperties = allAttributes.Concat<IProperty>(allRelations);
+        availableProperties = allProperties.Where(p => !Values.Contains(p.PropertyID));
+
+        await SetProperty(availableProperties.First().PropertyID);
+    }
+
+    private async Task HandleChangeProperty(ChangeEventArgs e) {
+        if (Int32.TryParse((string)e.Value, out var id)) {
+            await SetProperty(id);
+        }
+    }
+
+    private async Task SetProperty(int propertyID) {
+        attr = null;
+        relation = null;
+        model.Value = null;
+
+        var prop = availableProperties.Where(a => a.PropertyID == propertyID).Single();
+
+        if (prop is IAttr attrProp) {
+            attr = await AttrData.Instantiate(attrProp);
+        }
+        else if (prop is IRelation relationProto) {
+            relation = await RelationData.Instantiate(relationProto);
+            model.Value = relation.Values.First().IndividualID.ToString();
+        }
+        else {
+            return;
+        }
+
+        model.Property = prop;
+    }
+
+    private async Task Cancel() {
+        await BlazoredModal.Cancel();
+    }
+
+    private async Task HandleSubmit() {
+        if (!Valid) {
+            return;
+        }
+
+        await BlazoredModal.Close(ModalResult.Ok(
+            new EventAssignData {
+                ID = model.Property.PropertyID,
+                Value = model.Value,
+                Conditions = transient
+                    ? null
+                    : model.Conditions.Compile()
+            }
+        ));
+    }
+}

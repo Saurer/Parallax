@@ -125,5 +125,20 @@ namespace Parallax.Services {
                 return null;
             }
         }
+
+        public async Task<EventAssignData> AddPropertyProviderEvent() {
+            var parameters = new ModalParameters();
+            // FIXME
+            parameters.Add("Values", System.Array.Empty<int>());
+            var modal = instance.Show<AddModelEvent>("Add event", parameters);
+            var result = await modal.Result;
+
+            if (result.Data is EventAssignData data) {
+                return data;
+            }
+            else {
+                return null;
+            }
+        }
     }
 }

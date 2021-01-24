@@ -32,7 +32,7 @@ namespace Parallax.Models {
             AttachmentID = attachmentID;
         }
 
-        private AttachedEventData(
+        public AttachedEventData(
             IProperty property,
             ConditionRule conditions,
             string value

@@ -35,6 +35,7 @@
         IsRemovable="@(!attr.AttachmentID.HasValue)"
         OnAddAttribute="@(() => HandleAddAttribute(attr.PropertyProvider))"
         OnAddRelation="@(() => HandleAddRelation(attr.PropertyProvider))"
+        OnAddEvent="@(() => HandleAddEvent(attr.PropertyProvider))"
         OnRemove="@(() => properties.RemoveAttribute(attr))"
     >
         <ProviderProperties
@@ -60,6 +61,7 @@
         IsRemovable="@(!relation.AttachmentID.HasValue)"
         OnAddAttribute="@(() => HandleAddAttribute(relation.PropertyProvider))"
         OnAddRelation="@(() => HandleAddRelation(relation.PropertyProvider))"
+        OnAddEvent="@(() => HandleAddEvent(relation.PropertyProvider))"
         OnRemove="@(() => properties.RemoveRelation(relation))"
     >
         <ProviderProperties
@@ -178,14 +180,36 @@
     }
 
     private async Task HandleAddEvent(PropertyProviderData provider) {
-      var result = await Dialog.AddPropertyProviderEvent();
+      var result = await Dialog.AddPropertyProviderEvent(
+          provider.Relations.Keys
+              .Concat(provider.Attributes.Keys)
+              .Concat(provider.Events.Keys)
+      );
 
       if (null == result) {
         return;
       }
 
       if (CreateMode) {
-        throw new NotImplementedException();
+          var attr = await Storage.GetAttribute(result.ID);
+          var relation = await Storage.GetRelation(result.ID);
+          IProperty prop;
+
+          if (null != attr) {
+              prop = attr;
+          }
+          else if (null != relation) {
+              prop = relation;
+          }
+          else {
+              return;
+          }
+
+          provider.AddEvent(new AttachedEventData(
+              prop,
+              result.Conditions,
+              result.Value
+          ));
       }
       else {
         await PropertyProviderService.AddEvent(provider.ProviderID.Value, result);

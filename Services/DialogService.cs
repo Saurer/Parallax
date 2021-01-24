@@ -126,10 +126,9 @@ namespace Parallax.Services {
             }
         }
 
-        public async Task<EventAssignData> AddPropertyProviderEvent() {
+        public async Task<EventAssignData> AddPropertyProviderEvent(IEnumerable<int> unavailableProperties) {
             var parameters = new ModalParameters();
-            // FIXME
-            parameters.Add("Values", System.Array.Empty<int>());
+            parameters.Add("Values", unavailableProperties);
             var modal = instance.Show<AddModelEvent>("Add event", parameters);
             var result = await modal.Result;
 

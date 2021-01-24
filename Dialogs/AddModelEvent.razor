@@ -133,7 +133,9 @@ else {
         allProperties = allAttributes.Concat<IProperty>(allRelations);
         availableProperties = allProperties.Where(p => !Values.Contains(p.PropertyID));
 
-        await SetProperty(availableProperties.First().PropertyID);
+        if (availableProperties.Any()) {
+            await SetProperty(availableProperties.First().PropertyID);
+        }
     }
 
     private async Task HandleChangeProperty(ChangeEventArgs e) {
